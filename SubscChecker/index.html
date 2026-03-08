@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>サブスクチェッカー</title>
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icon.svg" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <script src="data.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body
+    class="bg-slate-50 font-sans text-slate-900 antialiased selection:bg-blue-200"
+  >
+    <div
+      id="input-screen"
+      class="md:flex md:max-w-6xl md:mx-auto md:min-h-screen md:gap-8 lg:gap-12 relative"
+    >
+      <div
+        class="md:hidden flex flex-col items-center pt-2 pb-1 bg-white relative z-40 w-full"
+      >
+        <div class="app-logo flex items-center justify-center -mt-4 -mb-4">
+          <h1 class="sr-only">サブスクチェッカー</h1>
+          <img
+            src="logo.svg"
+            alt="サブスクチェッカー"
+            class="h-32 w-auto object-contain flex-shrink-0"
+          />
+        </div>
+      </div>
+
+      <div
+        class="sticky top-0 z-50 flex flex-col w-full md:w-[320px] lg:w-[360px] md:shrink-0 md:h-screen md:bg-white md:border-r md:border-slate-200"
+      >
+        <div
+          class="hidden md:flex flex-col items-center pt-6 pb-4 bg-white relative z-40 flex-shrink-0"
+        >
+          <div class="app-logo flex items-center justify-center">
+            <h1 class="sr-only">サブスクチェッカー</h1>
+            <img
+              src="logo.svg"
+              alt="サブスクチェッカー"
+              class="h-28 lg:h-32 w-auto object-contain flex-shrink-0"
+            />
+          </div>
+        </div>
+
+        <header
+          id="header-content"
+          class="w-full bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200 md:bg-transparent md:backdrop-blur-none md:shadow-none md:border-none md:flex md:flex-col md:flex-1 md:overflow-hidden"
+        >
+          <div
+            class="px-4 pt-3 pb-2 md:px-4 md:pt-0 md:pb-2 w-full flex justify-center"
+          >
+            <div class="relative flex items-center w-full">
+              <input
+                type="text"
+                id="search-input"
+                placeholder="検索"
+                class="w-full bg-slate-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-0 focus:outline-none rounded-xl py-2 pl-10 pr-10 text-sm transition-all font-medium text-slate-700"
+              />
+              <svg
+                class="w-4 h-4 text-slate-400 absolute left-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
+              </svg>
+              <button
+                id="search-clear-btn"
+                class="absolute right-2.5 hidden text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-200/50"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <nav
+            class="w-full overflow-x-auto hide-scrollbar md:overflow-y-auto md:flex-1"
+          >
+            <div
+              id="nav-container"
+              class="flex flex-nowrap w-max gap-2 px-4 pb-3 md:w-full md:flex-col md:gap-1 md:px-3 md:py-1"
+            ></div>
+          </nav>
+        </header>
+      </div>
+      <main
+        id="main-content"
+        class="opacity-0 transition-opacity duration-300 flex-1 w-full max-w-3xl mx-auto px-4 pt-4 pb-40 md:pb-16 md:pt-10 relative flex flex-col"
+      >
+        <div
+          id="quick-guide"
+          class="guide-transition max-h-[500px] mb-8 p-4 md:p-6 rounded-2xl bg-blue-50/50 border-2 border-dashed border-blue-200 flex flex-col justify-center"
+        >
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-base">💡</span>
+            <span class="font-bold text-slate-700 text-sm"
+              >3ステップで簡単チェック</span
+            >
+          </div>
+          <div
+            class="flex flex-col md:flex-row gap-2 md:gap-3 text-sm text-slate-600 font-medium"
+          >
+            <div
+              class="flex items-center gap-2 flex-1 bg-white/80 px-3 py-2.5 rounded-xl shadow-sm border border-blue-100/50"
+            >
+              <span
+                class="bg-blue-100 text-blue-600 font-black text-xs px-2 py-0.5 rounded-md"
+                >1</span
+              >
+              <span class="text-xs md:text-sm tracking-tight"
+                >使っているサブスクを選ぶ</span
+              >
+            </div>
+            <div
+              class="flex items-center gap-2 flex-1 bg-white/80 px-3 py-2.5 rounded-xl shadow-sm border border-blue-100/50"
+            >
+              <span
+                class="bg-blue-100 text-blue-600 font-black text-xs px-2 py-0.5 rounded-md"
+                >2</span
+              >
+              <span class="text-xs md:text-sm tracking-tight"
+                >ないものは独自で追加</span
+              >
+            </div>
+            <div
+              class="flex items-center gap-2 flex-1 bg-white/80 px-3 py-2.5 rounded-xl shadow-sm border border-blue-100/50"
+            >
+              <span
+                class="bg-blue-100 text-blue-600 font-black text-xs px-2 py-0.5 rounded-md"
+                >3</span
+              >
+              <span class="text-xs md:text-sm tracking-tight"
+                >「結果を分析」で傾向を確認</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div id="subscription-list" class="flex flex-col"></div>
+
+        <div
+          id="empty-state"
+          class="hidden flex flex-col items-center justify-center py-10 px-4 text-center space-y-4 md:py-24 md:bg-white md:rounded-3xl md:shadow-sm md:border md:border-slate-200 mt-8"
+        >
+          <div
+            class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-1 border border-slate-100 flex-shrink-0"
+          >
+            <svg
+              class="w-8 h-8 text-slate-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+          </div>
+
+          <p class="text-slate-600 font-bold">
+            お探しのサブスクが見つかりませんでした
+          </p>
+
+          <button
+            id="btn-empty-add-custom"
+            class="mt-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-sm transition-colors flex items-center justify-center gap-2"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              ></path>
+            </svg>
+            独自のサブスクを追加する
+          </button>
+
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSdLrJ6cIUE84Elo7LQelJyOHsWM-3415BwIp8oDActYUvmTeg/viewform?usp=header"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-4 pt-2 text-xs md:text-sm text-slate-500 hover:text-blue-600 underline font-medium transition-colors"
+          >
+            サブスクをリクエスト
+          </a>
+        </div>
+
+        <section
+          id="section-custom"
+          class="scroll-mt-40 md:scroll-mt-8 nav-section pt-10 mt-10 md:pt-16 md:mt-16 border-t-2 border-slate-200/80"
+        >
+          <button
+            class="accordion-trigger w-full flex items-center justify-between py-2 pr-2 md:pr-4 text-left hover:bg-slate-50/50 rounded-2xl transition-colors focus:outline-none mb-6"
+          >
+            <div class="flex items-center gap-3 md:gap-4">
+              <div
+                class="w-1.5 h-12 md:h-14 bg-blue-600 rounded-r-md flex-shrink-0"
+              ></div>
+              <div
+                class="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-blue-50 rounded-full flex-shrink-0"
+              >
+                <span class="text-2xl md:text-3xl">✨</span>
+              </div>
+              <div class="flex flex-col md:flex-row md:items-baseline md:gap-4">
+                <h2
+                  class="text-xl md:text-2xl font-black text-slate-900 tracking-wider"
+                >
+                  独自のサブスク
+                </h2>
+                <span class="text-sm font-medium text-slate-500 mt-0.5 md:mt-0"
+                  >月額換算
+                  <span
+                    class="subtotal-val font-extrabold text-blue-600 text-lg md:text-xl ml-1"
+                    >0</span
+                  ><span class="text-xs text-blue-600 font-bold ml-0.5"
+                    >円</span
+                  ></span
+                >
+              </div>
+            </div>
+            <svg
+              class="w-6 h-6 text-slate-400 transform transition-transform duration-300 accordion-icon rotate-180 flex-shrink-0 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              ></path>
+            </svg>
+          </button>
+          <div class="accordion-content space-y-2 md:space-y-3 px-1 md:px-2">
+            <div
+              id="custom-list-container"
+              class="space-y-2 md:space-y-3"
+            ></div>
+            <button
+              id="btn-open-custom-modal"
+              class="mt-4 w-full py-4 border-2 border-dashed border-blue-200 text-blue-600 bg-blue-50/50 rounded-2xl font-bold hover:bg-blue-50 hover:border-blue-300 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                ></path>
+              </svg>
+              独自のサブスクを追加
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+    <footer
+      id="footer-controls"
+      class="fixed bottom-0 left-0 right-0 z-[90] pb-safe md:bottom-6 md:left-auto md:right-8 lg:right-12 md:w-[440px] w-full transition-all duration-300 pointer-events-none"
+    >
+      <div
+        class="pointer-events-auto bg-white/95 backdrop-blur-md border-t border-slate-200 px-5 py-4 md:p-5 md:bg-white md:backdrop-blur-none md:rounded-[2rem] md:shadow-[0_12px_40px_-8px_rgba(0,0,0,0.15)] md:border md:border-slate-100 flex flex-row items-center justify-between gap-4"
+      >
+        <div class="flex flex-col flex-1 gap-1">
+          <div class="flex items-center gap-2">
+            <span class="text-slate-500 font-bold text-xs shrink-0"
+              >月額合計</span
+            >
+            <div class="text-blue-600 flex items-baseline">
+              <span
+                id="monthly-total"
+                class="text-2xl md:text-3xl font-black tracking-tight"
+                >0</span
+              >
+              <span class="text-xs font-bold ml-1">円</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 opacity-90">
+            <span class="text-slate-400 font-bold text-[10px] shrink-0"
+              >年額合計</span
+            >
+            <div class="text-slate-600 flex items-baseline">
+              <span
+                id="yearly-total"
+                class="text-lg md:text-xl font-black tracking-tight"
+                >0</span
+              >
+              <span class="text-[10px] font-bold ml-0.5">円</span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex flex-col items-center gap-2 w-[150px] md:w-[170px] flex-shrink-0"
+        >
+          <button
+            id="btn-analyze"
+            class="w-full py-3 md:py-3.5 bg-blue-600 text-white text-sm md:text-base font-black rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg transition-all flex items-center justify-center gap-1.5 active:scale-95"
+          >
+            <svg
+              class="w-4 h-4 md:w-5 md:h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              ></path>
+            </svg>
+            結果を分析
+          </button>
+
+          <button
+            id="btn-reset-all"
+            class="flex items-center justify-center gap-1 text-[10px] md:text-xs font-bold text-slate-400 hover:text-red-500 transition-colors py-1 px-2 rounded-lg hover:bg-red-50"
+          >
+            <svg
+              class="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              ></path>
+            </svg>
+            すべてリセット
+          </button>
+        </div>
+      </div>
+    </footer>
+
+    <div
+      id="delete-toast"
+      class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl text-sm font-bold transition-all duration-300 translate-y-10 opacity-0 pointer-events-none z-[100] flex items-center gap-2"
+    >
+      <svg
+        class="w-5 h-5 text-green-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 13l4 4L19 7"
+        ></path>
+      </svg>
+      削除しました
+    </div>
+    <div
+      id="reset-toast"
+      class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl text-sm font-bold transition-all duration-300 translate-y-10 opacity-0 pointer-events-none z-[100] flex items-center gap-2"
+    >
+      <svg
+        class="w-5 h-5 text-green-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 13l4 4L19 7"
+        ></path>
+      </svg>
+      すべてリセットしました
+    </div>
+
+    <div id="result-container"></div>
+    <div id="modals-container"></div>
+
+    <footer
+      class="w-full pt-10 pb-32 md:pb-12 text-center flex flex-col items-center gap-6"
+    >
+      <a
+        href="https://docs.google.com/forms/d/e/1FAIpQLSdLrJ6cIUE84Elo7LQelJyOHsWM-3415BwIp8oDActYUvmTeg/viewform?usp=header"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-blue-600 bg-white px-5 py-3 rounded-full border border-slate-200 shadow-sm hover:border-blue-300 hover:bg-blue-50 transition-all"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+          ></path>
+        </svg>
+        サブスクの追加要望・修正報告はこちら
+      </a>
+
+      <button
+        onclick="
+          document.getElementById('policy-modal').classList.remove('hidden')
+        "
+        class="text-[10px] md:text-xs text-slate-400 hover:text-blue-500 underline transition-colors"
+      >
+        プライバシーポリシー・免責事項
+      </button>
+    </footer>
+
+    <div
+      id="policy-modal"
+      class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4"
+    >
+      <div
+        class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+        onclick="this.parentElement.classList.add('hidden')"
+      ></div>
+      <div
+        class="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full relative z-10 shadow-2xl max-h-[80vh] overflow-y-auto modal-animate"
+      >
+        <h3 class="text-lg font-black mb-4 flex items-center gap-2">
+          🛡️ プライバシーポリシー
+        </h3>
+        <div
+          class="space-y-4 text-xs md:text-sm text-slate-600 leading-relaxed text-left"
+        >
+          <p>
+            <strong>1. データの保存について</strong
+            ><br />入力された情報は、お客様のブラウザ（LocalStorage）にのみ保存されます。サーバーへの送信や、開発者・第三者が取得することはありません。
+          </p>
+          <p>
+            <strong>2. 広告配信について</strong><br />当サイトではGoogle
+            AdSenseを利用しています。第三者配信事業者はCookieを使用して、お客様の過去のアクセス情報に基づき適切な広告を配信します。
+          </p>
+          <p>
+            <strong>3. 免責事項</strong
+            ><br />計算結果の正確性には万全を期していますが、各サービスの料金改定等により実際の支払額と異なる場合があります。本アプリの利用により生じた損害について、一切の責任を負いかねます。
+          </p>
+        </div>
+        <button
+          onclick="this.parentElement.parentElement.classList.add('hidden')"
+          class="mt-6 w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors"
+        >
+          閉じる
+        </button>
+      </div>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
