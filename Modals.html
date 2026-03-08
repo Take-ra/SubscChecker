@@ -1,0 +1,272 @@
+<div
+  id="custom-modal"
+  class="fixed inset-0 z-[100] hidden items-center justify-center px-4"
+>
+  <div
+    class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm modal-overlay"
+  ></div>
+  <div
+    class="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden modal-animate p-6"
+  >
+    <h3 class="text-lg font-bold text-slate-800 mb-4">独自のサブスクを追加</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1"
+          >サービス名</label
+        >
+        <input
+          type="text"
+          id="custom-name"
+          placeholder="例: 家賃"
+          class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-slate-700 px-4 py-2.5 bg-slate-50 border"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1"
+          >料金</label
+        >
+        <div class="flex gap-2">
+          <div class="relative flex-1">
+            <input
+              type="number"
+              id="custom-price"
+              placeholder="例: 50000"
+              class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-slate-700 px-4 py-2.5 bg-slate-50 border pr-8"
+            />
+            <span class="absolute right-3 top-3 text-slate-500 font-medium"
+              >円</span
+            >
+          </div>
+          <select
+            id="custom-plan-type"
+            class="w-28 rounded-xl border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-slate-700 bg-slate-50 border px-2 pr-8"
+          >
+            <option value="monthly">月額</option>
+            <option value="yearly">年額</option>
+            <option value="custom">自由入力</option>
+          </select>
+        </div>
+      </div>
+
+      <div
+        id="custom-cycle-container"
+        class="hidden mt-3 p-3 bg-blue-50 rounded-xl border border-blue-100 animate-in fade-in slide-in-from-top-1"
+      >
+        <label class="block text-xs font-bold text-blue-600 mb-1 ml-1"
+          >支払い頻度</label
+        >
+        <div class="flex gap-2">
+          <select
+            id="custom-cycle-num"
+            class="flex-1 border-none rounded-lg p-2 text-sm font-black text-blue-600 focus:ring-0 bg-white cursor-pointer"
+          ></select>
+          <select
+            id="custom-cycle-unit"
+            class="w-24 border-none rounded-lg p-2 text-sm font-black text-blue-600 focus:ring-0 bg-white cursor-pointer"
+          >
+            <option value="weeks">週間ごと</option>
+            <option value="months" selected>ヶ月ごと</option>
+            <option value="years">年ごと</option>
+          </select>
+        </div>
+      </div>
+      <p
+        id="custom-error-msg"
+        class="text-sm text-red-500 font-medium hidden mt-1"
+      >
+        サービス名と料金を入力してください。
+      </p>
+    </div>
+    <div class="mt-6 flex gap-3">
+      <button
+        type="button"
+        class="flex-1 px-4 py-2.5 bg-white border border-slate-300 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors close-modal-btn"
+      >
+        キャンセル
+      </button>
+      <button
+        type="button"
+        id="btn-save-custom"
+        class="flex-1 px-4 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-sm transition-colors"
+      >
+        追加する
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  id="reset-modal"
+  class="fixed inset-0 z-[100] hidden items-center justify-center px-4"
+>
+  <div
+    class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm modal-overlay-reset"
+  ></div>
+  <div
+    class="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden modal-animate p-6"
+  >
+    <h3 class="text-lg font-bold text-slate-800 mb-2">
+      すべてリセットしますか？
+    </h3>
+    <p class="text-sm text-slate-600 mb-6">
+      すべての選択と、追加した独自のサブスクリプションをクリアします。<br />この操作は取り消せません。
+    </p>
+    <div class="flex gap-3">
+      <button
+        type="button"
+        class="flex-1 px-4 py-2.5 bg-white border border-slate-300 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors close-reset-modal-btn"
+      >
+        キャンセル
+      </button>
+      <button
+        type="button"
+        id="btn-confirm-reset"
+        class="flex-1 px-4 py-2.5 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 shadow-sm transition-colors"
+      >
+        リセットする
+      </button>
+    </div>
+  </div>
+</div>
+<div
+  id="calendar-modal"
+  class="fixed inset-0 z-[100] hidden items-center justify-center px-4"
+>
+  <div
+    class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+    onclick="closeCalendarModal()"
+  ></div>
+  <div
+    class="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden modal-animate p-6"
+  >
+    <h3 class="text-lg font-black text-slate-800 mb-2 flex items-center gap-2">
+      <span class="text-xl">🔔</span> カレンダーに通知を登録
+    </h3>
+    <p
+      id="cal-sub-name"
+      class="text-sm font-bold text-blue-700 mb-4 bg-blue-50 py-2 px-3 rounded-lg border border-blue-100"
+    ></p>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-1.5"
+          >契約日 (直近の支払日)</label
+        >
+        <input
+          type="date"
+          id="cal-start-date"
+          class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-slate-700 px-4 py-2.5 bg-slate-50 border cursor-pointer"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-1"
+          >通知日
+          <span class="text-xs font-normal text-slate-500"
+            >(複数選択可)</span
+          ></label
+        >
+        <p class="text-[10px] text-slate-500 mb-2 font-medium">
+          ※Googleカレンダーの場合は、仕様上1件ずつ順番に登録画面が開きます。
+        </p>
+
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <label
+            class="flex items-center gap-2 p-2.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+          >
+            <input
+              type="checkbox"
+              value="7"
+              class="cal-notify-cb w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+            />
+            <span class="text-sm font-bold text-slate-700">1週間前</span>
+          </label>
+          <label
+            class="flex items-center gap-2 p-2.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+          >
+            <input
+              type="checkbox"
+              value="3"
+              class="cal-notify-cb w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+            />
+            <span class="text-sm font-bold text-slate-700">3日前</span>
+          </label>
+          <label
+            class="flex items-center gap-2 p-2.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+          >
+            <input
+              type="checkbox"
+              value="1"
+              class="cal-notify-cb w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+            />
+            <span class="text-sm font-bold text-slate-700">1日前</span>
+          </label>
+          <label
+            class="flex items-center gap-2 p-2.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+          >
+            <input
+              type="checkbox"
+              value="0"
+              class="cal-notify-cb w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+            />
+            <span class="text-sm font-bold text-slate-700">当日</span>
+          </label>
+        </div>
+
+        <label
+          class="flex items-center gap-2 p-2.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors w-full"
+        >
+          <input
+            type="checkbox"
+            id="cal-notify-custom-cb"
+            value="custom"
+            onchange="handleTimingChange(event)"
+            class="cal-notify-cb w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+          />
+          <span class="text-sm font-bold text-slate-700">任意の日数前</span>
+        </label>
+      </div>
+
+      <div
+        id="cal-custom-timing-container"
+        class="hidden mt-1 p-3 bg-slate-50 rounded-xl border border-slate-200"
+      >
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            id="cal-custom-days"
+            min="1"
+            value="14"
+            class="w-24 rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-slate-700 px-3 py-2 bg-white border"
+          />
+          <span class="text-sm font-bold text-slate-600">日前</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 flex flex-col gap-3">
+      <button
+        type="button"
+        id="btn-google-cal"
+        onclick="addToGoogleCalendar()"
+        class="w-full px-4 py-3.5 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-blue-300 shadow-sm transition-all flex items-center justify-center gap-2"
+      >
+        📅 Googleカレンダーに追加
+      </button>
+      <button
+        type="button"
+        onclick="addToAppleCalendar()"
+        class="w-full px-4 py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 shadow-md transition-all flex items-center justify-center gap-2"
+      >
+        🍎 Appleカレンダー等に追加
+      </button>
+      <button
+        type="button"
+        onclick="closeCalendarModal()"
+        class="w-full px-4 py-2 text-sm text-slate-400 font-bold hover:text-slate-600 transition-colors mt-1"
+      >
+        キャンセル
+      </button>
+    </div>
+  </div>
+</div>
