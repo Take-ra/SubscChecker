@@ -296,10 +296,11 @@
     </div>
     <footer
       id="footer-controls"
-      class="fixed bottom-0 left-0 right-0 z-[90] md:bottom-6 md:left-auto md:right-8 lg:right-12 md:w-[440px] w-full transition-all duration-300 pointer-events-none"
+      class="fixed bottom-0 left-0 right-0 z-[90] md:bottom-6 md:left-auto md:right-8 lg:right-12 md:w-[440px] w-full pointer-events-none"
     >
       <div
-        class="pointer-events-auto bg-white/95 backdrop-blur-md border-t border-slate-200 px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:p-5 md:bg-white md:backdrop-blur-none md:rounded-[2rem] md:shadow-[0_12px_40px_-8px_rgba(0,0,0,0.15)] md:border md:border-slate-100 flex flex-row items-center justify-between gap-4"
+        class="pointer-events-auto bg-white/95 backdrop-blur-md border-t border-slate-200 px-5 pt-3 md:p-5 md:bg-white md:backdrop-blur-none md:rounded-[2rem] md:shadow-[0_12px_40px_-8px_rgba(0,0,0,0.15)] md:border md:border-slate-100 flex flex-row items-center justify-between gap-4"
+        style="padding-bottom: max(16px, env(safe-area-inset-bottom))"
       >
         <div class="flex flex-col flex-1 gap-1">
           <div class="flex items-center gap-2">
@@ -375,7 +376,6 @@
         </div>
       </div>
     </footer>
-
     <div
       id="delete-toast"
       class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl text-sm font-bold transition-all duration-300 translate-y-10 opacity-0 pointer-events-none z-[100] flex items-center gap-2"
