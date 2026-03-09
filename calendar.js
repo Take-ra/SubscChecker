@@ -146,7 +146,7 @@ export function addToGoogleCalendar() {
   }
 }
 
-// Appleカレンダー等へ追加 (iPhone Safariの機能を利用)
+// Appleカレンダー等へ追加 (ブラウザ判定付き)
 export async function addToAppleCalendar() {
   try {
     const daysArray = getSelectedNotifyDays();
@@ -157,7 +157,6 @@ export async function addToAppleCalendar() {
 
     let icsEvents = "";
 
-    // 選択された日数の数だけ予定(VEVENT)を作る
     for (const notifyDays of daysArray) {
       const eventDate = calculateSingleEventDate(notifyDays);
       if (!eventDate) {
@@ -180,20 +179,40 @@ END:VEVENT
 `;
     }
 
-    // カレンダーファイルをまとめる
     const icsData = `BEGIN:VCALENDAR
 VERSION:2.0
 ${icsEvents}END:VCALENDAR`;
 
-    // ▼▼ 修正：共有メニューではなく、Safariの標準機能で直接カレンダーを開かせる ▼▼
-    // カレンダーのデータをURLの形式に変換する
-    const dataUri =
-      "data:text/calendar;charset=utf-8," + encodeURIComponent(icsData);
+    // ▼▼ 修正：アクセスしている端末とブラウザを判定する ▼▼
+    const ua = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(ua);
+    const isCriOS = ua.includes("crios"); // iOS版のChromeは「CriOS」という名前になります
 
-    // 現在の画面をそのURLに遷移させる（iPhone Safariだとカレンダーの追加画面が自動で開きます）
-    window.location.href = dataUri;
-
-    closeCalendarModal();
+    if (isIOS) {
+      if (isCriOS) {
+        // パターンA：iPhoneだけど、Chromeを使っている場合
+        // ゴミファイルを残さないためにダウンロードをブロックし、案内を出す
+        alert(
+          "iOS版Chromeの仕様により、カレンダーアプリへの直接連携が制限されています。\nお手数ですが、上の「Googleカレンダーに追加」をご利用いただくか、Safariブラウザで開き直してお試しください🙇‍♂️",
+        );
+        return;
+      } else {
+        // パターンB：iPhoneで、Safariを使っている場合（大成功ルート）
+        const dataUri =
+          "data:text/calendar;charset=utf-8," + encodeURIComponent(icsData);
+        window.location.href = dataUri;
+        closeCalendarModal();
+        return;
+      }
+    } else {
+      // パターンC：AndroidやPCの場合
+      // 直接開く機能が対応していないため、Googleカレンダーへ誘導する
+      alert(
+        "お使いの環境ではカレンダーアプリへの直接連携がサポートされていません。\n上の「Googleカレンダーに追加」ボタンをご利用ください。",
+      );
+      return;
+    }
+    // ▲▲ 修正ここまで ▲▲
   } catch (error) {
     console.error(error);
     alert("エラーが発生しました: " + error.message);
