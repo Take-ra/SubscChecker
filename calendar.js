@@ -146,7 +146,7 @@ export function addToGoogleCalendar() {
   }
 }
 
-// Appleカレンダー等へ追加 (1つのファイルに複数の予定をまとめて出力できる)
+// Appleカレンダー等へ追加 (iPhone Safariの機能を利用)
 export async function addToAppleCalendar() {
   try {
     const daysArray = getSelectedNotifyDays();
@@ -185,41 +185,16 @@ END:VEVENT
 VERSION:2.0
 ${icsEvents}END:VCALENDAR`;
 
-    let file;
-    try {
-      // ここでPCローカル環境のエラーが起きやすいので、安全に処理する
-      const fileName = "subscription_alert.ics";
-      file = new File([icsData], fileName, { type: "text/calendar" });
-    } catch (fileErr) {
-      alert(
-        "お使いのブラウザ環境ではファイルの生成がブロックされました。\nGoogleカレンダーをご利用ください。",
-      );
-      return;
-    }
+    // ▼▼ 修正：共有メニューではなく、Safariの標準機能で直接カレンダーを開かせる ▼▼
+    // カレンダーのデータをURLの形式に変換する
+    const dataUri =
+      "data:text/calendar;charset=utf-8," + encodeURIComponent(icsData);
 
-    // スマホなどの「共有メニュー（Web Share API）」が使えるかチェック
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: "サブスク更新通知",
-        });
-        closeCalendarModal();
-      } catch (shareErr) {
-        console.log("共有がキャンセルされたか、失敗しました:", shareErr);
-        // ▼▼ 修正：コンソールに出すだけではなく、画面にアラートを出して案内する ▼▼
-        alert(
-          "お使いの環境では共有メニューを開けませんでした（ブラウザの権限ブロック等）。\n恐れ入りますが、Googleカレンダーボタンをご利用いただくか、スマホでお試しください。",
-        );
-      }
-    } else {
-      // 使えない環境（PCのブラウザ等）の場合はアラートを出す
-      alert(
-        "PC環境など、お使いのブラウザでは直接カレンダーアプリを開く機能（共有メニュー）がサポートされていません。\nGoogleカレンダーボタンをご利用いただくか、スマホのブラウザでお試しください。",
-      );
-    }
+    // 現在の画面をそのURLに遷移させる（iPhone Safariだとカレンダーの追加画面が自動で開きます）
+    window.location.href = dataUri;
+
+    closeCalendarModal();
   } catch (error) {
-    // 予期せぬエラーが起きた場合も、絶対にフリーズさせずにアラートを出す
     console.error(error);
     alert("エラーが発生しました: " + error.message);
   }
