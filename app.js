@@ -159,6 +159,7 @@ export function initApp() {
   }
 
   function setupScrollSpy() {
+    /*
     const onScroll = () => {
       if (isScrollingFromNav) return;
       const navLinks = document.querySelectorAll(".nav-link");
@@ -211,7 +212,7 @@ export function initApp() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
-    setTimeout(onScroll, 100);
+    setTimeout(onScroll, 100);*/
   }
 
   // --- イベントリスナー ---
@@ -303,14 +304,19 @@ export function initApp() {
       }
     }
     // もしクリックされたのが、左側（スマホは上）の目次ボタンだったら
+    // もしクリックされたのが、左側（スマホは上）の目次ボタンだったら
     const navLink = e.target.closest(".nav-link");
     if (navLink) {
-      const targetId = navLink.getAttribute("data-target"); // 「どこに飛ぶか」を取得（例："section-music"）
-      const targetSection = document.getElementById(targetId); // 飛ぶ先の目的地（カテゴリーの塊）を探す
+      const targetId = navLink.getAttribute("data-target");
+      const targetSection = document.getElementById(targetId);
 
-      if (targetSection) {
-        isScrollingFromNav = true;
+      // ★ 変更点1：実際にスクロールしている箱（コンテナ）を取得
+      const scrollContainer = document.querySelector(
+        ".h-full.w-full.overflow-y-auto",
+      );
 
+      if (targetSection && scrollContainer) {
+        // ★ 変更点2：クリックした目次だけを青く光らせ、他はグレーに戻す
         document.querySelectorAll(".nav-link").forEach((link) => {
           if (link === navLink) {
             link.classList.add(
@@ -340,34 +346,32 @@ export function initApp() {
             );
           }
         });
-        // PC画面(幅768px以上)かどうかを判定
-        const isPC = window.innerWidth >= 768;
 
-        // スマホの場合は、上の目次が画面に張り付いているので、その目次の高さ分だけスクロール位置を調整する
+        const isPC = window.innerWidth >= 768;
         const headerOffset = isPC
           ? 0
           : document.querySelector("nav").offsetHeight;
 
-        // 目的地がページの一番上から何ピクセルの位置にあるかを計算し、少しだけ余白（-20）を持たせる
+        // ★ 変更点3：コンテナ基準での正確なスクロール位置を計算
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const targetRect = targetSection.getBoundingClientRect();
         const targetPosition =
-          targetSection.getBoundingClientRect().top +
-          window.pageYOffset -
+          scrollContainer.scrollTop +
+          (targetRect.top - containerRect.top) -
           headerOffset -
           20;
 
-        // スルスルッと滑らかにスクロールさせる
-        window.scrollTo({ top: targetPosition, behavior: "smooth" });
+        // ★ 変更点4：windowではなく、コンテナ自体をスクロールさせる
+        scrollContainer.scrollTo({ top: targetPosition, behavior: "smooth" });
 
         // （気の利いた処理）もし飛んだ先のカテゴリーが「閉じて」いたら、自動的に「開く」ようにする
-        const content = targetSection.querySelector(".accordion-content");
+        const wrapper = targetSection.querySelector(".accordion-wrapper");
         const icon = targetSection.querySelector(".accordion-icon");
-        if (content?.classList.contains("hidden")) {
-          content.classList.remove("hidden");
-          icon.classList.add("rotate-180");
+        if (wrapper && wrapper.classList.contains("grid-rows-[0fr]")) {
+          wrapper.classList.remove("grid-rows-[0fr]", "opacity-0");
+          wrapper.classList.add("grid-rows-[1fr]", "opacity-100");
+          if (icon) icon.classList.add("rotate-180");
         }
-        setTimeout(() => {
-          isScrollingFromNav = false;
-        }, 800);
       }
     }
   });

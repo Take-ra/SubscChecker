@@ -212,7 +212,6 @@ ${icsEvents}END:VCALENDAR`;
       );
       return;
     }
-    // ▲▲ 修正ここまで ▲▲
   } catch (error) {
     console.error(error);
     alert("エラーが発生しました: " + error.message);
