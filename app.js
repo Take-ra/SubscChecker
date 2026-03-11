@@ -321,14 +321,28 @@ export function initApp() {
   const searchInput = document.getElementById("search-input");
   const searchClearBtn = document.getElementById("search-clear-btn");
   const emptyState = document.getElementById("empty-state");
-  const customSection = document.getElementById("section-custom");
+
+  // 【追加】全角/半角、大文字/小文字、ひらがな/カタカナの表記揺れを強力に吸収する関数
+  function normalizeSearchText(text) {
+    if (!text) return "";
+    // NFKCで全角英数→半角、半角カナ→全角に統一し、小文字化
+    let normalized = text.normalize("NFKC").toLowerCase();
+    // ひらがなをカタカナに変換（「ねとふり」と「ネトフリ」を同一視するため）
+    normalized = normalized.replace(/[\u3041-\u3096]/g, function (match) {
+      return String.fromCharCode(match.charCodeAt(0) + 0x60);
+    });
+    return normalized;
+  }
 
   searchInput.addEventListener("input", (e) => {
-    // 1. 検索キーワードをスペースで分割して配列にする（AND検索対応）
-    const queryStr = e.target.value.toLowerCase().trim();
+    // 1. 検索キーワードを正規化してスペースで分割（AND検索）
+    const queryStr = normalizeSearchText(e.target.value).trim();
     const keywords = queryStr.split(/\s+/).filter((k) => k.length > 0);
 
-    const sections = document.querySelectorAll("#subscription-list > section");
+    // 既存サブスクと独自サブスクの枠をまとめて取得して処理を共通化
+    const sections = document.querySelectorAll(
+      "#subscription-list > section, #section-custom",
+    );
     let totalVisibleItems = 0;
 
     // クリアボタンの表示・非表示
@@ -338,87 +352,78 @@ export function initApp() {
       searchClearBtn.classList.add("hidden");
     }
 
-    // 2. 既存サブスクの検索処理
+    // 2. 各セクションの検索と「スコア順ソート」処理
     sections.forEach((section) => {
       let visibleCount = 0;
-      const items = section.querySelectorAll(".sub-item");
+      let scoredItems = []; // ソート用の配列
+
+      const items = Array.from(
+        section.querySelectorAll(".sub-item, .custom-sub-item"),
+      );
       const trigger = section.querySelector(".accordion-trigger");
       const wrapper = section.querySelector(".accordion-wrapper");
-      const content = section.querySelector(".accordion-content"); // ← 追加：中身の箱
+      const content = section.querySelector(".accordion-content");
 
-      items.forEach((item) => {
-        const searchText = item.getAttribute("data-search") || "";
-        const isMatch = keywords.every((k) => searchText.includes(k));
+      // 独自サブスクと既存サブスクで要素を入れる親箱が異なるため、適切な方を特定
+      const targetContainer =
+        section.querySelector("#custom-list-container") || content;
 
-        if (keywords.length === 0 || isMatch) {
+      items.forEach((item, index) => {
+        // 検索クリア時に元の並び順に戻すため、初期インデックスを記録
+        if (!item.hasAttribute("data-original-index")) {
+          item.setAttribute("data-original-index", index);
+        }
+        const origIndex = parseInt(
+          item.getAttribute("data-original-index"),
+          10,
+        );
+
+        const rawName = item.querySelector("label div")?.textContent || "";
+        const name = normalizeSearchText(rawName);
+        const searchAttr = normalizeSearchText(
+          item.getAttribute("data-search") || "",
+        );
+        // スペースで区切られた単語リスト（名前＋キーワード群）
+        const searchWords = searchAttr.split(" ");
+
+        if (keywords.length === 0) {
+          // 【検索クリア時】すべて表示してスコア0（元の順序）とする
           item.style.setProperty("display", "", "important");
           item.classList.remove("hidden");
           item.classList.add("flex");
+          scoredItems.push({ el: item, score: 0, index: origIndex });
           visibleCount++;
         } else {
-          item.style.setProperty("display", "none", "important");
-          item.classList.remove("flex");
-          item.classList.add("hidden");
-        }
-      });
+          // 【検索中】AND検索で条件を満たすかチェックし、スコアリング
+          let isMatch = true;
+          let bestScore = 99; // 小さいほど上位に表示
 
-      if (keywords.length > 0) {
-        // 【検索中】
-        if (visibleCount === 0 && items.length > 0) {
-          section.style.setProperty("display", "none", "important");
-        } else {
-          section.style.setProperty("display", "", "important");
-
-          // ★ここがポイント！：検索中はジャンルの余白と線を消して、リスト間隔(0.5rem)だけにする
-          section.style.setProperty("margin-top", "0.5rem", "important");
-          section.style.setProperty("padding-top", "0", "important");
-          section.style.setProperty("border-top", "none", "important");
-          if (content)
-            content.style.setProperty("padding-top", "0", "important");
-
-          if (trigger)
-            trigger.style.setProperty("display", "none", "important");
-          if (wrapper) {
-            wrapper.classList.remove("grid-rows-[0fr]", "opacity-0");
-            wrapper.classList.add("grid-rows-[1fr]", "opacity-100");
+          for (const k of keywords) {
+            if (!searchAttr.includes(k)) {
+              isMatch = false; // 1つでも含まれていなければ除外
+              break;
+            }
+            // --- ユーザー体験を高めるスコアリングロジック ---
+            // 1. サービス名が検索文字で始まる (例: "n" で "netflix")
+            if (name.startsWith(k)) {
+              bestScore = Math.min(bestScore, 1);
+            }
+            // 2. キーワード(タグ)のどれかが検索文字で始まる (例: "ネ" で "ネットフリックス")
+            else if (searchWords.some((w) => w.startsWith(k))) {
+              bestScore = Math.min(bestScore, 2);
+            }
+            // 3. 途中から一致する部分一致 (例: "flix" で "netflix")
+            else {
+              bestScore = Math.min(bestScore, 3);
+            }
           }
-        }
-      } else {
-        // 【検索クリア時】
-        if (items.length > 0)
-          section.style.setProperty("display", "", "important");
 
-        // ★元の余白と線に復活させる
-        section.style.removeProperty("margin-top");
-        section.style.removeProperty("padding-top");
-        section.style.removeProperty("border-top");
-        if (content) content.style.removeProperty("padding-top");
-
-        if (trigger) trigger.style.setProperty("display", "", "important");
-      }
-
-      totalVisibleItems += visibleCount;
-    });
-
-    // 3. 独自のサブスクの検索処理
-    if (customSection) {
-      let customVisibleCount = 0;
-      const customItems = customSection.querySelectorAll(".custom-sub-item");
-      const customTrigger = customSection.querySelector(".accordion-trigger");
-      const customWrapper = customSection.querySelector(".accordion-wrapper");
-      const customContent = customSection.querySelector(".accordion-content"); // ← 追加：中身の箱
-
-      customItems.forEach((item) => {
-        const nameLabel = item.querySelector("label div");
-        if (nameLabel) {
-          const searchText = nameLabel.textContent.toLowerCase();
-          const isMatch = keywords.every((k) => searchText.includes(k));
-
-          if (keywords.length === 0 || isMatch) {
+          if (isMatch) {
             item.style.setProperty("display", "", "important");
             item.classList.remove("hidden");
             item.classList.add("flex");
-            customVisibleCount++;
+            scoredItems.push({ el: item, score: bestScore, index: origIndex });
+            visibleCount++;
           } else {
             item.style.setProperty("display", "none", "important");
             item.classList.remove("flex");
@@ -427,43 +432,52 @@ export function initApp() {
         }
       });
 
+      // 3. スコア順（1→2→3）でDOMを並び替え。同じスコアなら元の順序を維持
+      if (targetContainer) {
+        scoredItems.sort((a, b) => {
+          if (a.score !== b.score) return a.score - b.score;
+          return a.index - b.index;
+        });
+        // 物理的にDOM要素を移動させることで見た目もリアルタイムに整列される
+        scoredItems.forEach((itemObj) =>
+          targetContainer.appendChild(itemObj.el),
+        );
+      }
+
+      // 4. セクション（ジャンルの箱）自体の表示・非表示とUI調整
       if (keywords.length > 0) {
-        if (customVisibleCount === 0) {
-          customSection.style.setProperty("display", "none", "important");
+        if (visibleCount === 0 && items.length > 0) {
+          section.style.setProperty("display", "none", "important");
         } else {
-          customSection.style.setProperty("display", "", "important");
-
-          // ★独自のサブスクの余白も詰める
-          customSection.style.setProperty("margin-top", "0.5rem", "important");
-          customSection.style.setProperty("padding-top", "0", "important");
-          customSection.style.setProperty("border-top", "none", "important");
-          if (customContent)
-            customContent.style.setProperty("padding-top", "0", "important");
-
-          if (customTrigger)
-            customTrigger.style.setProperty("display", "none", "important");
-          if (customWrapper) {
-            customWrapper.classList.remove("grid-rows-[0fr]", "opacity-0");
-            customWrapper.classList.add("grid-rows-[1fr]", "opacity-100");
+          section.style.setProperty("display", "", "important");
+          // 検索中は余白と線を詰める
+          section.style.setProperty("margin-top", "0.5rem", "important");
+          section.style.setProperty("padding-top", "0", "important");
+          section.style.setProperty("border-top", "none", "important");
+          if (content)
+            content.style.setProperty("padding-top", "0", "important");
+          if (trigger)
+            trigger.style.setProperty("display", "none", "important");
+          if (wrapper) {
+            wrapper.classList.remove("grid-rows-[0fr]", "opacity-0");
+            wrapper.classList.add("grid-rows-[1fr]", "opacity-100");
           }
         }
       } else {
-        if (customItems.length > 0)
-          customSection.style.setProperty("display", "", "important");
-
-        // ★独自のサブスクの余白を復活
-        customSection.style.removeProperty("margin-top");
-        customSection.style.removeProperty("padding-top");
-        customSection.style.removeProperty("border-top");
-        if (customContent) customContent.style.removeProperty("padding-top");
-
-        if (customTrigger)
-          customTrigger.style.setProperty("display", "", "important");
+        if (items.length > 0)
+          section.style.setProperty("display", "", "important");
+        // 検索クリア時は余白を元に戻す
+        section.style.removeProperty("margin-top");
+        section.style.removeProperty("padding-top");
+        section.style.removeProperty("border-top");
+        if (content) content.style.removeProperty("padding-top");
+        if (trigger) trigger.style.setProperty("display", "", "important");
       }
-      totalVisibleItems += customVisibleCount;
-    }
 
-    // 4. 何もヒットしなかった時の「空っぽメッセージ」
+      totalVisibleItems += visibleCount;
+    });
+
+    // 何もヒットしなかった時のメッセージ
     if (emptyState) {
       if (keywords.length > 0 && totalVisibleItems === 0) {
         emptyState.classList.remove("hidden");

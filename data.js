@@ -26,7 +26,6 @@ const subscriptions = [
       "ネトフリ",
       "netflix",
       "ネットフリックス",
-      "ね",
       "広告つき",
     ],
   },
@@ -35,7 +34,7 @@ const subscriptions = [
     categoryId: "video",
     name: "Netflix (スタンダード)",
     monthly: 1590,
-    keywords: ["ねとふり", "ネトフリ", "netflix", "ネットフリックス", "ね"],
+    keywords: ["ねとふり", "ネトフリ", "netflix", "ネットフリックス"],
   },
   {
     id: "v1-prem",
@@ -47,7 +46,6 @@ const subscriptions = [
       "ネトフリ",
       "netflix",
       "ネットフリックス",
-      "ね",
       "プレミアム",
       "4k",
     ],
@@ -58,7 +56,7 @@ const subscriptions = [
     name: "Amazon Prime",
     monthly: 600,
     yearly: 5900,
-    keywords: ["あまぷら", "アマプラ", "amazon prime", "アマゾン", "あ"],
+    keywords: ["あまぷら", "アマプラ", "amazon prime", "アマゾン"],
   },
   {
     id: "v3",
@@ -66,119 +64,105 @@ const subscriptions = [
     name: "YouTube Premium",
     monthly: 1280,
     yearly: 12800,
-    keywords: ["ゆーちゅーぶ", "youtube", "ゆ"],
+    keywords: ["ゆーちゅーぶ", "youtube"],
   },
   {
     id: "v4",
     categoryId: "video",
     name: "U-NEXT",
     monthly: 2189,
-    keywords: ["ゆーねくすと", "unext", "ユーネクスト", "ゆ"],
+    keywords: ["ゆーねくすと", "unext", "ユーネクスト"],
   },
   {
     id: "v5-std",
     categoryId: "video",
     name: "Disney+ (スタンダード)",
     monthly: 1140,
-    keywords: [
-      "でぃずにー",
-      "ディズニー",
-      "disney",
-      "で",
-      "でぃ",
-      "スタンダード",
-    ],
+    keywords: ["でぃずにー", "ディズニー", "disney", "スタンダード"],
   },
   {
     id: "v5-prem",
     categoryId: "video",
     name: "Disney+ (プレミアム)",
     monthly: 1520,
-    keywords: [
-      "でぃずにー",
-      "ディズニー",
-      "disney",
-      "で",
-      "でぃ",
-      "プレミアム",
-    ],
+    keywords: ["でぃずにー", "ディズニー", "disney", "プレミアム"],
   },
   {
     id: "v6",
     categoryId: "video",
     name: "Hulu",
     monthly: 1026,
-    keywords: ["ふるー", "フルー", "hulu", "ふ"],
+    keywords: ["ふるー", "フルー", "hulu"],
   },
   {
     id: "v7",
     categoryId: "video",
     name: "ABEMAプレミアム",
     monthly: 1080,
-    keywords: ["あべま", "アベマ", "abema", "あ", "広告なし"],
+    keywords: ["あべま", "アベマ", "abema", "広告なし"],
   },
   {
     id: "v7-ad",
     categoryId: "video",
     name: "広告つきABEMAプレミアム",
     monthly: 580,
-    keywords: ["あべま", "アベマ", "abema", "あ", "広告つき"],
+    keywords: ["あべま", "アベマ", "abema", "広告つき"],
   },
   {
     id: "v8",
     categoryId: "video",
     name: "DMM TV",
     monthly: 550,
-    keywords: ["でぃーえむえむ", "dmm", "で", "でぃ"],
+    keywords: ["でぃーえむえむ", "dmm"],
   },
   {
     id: "v9",
     categoryId: "video",
     name: "FODプレミアム",
     monthly: 976,
-    keywords: ["ふじてれび", "fod", "エフオーディー", "え", "F"],
+    keywords: ["ふじてれび", "fod", "エフオーディー"],
   },
   {
     id: "v10",
     categoryId: "video",
     name: "WOWOWオンデマンド",
     monthly: 2530,
-    keywords: ["わうわう", "wowow", "わ", "W"],
+    keywords: ["わうわう", "wowow"],
   },
   {
     id: "v11",
     categoryId: "video",
     name: "dアニメストア",
     monthly: 660,
-    keywords: ["あにめ", "dアニメ", "で", "でぃ", "D", "d"],
+    keywords: ["あにめ", "dアニメ"],
   },
   {
     id: "v12",
     categoryId: "video",
     name: "Leminoプレミアム",
     monthly: 1540,
-    keywords: ["れみの", "lemino", "ドコモ", "れ", "L"],
+    keywords: ["れみの", "lemino", "ドコモ"],
   },
   {
     id: "v13",
     categoryId: "video",
     name: "DAZN (STANDARD)",
     monthly: 4200,
-    keywords: ["だぞーん", "ダゾーン", "dazn", "スポーツ", "だ", "D"],
+    keywords: ["だぞーん", "ダゾーン", "dazn", "スポーツ"],
   },
   {
     id: "v14",
     categoryId: "video",
     name: "Apple TV+",
     monthly: 900,
-    keywords: ["あっぷる", "apple tv", "アップル", "あ", "A"],
+    keywords: ["あっぷる", "apple tv", "アップル"],
   },
   {
     id: "v15",
     categoryId: "video",
     name: "TELASA",
     monthly: 990,
-    keywords: ["てらさ", "テラサ", "telasa", "テレビ朝日", "て", "T"],
+    keywords: ["てらさ", "テラサ", "telasa", "テレビ朝日"],
   },
 
   // --- 音楽 (categoryId: 'music') ---
@@ -187,7 +171,7 @@ const subscriptions = [
     categoryId: "music",
     name: "Spotify (Standard)",
     monthly: 1080,
-    keywords: ["すぽてぃふぁい", "spotify", "スポティファイ", "す"],
+    keywords: ["すぽてぃふぁい", "spotify", "スポティファイ"],
   },
   {
     id: "m1-stu",
@@ -210,14 +194,13 @@ const subscriptions = [
     monthly: 1880,
     keywords: ["すぽてぃふぁい", "spotify", "ファミリー", "家族"],
   },
-
   {
     id: "m2-ind",
     categoryId: "music",
     name: "Apple Music (個人)",
     monthly: 1080,
     yearly: 10800,
-    keywords: ["あっぷる", "apple music", "あ"],
+    keywords: ["あっぷる", "apple music"],
   },
   {
     id: "m2-stu",
@@ -233,14 +216,13 @@ const subscriptions = [
     monthly: 1680,
     keywords: ["あっぷる", "apple music", "ファミリー", "家族"],
   },
-
   {
     id: "m3-prm",
     categoryId: "music",
     name: "Amazon Music (個人/プライム)",
     monthly: 1080,
     yearly: 10800,
-    keywords: ["あまぞん", "amazon music", "あ"],
+    keywords: ["あまぞん", "amazon music"],
   },
   {
     id: "m3-ind",
@@ -263,13 +245,12 @@ const subscriptions = [
     monthly: 580,
     keywords: ["あまぞん", "amazon music", "echo"],
   },
-
   {
     id: "m6-ind",
     categoryId: "music",
     name: "YouTube Music (個人)",
     monthly: 1280,
-    keywords: ["ゆーちゅーぶ", "youtube music", "ゆ"],
+    keywords: ["ゆーちゅーぶ", "youtube music"],
   },
   {
     id: "m6-stu",
@@ -292,14 +273,13 @@ const subscriptions = [
     monthly: 780,
     keywords: ["ゆーちゅーぶ", "youtube music", "lite"],
   },
-
   {
     id: "m4-ind",
     categoryId: "music",
     name: "LINE MUSIC (一般)",
     monthly: 1080,
     yearly: 10800,
-    keywords: ["らいん", "line music", "ら"],
+    keywords: ["らいん", "line music"],
   },
   {
     id: "m4-stu",
@@ -315,14 +295,13 @@ const subscriptions = [
     monthly: 1680,
     keywords: ["らいん", "line music", "ファミリー", "家族"],
   },
-
   {
     id: "m5-std",
     categoryId: "music",
     name: "AWA (STANDARD)",
     monthly: 980,
     yearly: 9800,
-    keywords: ["あわ", "awa", "あ"],
+    keywords: ["あわ", "awa"],
   },
   {
     id: "m5-stu",
@@ -331,7 +310,6 @@ const subscriptions = [
     monthly: 480,
     keywords: ["あわ", "awa", "学生"],
   },
-
   {
     id: "m7",
     categoryId: "music",
@@ -339,7 +317,6 @@ const subscriptions = [
     monthly: 980,
     keywords: ["けーけーぼっくす", "kkbox"],
   },
-
   {
     id: "m8-std",
     categoryId: "music",
@@ -382,7 +359,7 @@ const subscriptions = [
     categoryId: "ebook",
     name: "dマガジン",
     monthly: 580,
-    keywords: ["まがじん", "dマガジン", "雑誌", "d"],
+    keywords: ["まがじん", "dマガジン", "雑誌"],
   },
   {
     id: "e4",
@@ -551,6 +528,7 @@ const subscriptions = [
     monthly: 800,
     keywords: ["ゆーびーあい", "ubisoft", "ユービーアイ", "アサクリ"],
   },
+
   // --- 仕事・ツール (categoryId: 'tool') ---
   {
     id: "t1",
@@ -780,21 +758,15 @@ const subscriptions = [
     monthly: 548,
     keywords: ["めにゅー", "menu", "スマートパス", "出前", "デリバリー"],
   },
+
   {
     id: "d3",
-    categoryId: "delivery",
-    name: "Amazon Prime (配送特典)",
-    monthly: 600,
-    yearly: 5900,
-    keywords: ["あまぞん", "amazon", "プライム", "配送", "通販"],
-  },
-  {
-    id: "d4",
     categoryId: "delivery",
     name: "Oisix (牛乳とか飲み放題)",
     monthly: 1628,
     keywords: ["おいしっくす", "oisix", "食材", "宅配"],
   },
+
   // --- 生活・その他 (categoryId: 'lifestyle') ---
   // ファッション
   {
@@ -858,7 +830,7 @@ const subscriptions = [
     keywords: ["えにたいむ", "エニタイム", "ジム", "フィットネス", "24時間"],
   },
 
-  // モビリティ（※タイムズカーは配達からこちらへお引っ越し）
+  // モビリティ
   {
     id: "o5",
     categoryId: "lifestyle",
