@@ -54,7 +54,6 @@ export function initApp() {
       customListContainer,
     );
     calculateTotal();
-    setupScrollSpy();
 
     // 画面の主要なパーツの透明(opacity-0)を解除して、フワッと表示させます
     const headerContent = document.getElementById("header-content");
@@ -156,63 +155,6 @@ export function initApp() {
       );
       Render.animateValue(yearlyTotalEl, currentYearly, data.totalYearly, 500);
     }
-  }
-
-  function setupScrollSpy() {
-    /*
-    const onScroll = () => {
-      if (isScrollingFromNav) return;
-      const navLinks = document.querySelectorAll(".nav-link");
-      const sections = document.querySelectorAll("main section");
-      let currentId = "";
-      const scrollPosition = window.scrollY + window.innerHeight / 3;
-      sections.forEach((section) => {
-        if (section.style.display !== "none") {
-          const sectionTop =
-            section.getBoundingClientRect().top + window.scrollY;
-          if (scrollPosition >= sectionTop)
-            currentId = section.getAttribute("id");
-        }
-      });
-      if (window.scrollY < 50 || currentId === "") {
-        const firstVisible = Array.from(sections).find(
-          (s) => s.style.display !== "none",
-        );
-        if (firstVisible) currentId = firstVisible.getAttribute("id");
-      }
-      navLinks.forEach((link) => {
-        if (link.getAttribute("data-target") === currentId) {
-          link.classList.add(
-            "text-blue-600",
-            "bg-blue-100",
-            "md:bg-blue-50/80",
-            "md:border-blue-500",
-          );
-          link.classList.remove(
-            "text-slate-500",
-            "bg-slate-100",
-            "md:bg-transparent",
-            "md:border-transparent",
-          );
-        } else {
-          link.classList.remove(
-            "text-blue-600",
-            "bg-blue-100",
-            "md:bg-blue-50/80",
-            "md:border-blue-500",
-          );
-          link.classList.add(
-            "text-slate-500",
-            "bg-slate-100",
-            "md:bg-transparent",
-            "md:border-transparent",
-          );
-        }
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    setTimeout(onScroll, 100);*/
   }
 
   // --- イベントリスナー ---
