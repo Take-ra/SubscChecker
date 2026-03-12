@@ -184,9 +184,6 @@ div[class*="absolute bottom-full"] {
   margin-right: 8px;
 }
 
-/* 金額表示エリアの固定 */
-/* style.css の末尾付近 */
-
 .sub-item > div:last-child {
   /* 固定幅を少し小さくして、右側に余白(margin-right)を作る */
   width: 130px;
