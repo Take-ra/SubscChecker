@@ -6,7 +6,8 @@ import * as ChartApp from "./chart.js";
 import * as CalendarApp from "./calendar.js";
 import { initSearch } from "./search.js";
 import { initUIEvents } from "./ui-events.js";
-import { analyzeSubscriptions } from "./ai-service.js"; // ★追加：AI通信用の配達員を呼ぶ
+import { analyzeSubscriptions } from "./ai-service.js";
+import { subscriptions, categories } from "./data.js";
 
 export function initApp() {
   // --- グローバル関数の登録 ---

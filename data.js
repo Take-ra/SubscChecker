@@ -1,5 +1,5 @@
 // data.js
-const categories = [
+export const categories = [
   { id: "video", name: "動画配信", icon: "📺" },
   { id: "music", name: "音楽", icon: "🎵" },
   { id: "ebook", name: "電子書籍", icon: "📚" },
