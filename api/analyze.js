@@ -17,7 +17,6 @@ export default async function handler(req) {
 
     // Vercelの環境変数からAPIキーをこっそり読み込む
     const apiKey = process.env.GEMINI_API_KEY;
-
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: "APIキーが設定されていません" }),
