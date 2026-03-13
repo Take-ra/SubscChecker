@@ -266,14 +266,17 @@ export function renderResultScreen(data) {
 
   // ② ▼▼ ここから追加：AI分析用のUIをグラフ/ランキングの下に生成 ▼▼
   const resultScreen = document.getElementById("result-screen");
-  // すでにAIセクションがあれば二重に作らないようにする
   if (resultScreen && !document.getElementById("ai-analysis-section")) {
     const aiSection = document.createElement("div");
     aiSection.id = "ai-analysis-section";
 
-    // ★ここを変更：カードの最大幅を絞り(max-w-md)、左右余白を自動(mx-auto)にして中央配置。中身も中央揃え(items-center, text-center)に。
+    // ★変更1：初期状態はスマホ・PCともにコンパクト(max-w-md)。700ミリ秒かけてフワッと変化するアニメーションを追加
     aiSection.className =
-      "mt-8 md:mt-12 bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-10 max-w-md mx-auto flex flex-col items-center text-center w-full";
+      "mt-8 md:mt-12 bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-10 max-w-md md:max-w-md mx-auto flex flex-col items-center text-center w-full transition-all duration-700 ease-in-out";
+
+    // ★変更2：ボタンを押した瞬間に、PC幅(md:)の制限を「max-w-md」から「max-w-3xl(横長)」に書き換えるJSコード
+    const expandCode =
+      "document.getElementById('ai-analysis-section').classList.replace('md:max-w-md', 'md:max-w-3xl');";
 
     aiSection.innerHTML = `
       <h3 class="text-lg md:text-xl font-black text-slate-800 flex items-center justify-center gap-2 mb-2">
@@ -282,10 +285,10 @@ export function renderResultScreen(data) {
       <p class="text-sm text-slate-500 mb-6 font-medium">あなたの契約状況を元に、AIが最適な見直しを提案します。</p>
 
       <div id="ai-buttons" class="flex flex-col gap-3 w-full">
-        <button data-goal="saving" class="ai-trigger-btn w-full px-4 py-3.5 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition-colors border border-blue-200 shadow-sm flex items-center justify-center gap-2 active:scale-95">
+        <button data-goal="saving" onclick="${expandCode}" class="ai-trigger-btn w-full px-4 py-3.5 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition-colors border border-blue-200 shadow-sm flex items-center justify-center gap-2 active:scale-95">
           💰 とにかく節約したい
         </button>
-        <button data-goal="qol" class="ai-trigger-btn w-full px-4 py-3.5 bg-purple-50 text-purple-600 font-bold rounded-xl hover:bg-purple-100 transition-colors border border-purple-200 shadow-sm flex items-center justify-center gap-2 active:scale-95">
+        <button data-goal="qol" onclick="${expandCode}" class="ai-trigger-btn w-full px-4 py-3.5 bg-purple-50 text-purple-600 font-bold rounded-xl hover:bg-purple-100 transition-colors border border-purple-200 shadow-sm flex items-center justify-center gap-2 active:scale-95">
           ✨ おすすめを知りたい
         </button>
         <button id="btn-ai-custom-toggle" class="w-full px-4 py-3.5 bg-slate-50 text-slate-600 font-bold rounded-xl hover:bg-slate-100 transition-colors border border-slate-200 shadow-sm flex items-center justify-center gap-2 active:scale-95">
@@ -295,12 +298,12 @@ export function renderResultScreen(data) {
 
       <div id="ai-custom-input-area" class="hidden mt-3 w-full flex-col gap-2 transition-all">
         <input type="text" id="ai-custom-text" placeholder="例：家族4人で共有できるおすすめは？" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm font-medium text-left">
-        <button id="btn-ai-submit-custom" data-goal="custom" class="ai-trigger-btn w-full bg-slate-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-700 text-sm shadow-sm active:scale-95">
+        <button id="btn-ai-submit-custom" data-goal="custom" onclick="${expandCode}" class="ai-trigger-btn w-full bg-slate-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-700 text-sm shadow-sm active:scale-95">
           送信
         </button>
       </div>
 
-      <div id="ai-result-area" class="hidden mt-6 w-full bg-slate-50 p-5 md:p-6 rounded-2xl border border-slate-100 text-left">
+      <div id="ai-result-area" class="hidden mt-6 w-full bg-slate-50 p-5 md:p-6 rounded-2xl border border-slate-100 text-left transition-all duration-500">
         <div id="ai-loading" class="hidden flex-col items-center justify-center py-6">
            <div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mb-4"></div>
            <p class="text-sm font-bold text-slate-500 animate-pulse">AIがあなたのデータを分析中...</p>
