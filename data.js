@@ -14,7 +14,7 @@ const categories = [
 // { id: '任意のユニークなID', categoryId: '上のカテゴリIDのいずれか', name: 'サービス名', monthly: 1000, yearly: 10000, keywords: ['検索ワード1', '検索ワード2'] },
 // ※ monthly（月額）と yearly（年額）は、存在する方のみ記述してください。両方ある場合は両方書きます。
 
-const subscriptions = [
+export const subscriptions = [
   // --- 動画配信 (categoryId: 'video') ---
   {
     id: "v1-ad",
