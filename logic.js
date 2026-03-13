@@ -121,3 +121,48 @@ export function calculateAggregation(
   const top5 = selectedItems.slice(0, 5);
   return { totalMonthly, totalYearly, genreTotals, selectedItems, top5 };
 }
+
+/**
+ * AIに渡すためのデータを、LLM（生成AI）が理解しやすいテキスト形式に整形
+ * @param {Object} aggregatedData - calculateAggregation() で計算された結果
+ * @returns {String} AIのプロンプトに埋め込むためのテキスト
+ */
+export function formatDataForAI(aggregatedData) {
+  // データが空、または1つも選ばれていない場合
+  if (!aggregatedData || aggregatedData.selectedItems.length === 0) {
+    return "現在、登録されているサブスクリプションはありません。";
+  }
+
+  let text = "【ユーザーの現在のサブスクリプション契約状況】\n";
+
+  // 1. 既存のリストから選んだサブスク
+  const regularSubs = aggregatedData.selectedItems.filter(
+    (item) => !item.isCustom,
+  );
+  if (regularSubs.length > 0) {
+    text += "■ 契約中のサービス（一般）:\n";
+    regularSubs.forEach((item) => {
+      // 例: - Netflix (動画配信): 月額 1590円
+      text += `- ${item.name} (${item.categoryName}): 月額 ${item.monthly.toLocaleString()}円\n`;
+    });
+  }
+
+  // 2. 独自に追加したサブスク
+  const customSubs = aggregatedData.selectedItems.filter(
+    (item) => item.isCustom,
+  );
+  if (customSubs.length > 0) {
+    text += "\n■ 契約中のサービス（独自追加）:\n";
+    customSubs.forEach((item) => {
+      // 例: - ウォーターサーバー: 月額換算 3500円
+      text += `- ${item.name}: 月額換算 ${item.monthly.toLocaleString()}円\n`;
+    });
+  }
+
+  // 3. 合計金額
+  text += `\n■ 現在の合計支出:\n`;
+  text += `- 月額合計: ${aggregatedData.totalMonthly.toLocaleString()}円\n`;
+  text += `- 年額合計: ${aggregatedData.totalYearly.toLocaleString()}円\n`;
+
+  return text;
+}

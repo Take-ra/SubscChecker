@@ -4,8 +4,10 @@ export function initUIEvents(callbacks) {
   // 目次クリックによる「自動スクロール中」かを判定するフラグ
   let isScrollingFromNav = false;
 
-  // 1. 全体のクリックイベント（カード選択、アコーディオン開閉、目次スクロール）
-  document.body.addEventListener("click", (e) => {
+  // 1. 全体のクリックイベント（カード選択、アコーディオン開閉、目次スクロール、AI操作）
+  document.body.addEventListener("click", async (e) => {
+    // ★ async を追加（AIの待ち時間用）
+
     // --- カードの余白クリックでチェックボックスを切り替える ---
     const card = e.target.closest(".sub-item, .custom-sub-item");
     if (
@@ -57,7 +59,6 @@ export function initUIEvents(callbacks) {
       );
 
       if (targetSection && scrollContainer) {
-        // ★追加：スクロール追従を一時停止
         isScrollingFromNav = true;
 
         document.querySelectorAll(".nav-link").forEach((link) => {
@@ -112,15 +113,87 @@ export function initUIEvents(callbacks) {
           if (icon) icon.classList.add("rotate-180");
         }
 
-        // ★追加：自動スクロールが完了する頃（約800ミリ秒後）に、手動追従を再開する
         setTimeout(() => {
           isScrollingFromNav = false;
         }, 800);
       }
     }
+
+    // ▼▼ 新規追加：AI関連のボタンが押された時の動き ▼▼
+
+    // 「その他（自由入力）」ボタンが押されたら、入力欄をスッと出す
+    if (e.target.closest("#btn-ai-custom-toggle")) {
+      const customArea = document.getElementById("ai-custom-input-area");
+      if (customArea) {
+        customArea.classList.toggle("hidden");
+        customArea.classList.toggle("flex");
+        // もし開いたら入力欄にフォーカスする
+        if (!customArea.classList.contains("hidden")) {
+          document.getElementById("ai-custom-text")?.focus();
+        }
+      }
+      return; // これ以上下の処理に行かないようにする
+    }
+
+    // 「節約したい」「QOL」「送信」などの実行ボタンが押された時
+    const aiBtn = e.target.closest(".ai-trigger-btn");
+    if (aiBtn) {
+      const goal = aiBtn.getAttribute("data-goal");
+      let customText = "";
+
+      // 自由入力の時は、テキストが空っぽじゃないかチェック
+      if (goal === "custom") {
+        const inputEl = document.getElementById("ai-custom-text");
+        if (!inputEl || !inputEl.value.trim()) {
+          alert("質問を入力してください🙏");
+          return;
+        }
+        customText = inputEl.value.trim();
+      }
+
+      // UIを「ローディング（分析中）」の表示に切り替える
+      const buttonsArea = document.getElementById("ai-buttons");
+      const customArea = document.getElementById("ai-custom-input-area");
+      const resultArea = document.getElementById("ai-result-area");
+      const loadingEl = document.getElementById("ai-loading");
+      const answerEl = document.getElementById("ai-answer");
+
+      if (buttonsArea) buttonsArea.style.display = "none";
+      if (customArea) {
+        customArea.classList.remove("flex");
+        customArea.classList.add("hidden");
+      }
+      if (resultArea) resultArea.classList.remove("hidden");
+      if (loadingEl) {
+        loadingEl.classList.remove("hidden");
+        loadingEl.classList.add("flex");
+      }
+      if (answerEl) answerEl.classList.add("hidden");
+
+      // 少しだけ下にスクロールして、ローディング画面を見やすくする
+      if (resultArea) {
+        const y = resultArea.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+
+      // app.jsに「AIに頼んできて！」と指令を出す（結果が返ってくるまでここで待つ）
+      if (callbacks.onAskAI) {
+        const answer = await callbacks.onAskAI(goal, customText);
+
+        // AIから返事が来たら、くるくるを消してテキストを表示する
+        if (loadingEl) {
+          loadingEl.classList.remove("flex");
+          loadingEl.classList.add("hidden");
+        }
+        if (answerEl) {
+          answerEl.textContent = answer;
+          answerEl.classList.remove("hidden");
+        }
+      }
+    }
   });
 
-  // ★新規追加：手動スクロール時の目次追従（スクロールスパイ）
+  // ★ 手動スクロール時の目次追従（スクロールスパイ）
   const scrollContainer = document.querySelector(
     ".h-full.w-full.overflow-y-auto",
   );
@@ -128,7 +201,6 @@ export function initUIEvents(callbacks) {
     scrollContainer.addEventListener(
       "scroll",
       () => {
-        // 目次クリックでの自動移動中は、ここの処理を無視する
         if (isScrollingFromNav) return;
 
         const sections = document.querySelectorAll(
@@ -136,7 +208,6 @@ export function initUIEvents(callbacks) {
         );
         let currentId = "";
 
-        // 画面上部から少し下（ヘッダー高＋100px程度のゆとり）に引いた「判定ライン」
         const isPC = window.innerWidth >= 768;
         const headerOffset = isPC
           ? 0
@@ -146,13 +217,11 @@ export function initUIEvents(callbacks) {
         sections.forEach((section) => {
           const top = section.offsetTop;
           const bottom = top + section.offsetHeight;
-          // 判定ラインがそのジャンルの箱の中に入っていれば、それを「今見ているジャンル」とする
           if (scrollPos >= top && scrollPos <= bottom) {
             currentId = section.getAttribute("id");
           }
         });
 
-        // 目次の色を「今見ているジャンル」に合わせて更新
         if (currentId) {
           document.querySelectorAll(".nav-link").forEach((link) => {
             if (link.getAttribute("data-target") === currentId) {

@@ -6,6 +6,7 @@ import * as ChartApp from "./chart.js";
 import * as CalendarApp from "./calendar.js";
 import { initSearch } from "./search.js";
 import { initUIEvents } from "./ui-events.js";
+import { analyzeSubscriptions } from "./ai-service.js"; // ★追加：AI通信用の配達員を呼ぶ
 
 export function initApp() {
   // --- グローバル関数の登録 ---
@@ -57,7 +58,7 @@ export function initApp() {
 
     initSearch();
 
-    // 切り出したUIイベントを起動。app.jsが持っているデータ処理を「リモコン(コールバック)」として渡す
+    // UIイベントの起動
     initUIEvents({
       getAggregatedData: () => aggregateData(),
       onAnalyzeRender: (data) => {
@@ -90,6 +91,27 @@ export function initApp() {
         calculateTotal();
         window.showToast("reset-toast");
       },
+
+      // ▼▼ ここから追加：AIボタンが押された時の処理 ▼▼
+      onAskAI: async (goal, customText) => {
+        // 1. 今選ばれているサブスクのデータを計算
+        const data = aggregateData();
+
+        // 2. AIが読めるように、きれいな箇条書きテキストに変換
+        let formattedData = Logic.formatDataForAI(data);
+
+        // 3. もし「その他（自由入力）」が選ばれた場合は、テキストの下に質問を付け足す
+        if (goal === "custom" && customText) {
+          formattedData += `\n\n【ユーザーからの特別な要望・質問】\n${customText}\nこれに対して具体的にアドバイスしてください。`;
+        }
+
+        // 4. 配達員（ai-service.js）にデータを渡して、結果が返ってくるまで待つ
+        const answer = await analyzeSubscriptions(formattedData, goal);
+
+        // 5. 返ってきたAIのアドバイスを画面（ui-events.js）に返す
+        return answer;
+      },
+      // ▲▲ ここまで追加 ▲▲
     });
 
     // 画面をフワッと表示
