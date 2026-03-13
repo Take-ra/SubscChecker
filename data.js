@@ -1,4 +1,4 @@
-// data.js
+// data.jss
 export const categories = [
   { id: "video", name: "動画配信", icon: "📺" },
   { id: "music", name: "音楽", icon: "🎵" },
