@@ -265,16 +265,18 @@ export function renderResultScreen(data) {
   }
 
   // ② ▼▼ ここから追加：AI分析用のUIをグラフ/ランキングの下に生成 ▼▼
-  const resultScreen = document.getElementById("result-screen");
-  if (resultScreen && !document.getElementById("ai-analysis-section")) {
+  // ★修正1：大枠の「result-screen」ではなく、その中にある「main」タグを探す
+  const resultMain = document.querySelector("#result-screen main");
+
+  if (resultMain && !document.getElementById("ai-analysis-section")) {
     const aiSection = document.createElement("div");
     aiSection.id = "ai-analysis-section";
 
-    // ★変更1：初期状態はスマホ・PCともにコンパクト(max-w-md)。700ミリ秒かけてフワッと変化するアニメーションを追加
+    // ★修正2：mainタグが自動で綺麗な余白(space-y-8)をつけてくれるので、mt(マージントップ)を削除！
     aiSection.className =
-      "mt-6 md:mt-8 bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-10 max-w-md md:max-w-md mx-auto flex flex-col items-center text-center w-full transition-all duration-700 ease-in-out";
+      "bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-8 max-w-md md:max-w-md mx-auto flex flex-col items-center text-center w-full transition-all duration-700 ease-in-out";
 
-    // ★変更2：ボタンを押した瞬間に、PC幅(md:)の制限を「max-w-md」から「max-w-3xl(横長)」に書き換えるJSコード
+    // ボタンを押した瞬間に、PC幅の制限を広げる魔法
     const expandCode =
       "document.getElementById('ai-analysis-section').classList.replace('md:max-w-md', 'md:max-w-3xl');";
 
@@ -312,6 +314,7 @@ export function renderResultScreen(data) {
       </div>
     `;
 
-    resultScreen.appendChild(aiSection);
+    // ★修正3：resultScreen ではなく、resultMain に追加する！
+    resultMain.appendChild(aiSection);
   }
 }
