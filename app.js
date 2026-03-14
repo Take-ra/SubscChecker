@@ -107,7 +107,12 @@ export function initApp() {
         }
 
         // 4. 配達員（ai-service.js）にデータを渡して、結果が返ってくるまで待つ
-        const answer = await analyzeSubscriptions(formattedData, goal);
+        const answer = await analyzeSubscriptions(
+          formattedData,
+          goal,
+          customText,
+          subs,
+        );
 
         // 5. 返ってきたAIのアドバイスを画面（ui-events.js）に返す
         return answer;
