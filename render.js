@@ -272,7 +272,7 @@ export function renderResultScreen(data) {
 
     // ★変更1：初期状態はスマホ・PCともにコンパクト(max-w-md)。700ミリ秒かけてフワッと変化するアニメーションを追加
     aiSection.className =
-      "mt-8 md:mt-12 bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-10 max-w-md md:max-w-md mx-auto flex flex-col items-center text-center w-full transition-all duration-700 ease-in-out";
+      "mt-6 md:mt-8 bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-10 max-w-md md:max-w-md mx-auto flex flex-col items-center text-center w-full transition-all duration-700 ease-in-out";
 
     // ★変更2：ボタンを押した瞬間に、PC幅(md:)の制限を「max-w-md」から「max-w-3xl(横長)」に書き換えるJSコード
     const expandCode =
