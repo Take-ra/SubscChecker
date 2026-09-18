@@ -1,9 +1,38 @@
 // ai-advisor.js (Gemini API 固定費最適化AIアドバイザー)
+import {
+  findCancelInfo,
+  PROMO_CARDS,
+  MOCK_DIAGNOSIS_DATA,
+} from "./action-data.js";
 
 let currentSelectedItemsGetter = null;
 let isAnalyzing = false;
 let cachedResult = null;
 let lastAnalyzedHash = null;
+
+export function isMockMode() {
+  const urlParam = new URLSearchParams(window.location.search).get("mock");
+  if (urlParam === "true" || urlParam === "1") return true;
+  return localStorage.getItem("subsc_mock_mode") === "true";
+}
+
+export function setMockMode(enabled) {
+  localStorage.setItem("subsc_mock_mode", enabled ? "true" : "false");
+  updateMockToggleUI();
+}
+
+function updateMockToggleUI() {
+  const toggleBtn = document.getElementById("btn-toggle-mock");
+  if (!toggleBtn) return;
+  const active = isMockMode();
+  toggleBtn.innerHTML = `<span>🛠️ 開発モック:</span> <span class="font-black ${active ? "text-emerald-700 underline" : "text-slate-400"}">${active ? "ON" : "OFF"}</span>`;
+  toggleBtn.className = `text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all flex items-center gap-1 cursor-pointer ${
+    active
+      ? "bg-emerald-50 border-emerald-300 text-emerald-800 shadow-sm"
+      : "bg-slate-100/90 border-slate-200 text-slate-500 hover:bg-slate-200"
+  }`;
+  toggleBtn.title = "Gemini APIのクォータを消費せずダミーデータで高速UI検証するモードを切り替えます";
+}
 
 export function initAIAdvisor(getSelectedItems) {
   currentSelectedItemsGetter = getSelectedItems;
@@ -13,6 +42,29 @@ export function initAIAdvisor(getSelectedItems) {
     btnTrigger.addEventListener("click", () => {
       triggerAnalysis(true);
     });
+  }
+
+  // 開発用モックモード切り替えボタンの初期化
+  const container = document.getElementById("ai-advisor-container");
+  if (container && !document.getElementById("btn-toggle-mock")) {
+    const titleArea = container.querySelector(".flex-col, .sm\\:flex-row") || container.firstElementChild;
+    const subText = container.querySelector("p");
+    if (subText && subText.parentNode) {
+      const mockWrapper = document.createElement("div");
+      mockWrapper.className = "flex items-center gap-2 mt-1.5 flex-wrap";
+      subText.parentNode.insertBefore(mockWrapper, subText.nextSibling);
+
+      const mockBtn = document.createElement("button");
+      mockBtn.id = "btn-toggle-mock";
+      mockBtn.type = "button";
+      mockBtn.addEventListener("click", () => {
+        const next = !isMockMode();
+        setMockMode(next);
+        triggerAnalysis(true);
+      });
+      mockWrapper.appendChild(mockBtn);
+      updateMockToggleUI();
+    }
   }
 }
 
@@ -44,7 +96,7 @@ export async function triggerAnalysis(force = false) {
 
   const currentHash = getItemsHash(items);
   if (!force && cachedResult && lastAnalyzedHash === currentHash) {
-    renderAdvisor(contentContainer, cachedResult);
+    renderAdvisor(contentContainer, cachedResult, items);
     return;
   }
 
@@ -62,36 +114,46 @@ export async function triggerAnalysis(force = false) {
   }, 30000);
 
   try {
-    const payload = items.map((item) => ({
-      name: item.name,
-      category: item.category,
-      monthly: item.monthly,
-      yearly: item.yearly,
-    }));
+    let data;
 
-    const res = await fetch("/api/analyze", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal: abortController.signal,
-      body: JSON.stringify({ subscriptions: payload }),
-    });
+    // 開発用モックモード（APIクォータ消費ゼロ）
+    if (isMockMode()) {
+      console.log("🛠️ [SubscChecker] 開発モックモードで実行中（Gemini API消費ゼロ）");
+      // アニメーション確認用に0.6秒待機
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      data = MOCK_DIAGNOSIS_DATA;
+    } else {
+      const payload = items.map((item) => ({
+        name: item.name,
+        category: item.category,
+        monthly: item.monthly,
+        yearly: item.yearly,
+      }));
 
-    clearTimeout(timeoutId);
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: abortController.signal,
+        body: JSON.stringify({ subscriptions: payload }),
+      });
 
-    if (!res.ok) {
-      const errJson = await res.json().catch(() => ({}));
-      throw new Error(errJson.error || `診断エラー (${res.status})`);
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `診断エラー (${res.status})`);
+      }
+
+      data = await res.json();
     }
 
-    const data = await res.json();
+    clearTimeout(timeoutId);
     cachedResult = data;
     lastAnalyzedHash = currentHash;
 
     // 100%のアニメーションを完了させてから結果をレンダリング
     await tracker.finish();
-    renderAdvisor(contentContainer, data);
+    renderAdvisor(contentContainer, data, items);
   } catch (error) {
     clearTimeout(timeoutId);
     tracker.abort();
@@ -269,7 +331,7 @@ function createProgressTracker(container) {
   };
 }
 
-function renderAdvisor(container, data) {
+function renderAdvisor(container, data, items = []) {
   const {
     profile_type,
     summary,
@@ -313,8 +375,121 @@ function renderAdvisor(container, data) {
     `;
   }
 
+  // ①【見直し・公式解約サポート】ブロック
+  let cancelHtml = "";
+  if (items && items.length > 0) {
+    const cancelCards = items
+      .map((item) => {
+        const info = findCancelInfo(item.name);
+        const monthlyStr = item.monthly ? `¥${Number(item.monthly).toLocaleString()}/月` : "";
+        return `
+          <div class="flex flex-col justify-between p-3.5 rounded-xl border border-slate-200/90 bg-slate-50/70 hover:bg-slate-50 hover:border-slate-300 transition-all">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="font-bold text-xs md:text-sm text-slate-800 truncate">${escapeHtml(item.name)}</span>
+                ${monthlyStr ? `<span class="text-[11px] font-bold text-slate-500 shrink-0">${monthlyStr}</span>` : ""}
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3 leading-relaxed">
+                ${escapeHtml(info.guide)}
+              </p>
+            </div>
+            <a
+              href="${escapeHtml(info.url)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-2xs hover:bg-slate-100 hover:text-slate-900 active:scale-98 transition-all text-center"
+            >
+              <span>${info.isDirect ? "公式の解約・設定管理を開く" : "公式の解約手順を検索"}</span>
+              <span class="text-xs">↗</span>
+            </a>
+          </div>
+        `;
+      })
+      .join("");
+
+    cancelHtml = `
+      <div class="bg-white/95 rounded-2xl p-5 md:p-6 border border-slate-200/90 shadow-sm space-y-3">
+        <div class="flex items-center justify-between flex-wrap gap-2 border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🔒</span>
+            <h3 class="text-sm md:text-base font-black text-slate-800">
+              見直し・公式解約サポート
+            </h3>
+            <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full">公式リンク</span>
+          </div>
+          <span class="text-[11px] text-slate-400 font-medium">※外部の各社公式ログイン・管理画面へ安全に遷移します</span>
+        </div>
+        <p class="text-xs text-slate-500 font-medium leading-relaxed">
+          見直しや解約を検討したいサービスは、以下の各社公式アカウントページから手続きを行えます。
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          ${cancelCards}
+        </div>
+      </div>
+    `;
+  }
+
+  // ②【お得な最適化プラン / 代替案】ブロック
+  const promoCardsHtml = PROMO_CARDS.map((card) => {
+    return `
+      <div class="flex flex-col justify-between p-4 md:p-5 rounded-2xl border ${card.theme.border} bg-gradient-to-b ${card.theme.bgGradient} shadow-sm hover:shadow-md transition-all">
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${card.theme.badgeBg}">
+              ${escapeHtml(card.badge)}
+            </span>
+            <span class="text-[9px] font-bold px-1.5 py-0.5 bg-white/90 text-slate-400 rounded border border-slate-200/80">PR</span>
+          </div>
+
+          <h4 class="text-xs md:text-sm font-black text-slate-900 leading-snug mb-2">
+            ${escapeHtml(card.title)}
+          </h4>
+
+          <div class="inline-block mb-2.5 px-2.5 py-1 bg-white/95 rounded-lg border border-slate-200/80 shadow-2xs">
+            <p class="text-[11px] md:text-xs font-black ${card.theme.highlightColor}">
+              ${escapeHtml(card.savingHighlight)}
+            </p>
+          </div>
+
+          <p class="text-xs text-slate-600 leading-relaxed mb-4 font-medium">
+            ${escapeHtml(card.description)}
+          </p>
+        </div>
+
+        <a
+          href="${escapeHtml(card.url)}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-3 text-xs font-black rounded-xl shadow-sm ${card.theme.buttonBg} active:scale-95 transition-all text-center"
+        >
+          <span>${escapeHtml(card.buttonText)}</span>
+        </a>
+      </div>
+    `;
+  }).join("");
+
+  const promoHtml = `
+    <div class="bg-gradient-to-br from-slate-50 via-white to-blue-50/40 rounded-2xl p-5 md:p-6 border border-blue-200/70 shadow-sm space-y-3">
+      <div class="flex items-center justify-between flex-wrap gap-2 border-b border-blue-100/70 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-base">💡</span>
+          <h3 class="text-sm md:text-base font-black text-slate-800">
+            固定費を圧縮するお得な代替案・乗り換え特典
+          </h3>
+        </div>
+        <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded border border-slate-200">おすすめ提案</span>
+      </div>
+      <p class="text-xs text-slate-500 font-medium leading-relaxed">
+        複数の単体契約から集約プランや無料体験を活用することで、サービスの質を落とさずに月々の支出だけを圧縮できます。
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+        ${promoCardsHtml}
+      </div>
+    </div>
+  `;
+
   container.innerHTML = `
-    <div class="space-y-4 pt-1 animate-in fade-in duration-300">
+    <div class="space-y-5 pt-1 animate-in fade-in duration-300">
       <!-- 診断タイプ & 総評 -->
       <div class="bg-white/90 rounded-2xl p-4 md:p-6 border border-slate-200 shadow-sm">
         <div class="flex flex-wrap items-center gap-2 mb-2.5">
@@ -383,6 +558,12 @@ function renderAdvisor(container, data) {
       `
           : ""
       }
+
+      <!-- ①【見直し・公式解約サポート】（信頼性向上のための公式導線） -->
+      ${cancelHtml}
+
+      <!-- ②【お得な最適化プラン / 代替案】（アフィリエイト・マネタイズ導線） -->
+      ${promoHtml}
     </div>
   `;
 }
