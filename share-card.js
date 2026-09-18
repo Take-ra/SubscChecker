@@ -186,14 +186,6 @@ export async function generateShareCardBlob() {
   });
 }
 
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) resolve(blob);
-      else reject(new Error("画像のBlob生成に失敗しました"));
-    }, "image/png");
-  });
-}
-
 /**
  * シェアボタンのイベントリスナーを登録
  */
