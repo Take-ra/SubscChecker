@@ -70,7 +70,7 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
               <p class="text-[11px] text-slate-400 font-semibold tracking-wider uppercase">Monthly Total</p>
               <div class="flex items-baseline justify-center gap-1 my-1">
                 <span class="text-xs font-bold text-slate-400">月額</span>
-                <span class="text-3xl md:text-4xl font-black bg-gradient-to-r from-white via-slate-100 to-blue-200 bg-clip-text text-transparent tracking-tight">
+                <span class="text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow-sm">
                   ¥${formattedMonthly}
                 </span>
               </div>
@@ -154,110 +154,37 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
         </div>
       </div>
     </div>
-
-    <!-- 高解像度キャプチャ用 オフスクリーンDOM（600x600 固定解像度） -->
-    <div
-      id="share-card-capture-target"
-      style="position: fixed; left: -9999px; top: 0; width: 600px; height: 600px; z-index: -100; pointer-events: none;"
-    >
-      <div style="width: 600px; height: 600px; padding: 36px; background: linear-gradient(135deg, #020617 0%, #0f172a 40%, #1e1b4b 100%); color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; border-radius: 0;">
-        <!-- ヘッダー -->
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 16px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #4f46e5); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: #fff;">
-              S
-            </div>
-            <span style="font-weight: 900; font-size: 22px; letter-spacing: -0.5px; color: #fff;">SubscChecker</span>
-          </div>
-          <div style="padding: 6px 14px; border-radius: 9999px; background: rgba(59, 130, 246, 0.25); border: 1px solid rgba(96, 165, 250, 0.4); font-size: 13px; font-weight: 800; color: #93c5fd;">
-            サブスク固定費 診断カルテ
-          </div>
-        </div>
-
-        <!-- 診断タイプ & メイン金額 -->
-        <div style="text-align: center; padding: 10px 0;">
-          <div style="display: inline-block; padding: 8px 20px; border-radius: 9999px; background: linear-gradient(90deg, #2563eb, #6366f1); color: #ffffff; font-weight: 900; font-size: 16px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
-            ${escapeHtml(profileType)}
-          </div>
-          <div style="font-size: 13px; color: #94a3b8; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
-            Monthly Total Subscription Cost
-          </div>
-          <div style="display: flex; align-items: baseline; justify-content: center; gap: 4px; margin: 6px 0;">
-            <span style="font-size: 18px; font-weight: 800; color: #94a3b8;">月額</span>
-            <span style="font-size: 52px; font-weight: 900; letter-spacing: -1.5px; color: #ffffff; line-height: 1;">
-              ¥${formattedMonthly}
-            </span>
-          </div>
-          <div style="font-size: 14px; color: #cbd5e1; font-weight: 600;">
-            年間換算: <strong style="color: #ffffff; font-weight: 800;">約 ¥${formattedYearly}</strong>
-          </div>
-        </div>
-
-        <!-- 契約サブスク一覧 -->
-        <div style="background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; padding: 14px 18px;">
-          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: #94a3b8; margin-bottom: 10px;">
-            <span>契約中の主なサービス</span>
-            <span style="color: #cbd5e1;">${items.length}件 契約中</span>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-            ${
-              topItems.length > 0
-                ? topItems
-                    .map(
-                      (item) => `
-                <div style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 10px; font-size: 13px; font-weight: 800; color: #ffffff;">
-                  <span>${escapeHtml(item.name)}</span>
-                  <span style="color: #93c5fd; font-size: 12px; font-weight: 700;">¥${Number(item.monthly).toLocaleString()}</span>
-                </div>
-              `
-                    )
-                    .join("")
-                : `<span style="font-size: 13px; color: #94a3b8;">未登録</span>`
-            }
-            ${
-              items.length > 4
-                ? `<div style="padding: 6px 10px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; font-size: 12px; font-weight: 700; color: #94a3b8;">+他${items.length - 4}件</div>`
-                : ""
-            }
-          </div>
-        </div>
-
-        <!-- AIワンポイント -->
-        <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 14px; padding: 12px 16px; text-align: center;">
-          <p style="font-size: 13px; font-weight: 800; color: #6ee7b7; margin: 0;">
-            💡 ${savingStr ? `年払い切り替え等で年間約${savingStr}円の節約余地あり！` : "固定費の最適化で年間数千円〜数万円削減！"}
-          </p>
-        </div>
-
-        <!-- フッター -->
-        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: 14px; font-size: 13px; color: #94a3b8;">
-          <span style="font-weight: 600;">subsc-checker.vercel.app</span>
-          <span style="color: #60a5fa; font-weight: 800;">#SubscChecker</span>
-        </div>
-      </div>
-    </div>
   `;
 }
 
 /**
- * html2canvas を用いて高解像度（Retina 2x）のカードPNG画像を生成する
+ * html2canvas を用いて高解像度（Retina 3x）のカードPNG画像を生成する
  */
 export async function generateShareCardBlob() {
-  const captureEl = document.getElementById("share-card-capture-target");
-  if (!captureEl) {
-    throw new Error("キャプチャ用要素が見つかりませんでした");
+  const previewEl = document.getElementById("share-card-preview");
+  if (!previewEl) {
+    throw new Error("シェアカード要素が見つかりませんでした");
   }
 
   if (typeof window.html2canvas !== "function") {
     throw new Error("html2canvas ライブラリが読み込まれていません");
   }
 
-  const canvas = await window.html2canvas(captureEl, {
-    scale: 2, // 1200x1200px Retina画質
+  // 画面上のプレビューカードをそのまま美しく高精細キャプチャ
+  const canvas = await window.html2canvas(previewEl, {
+    scale: 3, // 高精細Retina画質
     useCORS: true,
     logging: false,
-    backgroundColor: null,
+    backgroundColor: "#020617",
   });
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("画像のBlob生成に失敗しました"));
+    }, "image/png");
+  });
+}
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -375,3 +302,4 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
+

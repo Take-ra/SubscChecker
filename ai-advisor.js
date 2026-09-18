@@ -554,9 +554,6 @@ function renderAdvisor(container, data, items = []) {
           : ""
       }
 
-      <!-- 📱 SNSシェアカード（画像化 ＆ Xでポスト） -->
-      ${shareHtml}
-
       <!-- 重複警告 & プラン最適化の2カラム (PC時) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         ${duplicateHtml}
@@ -585,6 +582,9 @@ function renderAdvisor(container, data, items = []) {
 
       <!-- ②【お得な最適化プラン / 代替案】（アフィリエイト・マネタイズ導線） -->
       ${promoHtml}
+
+      <!-- 📱 SNSシェアカード（画像化 ＆ Xでポスト: 一番最後に配置） -->
+      ${shareHtml}
     </div>
   `;
 
