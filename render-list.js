@@ -73,7 +73,9 @@ export function getBrandDomain(name = "") {
   if (/google|drive|gemini/i.test(n)) return "google.com";
   if (/playstation|ps\b/i.test(n)) return "playstation.com";
   if (/nintendo/i.test(n)) return "nintendo.co.jp";
-  if (/dアニメ|dマガジン|dフォト|dキッズ/i.test(n)) return "docomo.ne.jp";
+  if (/dマガジン/i.test(n)) return "magazine.dmkt-sp.jp";
+  if (/dアニメ/i.test(n)) return "animestore.docomo.ne.jp";
+  if (/dフォト|dキッズ/i.test(n)) return "docomo.ne.jp";
   if (/dラボ/i.test(n)) return "daigo.jp";
   if (/hulu/i.test(n)) return "hulu.jp";
   if (/abema/i.test(n)) return "abema.tv";
@@ -93,7 +95,7 @@ export function getBrandDomain(name = "") {
   if (/pokekara/i.test(n)) return "pokekara.com";
   if (/telasa/i.test(n)) return "telasa.jp";
   if (/fod/i.test(n)) return "fod.fujitv.co.jp";
-  if (/wowow/i.test(n)) return "wowow.co.jp";
+  if (/wowow/i.test(n)) return "wod.wowow.co.jp";
   if (/dmm/i.test(n)) return "dmm.com";
   if (/lemino|dtv/i.test(n)) return "lemino.docomo.ne.jp";
   if (/paravi/i.test(n)) return "paravi.jp";
@@ -113,11 +115,11 @@ export function renderMainList(cats, subs, savedState, container) {
       };
       const isChecked = state.checked;
 
-      // 金額表示（セレクトと固定金額で書式・文字サイズ・枠・中央揃えを完全統一）
+      // 金額表示（矢印被り防止の右パディング確保・幅拡大・書式統一）
       let planUI = "";
       if (sub.monthly && sub.yearly) {
         planUI = `
-          <select id="sel-${sub.id}" class="plan-selector w-full h-8 text-xs sm:text-sm font-bold text-slate-800 py-0 px-1 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-1 focus:ring-blue-500 shadow-2xs transition-all text-center select-none" onclick="event.stopPropagation()">
+          <select id="sel-${sub.id}" class="plan-selector w-full h-8 text-xs sm:text-sm font-bold text-slate-800 py-0 pl-1.5 pr-6 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-1 focus:ring-blue-500 shadow-2xs transition-all text-center select-none" onclick="event.stopPropagation()">
             <option value="monthly" ${state.plan === "monthly" ? "selected" : ""}>月額 ¥${sub.monthly.toLocaleString()}</option>
             <option value="yearly" ${state.plan === "yearly" ? "selected" : ""}>年額 ¥${sub.yearly.toLocaleString()}</option>
           </select>`;
@@ -127,7 +129,7 @@ export function renderMainList(cats, subs, savedState, container) {
         const prefix = isYearly ? "年額" : "月額";
 
         planUI = `
-          <div class="w-full h-8 text-xs sm:text-sm font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-center tabular-nums text-center select-none shadow-2xs">
+          <div class="w-full h-8 text-xs sm:text-sm font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-center tabular-nums text-center select-none shadow-2xs px-1">
             ${prefix} ¥${Number(priceVal || 0).toLocaleString()}
           </div>`;
       }
@@ -152,12 +154,12 @@ export function renderMainList(cats, subs, savedState, container) {
         </button>
       `;
 
-      // アイコン表示部（余計な四角枠線を削除し、丸型・角丸アプリアイコンがそのまま自然に表示されるスタイル）
+      // アイコン表示部（p-0.5で上端や角のクリップを防止し、綺麗なアプリアイコンを表示）
       const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
       const iconHtml = faviconUrl
         ? `
         <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shrink-0 select-none overflow-hidden relative flex items-center justify-center">
-          <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-contain" onerror="this.parentElement.className='w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none'; this.remove();">
+          <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-contain p-0.5" onerror="this.parentElement.className='w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none'; this.remove();">
           <span class="sr-only">${brandBadge.label}</span>
         </div>`
         : `
@@ -176,9 +178,9 @@ export function renderMainList(cats, subs, savedState, container) {
           </label>
         </div>
 
-        <!-- 右側: 金額（完全同一幅） + ベルボタン（枠線から離して左寄りに収容） -->
-        <div class="flex-shrink-0 flex items-center gap-1.5 sm:gap-2">
-          <div class="w-[104px] sm:w-[114px] shrink-0">
+        <!-- 右側: 金額（幅を十分確保して矢印被り防止） + ベルボタン -->
+        <div class="flex-shrink-0 flex items-center gap-1 sm:gap-1.5">
+          <div class="w-[114px] sm:w-[124px] shrink-0">
             ${planUI}
           </div>
           <div class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center">
@@ -268,7 +270,7 @@ export function renderCustomList(customSubscriptions, savedState, container) {
     const iconHtml = faviconUrl
       ? `
       <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shrink-0 select-none overflow-hidden relative flex items-center justify-center">
-        <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-contain" onerror="this.parentElement.className='w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none'; this.remove();">
+        <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-contain p-0.5" onerror="this.parentElement.className='w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none'; this.remove();">
         <span class="sr-only">${brandBadge.label}</span>
       </div>`
       : `
