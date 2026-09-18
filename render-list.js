@@ -81,12 +81,20 @@ export function renderMainList(cats, subs, savedState, container) {
       </div>`;
     });
 
+    const theme = cat.theme || {
+      bg: "bg-blue-50/90",
+      text: "text-blue-600",
+      border: "border-blue-100",
+      hoverBg: "group-hover:bg-blue-100/90",
+      accentBar: "bg-blue-600",
+    };
+
     htmlList += `
     <section id="section-${cat.id}" class="scroll-mt-40 md:scroll-mt-8 nav-section pt-6 mt-6 md:pt-8 md:mt-8 border-t border-slate-200 first:border-none first:pt-0 first:mt-0">
       <button class="accordion-trigger w-full flex items-center justify-between py-2 pr-4 text-left hover:bg-slate-50 transition-colors focus:outline-none rounded-xl relative group z-10">
         <div class="flex items-center gap-3 md:gap-4">
-          <div class="w-1.5 h-12 md:h-14 bg-blue-600 rounded-r-md flex-shrink-0"></div>
-          <div class="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-blue-50 rounded-2xl flex-shrink-0 text-blue-600 p-2.5 md:p-3 group-hover:bg-blue-100 transition-colors">
+          <div class="w-1.5 h-12 md:h-14 ${theme.accentBar} rounded-r-md flex-shrink-0 transition-colors"></div>
+          <div class="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 ${theme.bg} ${theme.border} border ${theme.text} ${theme.hoverBg} shadow-2xs rounded-2xl flex-shrink-0 p-2.5 md:p-3 transition-colors">
             ${cat.icon}
           </div>
           <div class="flex flex-col md:flex-row md:items-baseline md:gap-4">

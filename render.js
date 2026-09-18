@@ -25,10 +25,13 @@ export function renderNav(cats, container) {
   if (!container) return;
   let htmlNav = "";
   cats.forEach((cat) => {
+    const theme = cat.theme || {
+      navIcon: "text-blue-500 group-hover:text-blue-600",
+    };
     htmlNav += `
     <button data-target="section-${cat.id}" class="nav-link group px-4 py-2 md:py-2.5 md:px-4 text-slate-500 bg-white border border-slate-200 md:border-transparent md:bg-transparent rounded-full md:rounded-r-2xl md:rounded-l-none text-sm md:text-base font-bold hover:bg-slate-50 md:hover:bg-blue-50/50 md:hover:text-blue-600 transition-all duration-200 whitespace-nowrap md:w-full md:text-left flex items-center justify-center md:justify-start border-l-0 md:border-l-4 focus:outline-none">
       <span class="flex items-center w-full">
-        <span class="w-6 md:w-8 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors">
+        <span class="w-6 md:w-8 flex items-center justify-center ${theme.navIcon} transition-colors">
           <span class="w-4 h-4 md:w-5 md:h-5 inline-block">${cat.icon}</span>
         </span>
         <span class="ml-1.5 md:ml-3 text-left flex-1">${cat.name}</span>
@@ -36,9 +39,9 @@ export function renderNav(cats, container) {
     </button>`;
   });
   htmlNav += `
-  <button data-target="section-custom" class="nav-link group px-4 py-2 md:py-2.5 md:px-4 text-slate-500 bg-white border border-slate-200 md:border-transparent md:bg-transparent rounded-full md:rounded-r-2xl md:rounded-l-none text-sm md:text-base font-bold hover:bg-slate-50 md:hover:bg-blue-50/50 md:hover:text-blue-600 transition-all duration-200 whitespace-nowrap md:w-full md:text-left flex items-center justify-center md:justify-start border-l-0 md:border-l-4 focus:outline-none">
+  <button data-target="section-custom" class="nav-link group px-4 py-2 md:py-2.5 md:px-4 text-slate-500 bg-white border border-slate-200 md:border-transparent md:bg-transparent rounded-full md:rounded-r-2xl md:rounded-l-none text-sm md:text-base font-bold hover:bg-slate-50 md:hover:bg-indigo-50/50 md:hover:text-indigo-600 transition-all duration-200 whitespace-nowrap md:w-full md:text-left flex items-center justify-center md:justify-start border-l-0 md:border-l-4 focus:outline-none">
     <span class="flex items-center w-full">
-      <span class="w-6 md:w-8 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors">
+      <span class="w-6 md:w-8 flex items-center justify-center text-indigo-500 group-hover:text-indigo-600 transition-colors">
         <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
         </svg>
@@ -47,7 +50,7 @@ export function renderNav(cats, container) {
     </span>
   </button>
 
-<!-- Information セクション -->
+  <!-- Information セクション -->
   <div class="flex flex-nowrap items-center md:flex-col md:items-stretch gap-1.5 md:gap-1 pt-2 md:pt-4 md:mt-3 border-l md:border-l-0 md:border-t border-slate-200/80 pl-2 md:pl-0">
     <span class="hidden md:block text-[11px] font-bold text-slate-400 tracking-wider uppercase px-4 mb-1">Information</span>
 
@@ -126,11 +129,11 @@ export function renderResultScreen(data) {
       '<p class="text-slate-400 text-xs text-center py-6">サブスクが選択されていません</p>';
   } else {
     const rankIcons = [
-      '<span class="text-xs font-black text-amber-900 bg-gradient-to-br from-amber-200 to-amber-400 rounded-full w-5 h-5 flex items-center justify-center shadow-2xs ring-1 ring-amber-300">1</span>',
-      '<span class="text-xs font-black text-slate-800 bg-gradient-to-br from-slate-100 to-slate-300 rounded-full w-5 h-5 flex items-center justify-center shadow-2xs ring-1 ring-slate-300">2</span>',
-      '<span class="text-xs font-black text-amber-950 bg-gradient-to-br from-amber-600/30 to-amber-700/50 rounded-full w-5 h-5 flex items-center justify-center shadow-2xs ring-1 ring-amber-700/30">3</span>',
-      '<span class="text-xs font-black text-slate-500 bg-slate-200/80 rounded-full w-5 h-5 flex items-center justify-center">4</span>',
-      '<span class="text-xs font-black text-slate-500 bg-slate-200/80 rounded-full w-5 h-5 flex items-center justify-center">5</span>',
+      '<span class="text-xs font-black text-amber-950 bg-gradient-to-br from-amber-200 via-amber-300 to-amber-500 rounded-full w-5 h-5 flex items-center justify-center shadow-xs ring-2 ring-amber-200/90">1</span>',
+      '<span class="text-xs font-black text-slate-800 bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 rounded-full w-5 h-5 flex items-center justify-center shadow-xs ring-2 ring-slate-200">2</span>',
+      '<span class="text-xs font-black text-amber-50 bg-gradient-to-br from-amber-600 via-amber-700 to-amber-800 rounded-full w-5 h-5 flex items-center justify-center shadow-xs ring-2 ring-amber-600/30">3</span>',
+      '<span class="text-xs font-bold text-slate-500 bg-slate-100 rounded-full w-5 h-5 flex items-center justify-center border border-slate-200/80">4</span>',
+      '<span class="text-xs font-bold text-slate-500 bg-slate-100 rounded-full w-5 h-5 flex items-center justify-center border border-slate-200/80">5</span>',
     ];
     rankContainer.innerHTML = data.top5
       .map(
