@@ -55,7 +55,7 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
             あなたの固定費カルテを 𝕏 でポスト
           </h3>
           <p class="text-xs md:text-sm text-slate-400 mt-1.5 font-medium">
-            ワンタップで診断結果入りの投稿画面が立ち上がります。フォロワーと固定費を比べ合おう！
+            診断結果をXでポストできます。あなたのサブスク固定費をシェアしてみましょう！
           </p>
         </div>
 
