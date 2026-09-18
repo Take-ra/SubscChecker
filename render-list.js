@@ -12,12 +12,7 @@ export function getBrandBadge(name = "", categoryId = "") {
   if (/amazon|prime/i.test(n)) return { label: "A", bg: "bg-amber-500 text-white" };
   if (/youtube/i.test(n)) return { label: "Y", bg: "bg-red-500 text-white" };
   if (/spotify/i.test(n)) return { label: "S", bg: "bg-emerald-500 text-white" };
-  if (/apple|icloud/i.test(n)) {
-    return {
-      label: `<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current inline-block" viewBox="0 0 170 170"><path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.04-7.69-7.83-11.96-14.39-5.99-9.13-10.74-19.64-14.24-31.54-3.5-11.89-5.26-23.23-5.26-34.02 0-14.03 3.63-25.75 10.89-35.16 7.26-9.41 16.5-14.24 27.72-14.51 4.57 0 9.77 1.25 15.6 3.76 5.83 2.5 9.72 3.82 11.66 3.94 1.74-.12 5.92-1.57 12.54-4.35 6.62-2.78 12.19-4.01 16.71-3.69 13.06.66 23.36 5.54 30.9 14.65-11.33 6.86-16.82 16.32-16.49 28.38.33 9.47 4.08 17.3 11.24 23.51 7.17 6.21 15.71 9.79 25.64 10.74-2.18 6.42-4.8 12.53-7.87 18.34zM119.22 31.84c0-7.29 2.65-14.09 7.95-20.4 5.3-6.31 11.8-10.36 19.51-12.14.33 1.3.49 2.5.49 3.6 0 7.39-2.83 14.41-8.49 21.05-5.66 6.64-12.39 10.66-20.2 12.06-.22-1.3-.43-2.69-.43-4.17z"/></svg>`,
-      bg: "bg-slate-950 text-white",
-    };
-  }
+  if (/apple|icloud/i.test(n)) return { label: "A", bg: "bg-slate-950 text-white" };
   if (/disney/i.test(n)) return { label: "D", bg: "bg-blue-700 text-white" };
   if (/u-next/i.test(n)) return { label: "U", bg: "bg-slate-900 text-white" };
   if (/chatgpt|openai/i.test(n)) return { label: "G", bg: "bg-teal-600 text-white" };
@@ -78,7 +73,7 @@ export function renderMainList(cats, subs, savedState, container) {
       let planUI = "";
       if (sub.monthly && sub.yearly) {
         planUI = `
-          <select id="sel-${sub.id}" class="plan-selector w-full text-xs sm:text-sm font-black text-slate-900 py-1.5 pl-2 pr-6 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-2 focus:ring-blue-500 shadow-2xs transition-all text-right select-none" onclick="event.stopPropagation()">
+          <select id="sel-${sub.id}" class="plan-selector w-full text-xs sm:text-sm font-black text-slate-900 py-1.5 px-2 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-2 focus:ring-blue-500 shadow-2xs transition-all text-center select-none" onclick="event.stopPropagation()">
             <option value="monthly" ${state.plan === "monthly" ? "selected" : ""}>月額 ¥${sub.monthly.toLocaleString()}</option>
             <option value="yearly" ${state.plan === "yearly" ? "selected" : ""}>年額 ¥${sub.yearly.toLocaleString()}</option>
           </select>`;
@@ -106,10 +101,10 @@ export function renderMainList(cats, subs, savedState, container) {
       const brandBadge = getBrandBadge(sub.name, cat.id);
       const safeName = escapeAttr(sub.name);
 
-      // ベルボタン（右端から余裕を持って枠内に収まるサイズ・配置）
+      // ベルボタン（カード枠内に収まる小さめサイズ）
       const bellBtnHtml = `
-        <button type="button" class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/70 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${state.plan}')" title="カレンダーに通知を登録">
-          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+        <button type="button" class="bell-btn w-6 h-6 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/70 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${state.plan}')" title="カレンダーに通知を登録">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
         </button>
       `;
 
@@ -126,12 +121,12 @@ export function renderMainList(cats, subs, savedState, container) {
           </label>
         </div>
 
-        <!-- 右側: 金額ボックス（左寄せ配置でベルをカード内側に収める） + ベルボタン -->
-        <div class="flex-shrink-0 flex items-center justify-end gap-1.5 sm:gap-2 w-[164px] sm:w-[180px] pr-1.5 sm:pr-2.5">
+        <!-- 右側: 金額 + ベルボタン（余裕を持ってカード枠内に収める） -->
+        <div class="flex-shrink-0 flex items-center gap-1.5 pr-2 sm:pr-3">
           <div class="w-[120px] sm:w-[132px] shrink-0">
             ${planUI}
           </div>
-          <div class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center mr-1">
+          <div class="w-6 h-6 shrink-0 flex items-center justify-center">
             ${bellBtnHtml}
           </div>
         </div>
@@ -225,16 +220,16 @@ export function renderCustomList(customSubscriptions, savedState, container) {
       </div>
 
       <!-- 右側: 金額ボックス + ベル + 編集メニュー -->
-      <div class="flex-shrink-0 flex items-center justify-end gap-1 w-[164px] sm:w-[180px] pr-1.5 sm:pr-2.5">
+      <div class="flex-shrink-0 flex items-center gap-1 pr-2 sm:pr-3">
         <div class="w-[96px] sm:w-[108px] shrink-0">
           <div class="w-full text-xs sm:text-sm font-black text-slate-900 py-1.5 px-2 border border-slate-200/60 bg-slate-50/60 rounded-xl flex items-center justify-end tabular-nums text-right select-none">
             <span class="text-[10px] font-bold text-slate-400 mr-1">${planText}</span>¥${price.toLocaleString()}
           </div>
         </div>
         
-        <div class="w-7 h-7 shrink-0 flex items-center justify-center">
-          <button type="button" class="bell-btn w-7 h-7 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/70 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType}', ${sub.cycleNum || 1}, '${sub.cycleUnit || "months"}')" title="カレンダーに通知を登録">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+        <div class="w-6 h-6 shrink-0 flex items-center justify-center">
+          <button type="button" class="bell-btn w-6 h-6 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/70 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType}', ${sub.cycleNum || 1}, '${sub.cycleUnit || "months"}')" title="カレンダーに通知を登録">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
           </button>
         </div>
 
