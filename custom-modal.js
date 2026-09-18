@@ -69,16 +69,23 @@ export function initCustomModal(callbacks) {
     }
 
     let cycle = 1;
+    let cycleNum = 1;
+    let cycleUnit = "months";
+
     if (planType === "monthly") {
       cycle = 1;
+      cycleNum = 1;
+      cycleUnit = "months";
     } else if (planType === "yearly") {
       cycle = 12;
+      cycleNum = 1;
+      cycleUnit = "years";
     } else if (planType === "custom") {
-      const num = parseInt(customCycleNum.value, 10);
-      const unit = customCycleUnit.value;
-      if (unit === "weeks") cycle = num / 4.345;
-      else if (unit === "months") cycle = num;
-      else if (unit === "years") cycle = num * 12;
+      cycleNum = parseInt(customCycleNum.value, 10);
+      cycleUnit = customCycleUnit.value;
+      if (cycleUnit === "weeks") cycle = cycleNum / 4.345;
+      else if (cycleUnit === "months") cycle = cycleNum;
+      else if (cycleUnit === "years") cycle = cycleNum * 12;
     }
 
     // app.js から最新のデータを取得
@@ -94,6 +101,8 @@ export function initCustomModal(callbacks) {
           price,
           planType,
           cycle,
+          cycleNum,
+          cycleUnit,
         };
       }
       // 保存状態のプランタイプも同期する
@@ -103,7 +112,7 @@ export function initCustomModal(callbacks) {
       editingSubId = null;
     } else {
       const newId = "c_" + Date.now();
-      customSubs.push({ id: newId, name, price, planType, cycle });
+      customSubs.push({ id: newId, name, price, planType, cycle, cycleNum, cycleUnit });
       savedState[newId] = { checked: true, plan: planType };
     }
 
@@ -154,21 +163,27 @@ export function initCustomModal(callbacks) {
     document.getElementById("custom-price").value = sub.price;
     customPlanType.value = sub.planType;
 
-    if (sub.planType === "custom" && sub.cycle != null) {
+    if (sub.planType === "custom") {
       customCycleContainer.classList.remove("hidden");
-      if (sub.cycle < 1 || (sub.cycle > 0 && sub.cycle < 3 && sub.cycle % 1 !== 0)) {
-        // 小数値のサイクルは週単位として解釈する
-        customCycleUnit.value = "weeks";
+      if (sub.cycleUnit) {
+        customCycleUnit.value = sub.cycleUnit;
         updateCycleNumOptions();
-        customCycleNum.value = Math.round(sub.cycle * 4.345);
-      } else if (sub.cycle >= 12 && sub.cycle % 12 === 0) {
-        customCycleUnit.value = "years";
-        updateCycleNumOptions();
-        customCycleNum.value = sub.cycle / 12;
-      } else {
-        customCycleUnit.value = "months";
-        updateCycleNumOptions();
-        customCycleNum.value = Math.round(sub.cycle);
+        if (sub.cycleNum) customCycleNum.value = sub.cycleNum;
+      } else if (sub.cycle != null) {
+        // 過去データの後方互換フォールバック
+        if (sub.cycle < 1 || (sub.cycle > 0 && sub.cycle < 3 && sub.cycle % 1 !== 0)) {
+          customCycleUnit.value = "weeks";
+          updateCycleNumOptions();
+          customCycleNum.value = Math.round(sub.cycle * 4.345);
+        } else if (sub.cycle >= 12 && sub.cycle % 12 === 0) {
+          customCycleUnit.value = "years";
+          updateCycleNumOptions();
+          customCycleNum.value = sub.cycle / 12;
+        } else {
+          customCycleUnit.value = "months";
+          updateCycleNumOptions();
+          customCycleNum.value = Math.round(sub.cycle);
+        }
       }
     } else {
       customCycleContainer.classList.add("hidden");

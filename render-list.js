@@ -121,18 +121,27 @@ export function renderCustomList(customSubscriptions, savedState, container) {
     if (
       sub.planType === "monthly" ||
       (cycle === 1 && sub.planType !== "custom")
-    )
+    ) {
       planText = "月額";
-    else if (
+    } else if (
       sub.planType === "yearly" ||
       (cycle === 12 && sub.planType !== "custom")
-    )
+    ) {
       planText = "年額";
-    else {
-      if (cycle < 1) planText = `${Math.round(cycle * 4.345)}週間ごとに`;
-      else if (cycle >= 12 && cycle % 12 === 0)
+    } else if (sub.cycleUnit && sub.cycleNum) {
+      // ユーザーが選択した周期単位と数値をそのまま表示
+      if (sub.cycleUnit === "weeks") planText = `${sub.cycleNum}週間ごとに`;
+      else if (sub.cycleUnit === "years") planText = `${sub.cycleNum}年ごとに`;
+      else planText = `${sub.cycleNum}ヶ月ごとに`;
+    } else {
+      // 過去データの後方互換フォールバック
+      if (cycle < 1 || (cycle > 0 && cycle < 3 && cycle % 1 !== 0)) {
+        planText = `${Math.round(cycle * 4.345)}週間ごとに`;
+      } else if (cycle >= 12 && cycle % 12 === 0) {
         planText = `${cycle / 12}年ごとに`;
-      else planText = `${cycle}ヶ月ごとに`;
+      } else {
+        planText = `${Math.round(cycle)}ヶ月ごとに`;
+      }
     }
 
     const safeName = escapeAttr(sub.name);
@@ -151,7 +160,7 @@ export function renderCustomList(customSubscriptions, savedState, container) {
           ${planText} ${price.toLocaleString()}円
         </div>
         
-        <button type="button" class="bell-btn ml-1 p-2 text-blue-400 hover:text-blue-600 hover:bg-white rounded-full transition-colors flex-shrink-0 bg-white/50 shadow-sm border border-blue-100 ${isChecked ? "" : "invisible"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType}')" title="カレンダーに通知を登録">
+        <button type="button" class="bell-btn ml-1 p-2 text-blue-400 hover:text-blue-600 hover:bg-white rounded-full transition-colors flex-shrink-0 bg-white/50 shadow-sm border border-blue-100 ${isChecked ? "" : "invisible"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType}', ${sub.cycleNum || 1}, '${sub.cycleUnit || "months"}')" title="カレンダーに通知を登録">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
         </button>
 

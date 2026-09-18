@@ -4,8 +4,8 @@ let currentCalSub = null;
 let pendingGoogleCalendarDays = []; // Googleカレンダー用に「残り何件登録するか」を覚えておく配列
 
 // モーダルを開く処理
-export function openCalendarModal(subId, subName, plan) {
-  currentCalSub = { id: subId, name: subName, plan: plan };
+export function openCalendarModal(subId, subName, plan, cycleNum = 1, cycleUnit = "months") {
+  currentCalSub = { id: subId, name: subName, plan: plan, cycleNum, cycleUnit };
   pendingGoogleCalendarDays = []; // リセット
 
   const modal = document.getElementById("calendar-modal");
@@ -91,7 +91,16 @@ function calculateSingleEventDate(notifyDays) {
 
   const plan = currentCalSub.plan;
   const advanceRenewal = () => {
-    if (plan === "monthly" || plan === "custom") {
+    if (plan === "custom" && currentCalSub.cycleUnit) {
+      const num = currentCalSub.cycleNum || 1;
+      if (currentCalSub.cycleUnit === "weeks") {
+        nextRenewal.setDate(nextRenewal.getDate() + num * 7);
+      } else if (currentCalSub.cycleUnit === "years") {
+        nextRenewal.setFullYear(nextRenewal.getFullYear() + num);
+      } else {
+        nextRenewal.setMonth(nextRenewal.getMonth() + num);
+      }
+    } else if (plan === "monthly" || plan === "custom") {
       nextRenewal.setMonth(nextRenewal.getMonth() + 1);
     } else {
       nextRenewal.setFullYear(nextRenewal.getFullYear() + 1);
