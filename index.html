@@ -363,14 +363,15 @@
               </div>
             </div>
 
+            <!-- 選択中サブスク確認ボタン（未選択時は非表示） -->
             <button
               id="btn-open-selected-sheet"
               type="button"
-              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 hover:bg-blue-100 active:scale-95 text-blue-700 text-[11px] font-black border border-blue-200/80 transition-all cursor-pointer shadow-2xs"
+              class="hidden items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-700 hover:border-blue-300 active:scale-95 text-[10px] md:text-[11px] font-bold border border-slate-200 transition-all cursor-pointer shadow-2xs"
             >
               <span>📋</span>
               <span id="footer-selected-count">0件 選択中</span>
-              <span class="text-[9px] text-blue-500">▲</span>
+              <span class="text-[8px] text-slate-400">▲</span>
             </button>
           </div>
         </div>

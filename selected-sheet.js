@@ -3,45 +3,71 @@ import { getBrandBadge } from "./render-list.js";
 import { escapeAttr } from "./render.js";
 
 export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze }) {
-  const sheetEl = document.getElementById("selected-subs-sheet");
-  const overlayEl = document.getElementById("selected-sheet-overlay");
-  const panelEl = document.getElementById("selected-sheet-panel");
-  const btnOpen = document.getElementById("btn-open-selected-sheet");
-  const btnClose = document.getElementById("btn-close-selected-sheet");
-  const btnSheetClose = document.getElementById("btn-sheet-close");
-  const btnSheetAnalyze = document.getElementById("btn-sheet-analyze");
-  const listEl = document.getElementById("selected-sheet-list");
-  const countBadgeEl = document.getElementById("sheet-count-badge");
-  const monthlyTotalEl = document.getElementById("sheet-monthly-total");
+  const getSheetEl = () => document.getElementById("selected-subs-sheet");
+  const getOverlayEl = () => document.getElementById("selected-sheet-overlay");
+  const getPanelEl = () => document.getElementById("selected-sheet-panel");
+  const getListEl = () => document.getElementById("selected-sheet-list");
+  const getCountBadgeEl = () => document.getElementById("sheet-count-badge");
+  const getMonthlyTotalEl = () => document.getElementById("sheet-monthly-total");
 
   function openSheet() {
     renderSheetContent();
-    if (!sheetEl) return;
+    const sheetEl = getSheetEl();
+    const overlayEl = getOverlayEl();
+    const panelEl = getPanelEl();
+    if (!sheetEl) {
+      console.warn("selected-subs-sheet 要素が見つかりません");
+      return;
+    }
+
     sheetEl.classList.remove("hidden");
     sheetEl.classList.add("flex");
-    requestAnimationFrame(() => {
-      overlayEl?.classList.remove("opacity-0");
-      overlayEl?.classList.add("opacity-100");
-      panelEl?.classList.remove("translate-y-full", "md:translate-y-4", "md:scale-95");
-      panelEl?.classList.add("translate-y-0", "md:translate-y-0", "md:scale-100");
-    });
+    sheetEl.style.display = "flex";
+    document.body.style.overflow = "hidden";
+
+    // アニメーションを滑らかに起動
+    setTimeout(() => {
+      if (overlayEl) {
+        overlayEl.classList.remove("opacity-0");
+        overlayEl.classList.add("opacity-100");
+      }
+      if (panelEl) {
+        panelEl.classList.remove("translate-y-full", "md:translate-y-4", "md:scale-95");
+        panelEl.classList.add("translate-y-0", "md:translate-y-0", "md:scale-100");
+      }
+    }, 10);
   }
 
   function closeSheet() {
+    const sheetEl = getSheetEl();
+    const overlayEl = getOverlayEl();
+    const panelEl = getPanelEl();
     if (!sheetEl) return;
-    overlayEl?.classList.remove("opacity-100");
-    overlayEl?.classList.add("opacity-0");
-    panelEl?.classList.remove("translate-y-0", "md:translate-y-0", "md:scale-100");
-    panelEl?.classList.add("translate-y-full", "md:translate-y-4", "md:scale-95");
+
+    if (overlayEl) {
+      overlayEl.classList.remove("opacity-100");
+      overlayEl.classList.add("opacity-0");
+    }
+    if (panelEl) {
+      panelEl.classList.remove("translate-y-0", "md:translate-y-0", "md:scale-100");
+      panelEl.classList.add("translate-y-full", "md:translate-y-4", "md:scale-95");
+    }
+
     setTimeout(() => {
       sheetEl.classList.remove("flex");
       sheetEl.classList.add("hidden");
+      sheetEl.style.display = "none";
+      document.body.style.overflow = "";
     }, 250);
   }
 
   function renderSheetContent() {
-    const data = getAggregatedData();
+    const data = getAggregatedData ? getAggregatedData() : { selectedItems: [], totalMonthly: 0 };
     const items = data.selectedItems || [];
+
+    const countBadgeEl = getCountBadgeEl();
+    const monthlyTotalEl = getMonthlyTotalEl();
+    const listEl = getListEl();
 
     if (countBadgeEl) countBadgeEl.textContent = `${items.length}件`;
     if (monthlyTotalEl) monthlyTotalEl.textContent = Number(data.totalMonthly || 0).toLocaleString();
@@ -94,31 +120,50 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
       .join("");
   }
 
-  // イベントリスナー
-  if (btnOpen) btnOpen.addEventListener("click", openSheet);
-  if (btnClose) btnClose.addEventListener("click", closeSheet);
-  if (btnSheetClose) btnSheetClose.addEventListener("click", closeSheet);
-  if (overlayEl) overlayEl.addEventListener("click", closeSheet);
+  // グローバル登録（いつでも呼び出し可能）
+  window.openSelectedSubsSheet = openSheet;
+  window.closeSelectedSubsSheet = closeSheet;
 
-  if (btnSheetAnalyze) {
-    btnSheetAnalyze.addEventListener("click", () => {
+  // イベント委譲（DOMのレンダリング順序や更新に影響されない最強の設計）
+  document.addEventListener("click", (e) => {
+    // 開くボタン
+    if (e.target.closest("#btn-open-selected-sheet")) {
+      e.preventDefault();
+      openSheet();
+      return;
+    }
+
+    // 閉じるボタン群 / オーバーレイ
+    if (
+      e.target.closest("#btn-close-selected-sheet") ||
+      e.target.closest("#btn-sheet-close") ||
+      e.target.closest("#selected-sheet-overlay")
+    ) {
+      e.preventDefault();
+      closeSheet();
+      return;
+    }
+
+    // 分析へ進むボタン
+    if (e.target.closest("#btn-sheet-analyze")) {
+      e.preventDefault();
       closeSheet();
       if (onAnalyze) onAnalyze();
-    });
-  }
+      return;
+    }
 
-  // 解除ボタン（イベント委譲）
-  if (listEl) {
-    listEl.addEventListener("click", (e) => {
-      const removeBtn = e.target.closest("[data-remove-sub-id]");
-      if (!removeBtn) return;
+    // シート内での解除ボタン
+    const removeBtn = e.target.closest("[data-remove-sub-id]");
+    if (removeBtn) {
+      e.preventDefault();
       const subId = removeBtn.getAttribute("data-remove-sub-id");
       if (subId && onToggleSub) {
         onToggleSub(subId, false);
         renderSheetContent();
       }
-    });
-  }
+      return;
+    }
+  });
 
   return {
     openSheet,

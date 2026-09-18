@@ -233,9 +233,11 @@ export function initApp() {
     const btnOpenSelected = document.getElementById("btn-open-selected-sheet");
     if (btnOpenSelected) {
       if (data.selectedItems.length > 0) {
-        btnOpenSelected.classList.remove("opacity-50", "pointer-events-none");
+        btnOpenSelected.classList.remove("hidden");
+        btnOpenSelected.style.display = "inline-flex";
       } else {
-        btnOpenSelected.classList.add("opacity-50");
+        btnOpenSelected.classList.add("hidden");
+        btnOpenSelected.style.display = "none";
       }
     }
   }

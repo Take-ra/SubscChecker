@@ -10,7 +10,7 @@ export function getBrandBadge(name = "", categoryId = "") {
   // 有名ブランドの固有カラー
   if (/netflix/i.test(n)) return { label: "N", bg: "bg-red-600 text-white" };
   if (/amazon|prime/i.test(n)) return { label: "A", bg: "bg-amber-500 text-white" };
-  if (/youtube/i.test(n)) return { label: "Y", bg: "bg-red-600 text-white" };
+  if (/youtube/i.test(n)) return { label: "Y", bg: "bg-red-500 text-white" };
   if (/spotify/i.test(n)) return { label: "S", bg: "bg-emerald-500 text-white" };
   if (/apple|icloud/i.test(n)) return { label: "", bg: "bg-slate-900 text-white" };
   if (/disney/i.test(n)) return { label: "D", bg: "bg-blue-700 text-white" };
@@ -68,18 +68,15 @@ export function renderMainList(cats, subs, savedState, container) {
         plan: sub.monthly ? "monthly" : "yearly",
       };
       const isChecked = state.checked;
-      let planUI = "";
-      const containerClass =
-        "flex-shrink-0 w-[130px] sm:w-[150px] flex items-center justify-end";
 
+      // 金額表示（切り替え可能・固定で高さ・横幅・枠線を完全一致させてインデントを整然と揃える）
+      let planUI = "";
       if (sub.monthly && sub.yearly) {
         planUI = `
-        <div class="${containerClass}">
-          <select id="sel-${sub.id}" class="plan-selector w-full text-xs font-black text-slate-900 py-1.5 pl-2.5 pr-7 border border-slate-200 rounded-xl bg-slate-50/80 hover:bg-white cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-2xs transition-all" onclick="event.stopPropagation()">
+          <select id="sel-${sub.id}" class="plan-selector w-full text-xs font-black text-slate-800 py-1.5 pl-2 pr-6 border border-slate-200/90 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-2 focus:ring-blue-500 shadow-2xs transition-all text-right select-none" onclick="event.stopPropagation()">
             <option value="monthly" ${state.plan === "monthly" ? "selected" : ""}>月額 ¥${sub.monthly.toLocaleString()}</option>
             <option value="yearly" ${state.plan === "yearly" ? "selected" : ""}>年額 ¥${sub.yearly.toLocaleString()}</option>
-          </select>
-        </div>`;
+          </select>`;
       } else {
         const isYearly = !sub.monthly && sub.yearly;
         const priceVal = isYearly ? sub.yearly : sub.monthly;
@@ -87,12 +84,11 @@ export function renderMainList(cats, subs, savedState, container) {
         const cycleSuffix = isYearly ? "/年" : "/月";
 
         planUI = `
-        <div class="${containerClass}">
-          <div class="text-right w-full font-black text-slate-900 tracking-tight text-xs sm:text-sm tabular-nums px-1">
+          <div class="w-full text-xs font-black text-slate-800 py-1.5 pl-2 pr-2.5 border border-slate-200/60 bg-slate-50/60 rounded-xl flex items-center justify-end tabular-nums text-right select-none">
             <span class="text-[10px] font-bold text-slate-400 mr-1">${prefix}</span>¥${Number(priceVal || 0).toLocaleString()}<span class="text-[10px] font-normal text-slate-400 ml-0.5">${cycleSuffix}</span>
-          </div>
-        </div>`;
+          </div>`;
       }
+
       const searchText = (
         sub.name +
         " " +
@@ -104,14 +100,17 @@ export function renderMainList(cats, subs, savedState, container) {
 
       const brandBadge = getBrandBadge(sub.name, cat.id);
       const safeName = escapeAttr(sub.name);
+
+      // ベルボタン（チェックOFF時も領域を確保して金額ボックスの横位置がズレないようにする）
       const bellBtnHtml = `
-        <button type="button" class="bell-btn ml-1.5 p-2 text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors flex-shrink-0 bg-white/60 shadow-2xs border border-blue-200/80 ${isChecked ? "" : "invisible"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${state.plan}')" title="カレンダーに通知を登録">
+        <button type="button" class="bell-btn w-8 h-8 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/60 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${state.plan}')" title="カレンダーに通知を登録">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
         </button>
       `;
 
       itemsHtml += `
       <div class="sub-item relative flex items-center justify-between p-3 sm:p-4 md:px-5 md:py-3.5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">
+        <!-- 左側: チェックボックス + アイコン + サービス名 -->
         <div class="flex items-center flex-1 min-w-0 pr-2 gap-2.5">
           <input type="checkbox" id="chk-${sub.id}" class="sub-checkbox peer w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" ${isChecked ? "checked" : ""}>
           <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none">
@@ -121,9 +120,15 @@ export function renderMainList(cats, subs, savedState, container) {
             <div class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug line-clamp-2">${sub.name}</div>
           </label>
         </div>
-        <div class="flex-shrink-0 flex items-center justify-end" style="width: auto !important; min-width: 140px;">
-          <div class="w-32 sm:w-36 flex items-center justify-end">${planUI}</div>
-          ${bellBtnHtml}
+
+        <!-- 右側: 金額ボックス（幅完全固定） + ベルボタン（幅完全固定） -->
+        <div class="flex-shrink-0 flex items-center justify-end gap-1.5 w-[165px] sm:w-[175px]">
+          <div class="w-[125px] sm:w-[135px] shrink-0">
+            ${planUI}
+          </div>
+          <div class="w-8 h-8 shrink-0 flex items-center justify-center">
+            ${bellBtnHtml}
+          </div>
         </div>
       </div>`;
     });
@@ -185,16 +190,16 @@ export function renderCustomList(customSubscriptions, savedState, container) {
     ) {
       planText = "年額";
     } else if (sub.cycleUnit && sub.cycleNum) {
-      if (sub.cycleUnit === "weeks") planText = `${sub.cycleNum}週ごと`;
-      else if (sub.cycleUnit === "years") planText = `${sub.cycleNum}年ごと`;
-      else planText = `${sub.cycleNum}ヶ月ごと`;
+      if (sub.cycleUnit === "weeks") planText = `${sub.cycleNum}週`;
+      else if (sub.cycleUnit === "years") planText = `${sub.cycleNum}年`;
+      else planText = `${sub.cycleNum}ヶ月`;
     } else {
       if (cycle < 1 || (cycle > 0 && cycle < 3 && cycle % 1 !== 0)) {
-        planText = `${Math.round(cycle * 4.345)}週ごと`;
+        planText = `${Math.round(cycle * 4.345)}週`;
       } else if (cycle >= 12 && cycle % 12 === 0) {
-        planText = `${cycle / 12}年ごと`;
+        planText = `${cycle / 12}年`;
       } else {
-        planText = `${Math.round(cycle)}ヶ月ごと`;
+        planText = `${Math.round(cycle)}ヶ月`;
       }
     }
 
@@ -213,17 +218,23 @@ export function renderCustomList(customSubscriptions, savedState, container) {
           <div class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug line-clamp-2">${sub.name}</div>
         </label>
       </div>
-      <div class="flex items-center gap-1 relative justify-end" style="width: auto !important; min-width: 140px;">
-        <div class="flex-shrink-0 w-28 sm:w-32 text-right font-black text-slate-900 tracking-tight text-xs sm:text-sm tabular-nums px-1">
-          <span class="text-[10px] font-bold text-slate-400 mr-1">${planText}</span>¥${price.toLocaleString()}
+
+      <!-- 右側: 金額ボックス（通常サブスクと幅・高さを完全一致） + ベル + 編集メニュー -->
+      <div class="flex-shrink-0 flex items-center justify-end gap-1.5 w-[165px] sm:w-[175px]">
+        <div class="w-[95px] sm:w-[105px] shrink-0">
+          <div class="w-full text-xs font-black text-slate-800 py-1.5 px-2 border border-slate-200/60 bg-slate-50/60 rounded-xl flex items-center justify-end tabular-nums text-right select-none">
+            <span class="text-[10px] font-bold text-slate-400 mr-1">${planText}</span>¥${price.toLocaleString()}
+          </div>
         </div>
         
-        <button type="button" class="bell-btn ml-1 p-2 text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors flex-shrink-0 bg-white/60 shadow-2xs border border-blue-200/80 ${isChecked ? "" : "invisible"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType}', ${sub.cycleNum || 1}, '${sub.cycleUnit || "months"}')" title="カレンダーに通知を登録">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-        </button>
+        <div class="w-7 h-7 shrink-0 flex items-center justify-center">
+          <button type="button" class="bell-btn w-7 h-7 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/60 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType}', ${sub.cycleNum || 1}, '${sub.cycleUnit || "months"}')" title="カレンダーに通知を登録">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+          </button>
+        </div>
 
-        <div class="relative ml-1">
-          <button onclick="event.stopPropagation(); toggleEditMenu('${sub.id}')" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+        <div class="relative w-7 h-7 shrink-0 flex items-center justify-center">
+          <button onclick="event.stopPropagation(); toggleEditMenu('${sub.id}')" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
           </button>
           <div id="edit-menu-${sub.id}" class="hidden absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-xl border border-slate-100 z-[60] overflow-hidden">
