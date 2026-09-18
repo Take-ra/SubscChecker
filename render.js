@@ -1,5 +1,6 @@
 // render.js（ナビゲーション、ハイライト、結果画面の描画）
-export { escapeAttr, animateValue, escapeHtml, formatCurrency } from "./utils.js";
+import { escapeAttr, animateValue, escapeHtml, formatCurrency } from "./utils.js";
+export { escapeAttr, animateValue, escapeHtml, formatCurrency };
 
 export function updateHighlight(card, isChecked) {
   if (!card) return;
