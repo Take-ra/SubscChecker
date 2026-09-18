@@ -48,77 +48,77 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
 
         <!-- プレビューカード（スマホ・PC両対応でリサイズ表示） -->
         <div class="max-w-md mx-auto mb-6">
-          <div id="share-card-preview" class="w-full aspect-square rounded-2xl p-5 md:p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 border border-white/10 shadow-2xl flex flex-col justify-between relative overflow-hidden select-none">
+          <div id="share-card-preview" class="w-full aspect-square rounded-3xl p-6 md:p-7 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 border border-white/15 shadow-2xl flex flex-col justify-between relative select-none">
             <!-- カード内ヘッダー -->
-            <div class="flex items-center justify-between border-b border-white/10 pb-3">
-              <div class="flex items-center gap-2">
+            <div class="flex items-center justify-between border-b border-white/15 pb-3.5">
+              <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white font-black text-sm shadow-md">
                   S
                 </div>
-                <span class="font-black text-sm md:text-base tracking-tight text-white">SubscChecker</span>
+                <span class="font-black text-base tracking-tight text-white leading-normal">SubscChecker</span>
               </div>
-              <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+              <span class="text-[11px] font-bold px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 leading-normal">
                 固定費カルテ
               </span>
             </div>
 
             <!-- カード内メイン数値 & AIタイプ -->
             <div class="py-2 text-center">
-              <div class="inline-block px-3 py-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs md:text-sm shadow-md mb-2">
+              <div class="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs md:text-sm shadow-md mb-3 leading-normal">
                 ${escapeHtml(profileType)}
               </div>
-              <p class="text-[11px] text-slate-400 font-semibold tracking-wider uppercase">Monthly Total</p>
-              <div class="flex items-baseline justify-center gap-1 my-1">
-                <span class="text-xs font-bold text-slate-400">月額</span>
-                <span class="text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow-sm">
+              <p class="text-xs text-slate-400 font-bold tracking-widest uppercase leading-normal">MONTHLY TOTAL</p>
+              <div class="flex items-center justify-center gap-2 my-1">
+                <span class="text-sm font-extrabold text-slate-400 leading-normal">月額</span>
+                <span class="text-4xl md:text-5xl font-black text-white tracking-tight leading-none drop-shadow-sm">
                   ¥${formattedMonthly}
                 </span>
               </div>
-              <p class="text-[11px] text-slate-400 font-medium">
-                年間換算: <span class="text-slate-300 font-bold">約¥${formattedYearly}</span>
+              <p class="text-xs text-slate-300 font-semibold leading-normal mt-1">
+                年間換算: <strong class="text-white font-black">約 ¥${formattedYearly}</strong>
               </p>
             </div>
 
             <!-- カード内サブスク一覧（上位チップ） -->
-            <div class="space-y-1.5 bg-white/5 rounded-xl p-3 border border-white/10">
-              <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold px-1">
-                <span>契約中の主なサービス</span>
-                <span>${items.length}件利用中</span>
+            <div class="bg-white/5 rounded-2xl p-3.5 border border-white/10 space-y-2">
+              <div class="flex items-center justify-between text-xs text-slate-400 font-bold px-0.5 leading-normal">
+                <span>契約中の主なサブスク</span>
+                <span class="text-slate-300">${items.length}件 契約中</span>
               </div>
-              <div class="flex flex-wrap gap-1.5">
+              <div class="flex flex-wrap gap-2">
                 ${
                   topItems.length > 0
                     ? topItems
                         .map(
                           (item) => `
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 text-white text-[11px] font-bold border border-white/10">
-                      <span class="truncate max-w-[90px]">${escapeHtml(item.name)}</span>
-                      <span class="text-blue-300 text-[10px]">¥${Number(item.monthly).toLocaleString()}</span>
-                    </span>
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 text-white text-xs font-bold border border-white/15 leading-normal">
+                      <span>${escapeHtml(item.name)}</span>
+                      <span class="text-blue-300 font-extrabold shrink-0">¥${Number(item.monthly).toLocaleString()}</span>
+                    </div>
                   `
                         )
                         .join("")
-                    : `<span class="text-xs text-slate-400">未登録</span>`
+                    : `<span class="text-xs text-slate-400 leading-normal">未登録</span>`
                 }
                 ${
                   items.length > 4
-                    ? `<span class="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 text-slate-400 text-[10px] font-bold">+他${items.length - 4}件</span>`
+                    ? `<div class="inline-flex items-center px-2.5 py-1.5 rounded-xl bg-white/5 text-slate-400 text-xs font-bold leading-normal">+他${items.length - 4}件</div>`
                     : ""
                 }
               </div>
             </div>
 
             <!-- カード内AIアドバイス -->
-            <div class="bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-500/30 rounded-xl p-2.5 text-center">
-              <p class="text-[11px] text-emerald-300 font-black truncate">
+            <div class="bg-gradient-to-r from-emerald-500/15 via-teal-500/15 to-emerald-500/15 border border-emerald-500/30 rounded-2xl px-3.5 py-2.5 text-center">
+              <p class="text-xs text-emerald-300 font-bold leading-normal m-0">
                 💡 ${savingStr ? `年払い等で年間約${savingStr}円の節約余地あり！` : "固定費の最適化で年間数千円〜数万円削減！"}
               </p>
             </div>
 
             <!-- カード内フッター -->
-            <div class="flex items-center justify-between text-[10px] text-slate-400 border-t border-white/10 pt-2.5">
-              <span>subsc-checker.vercel.app</span>
-              <span class="text-blue-400 font-bold">#SubscChecker</span>
+            <div class="flex items-center justify-between text-xs text-slate-400 border-t border-white/15 pt-3 leading-normal">
+              <span class="font-medium">subsc-checker.vercel.app</span>
+              <span class="text-blue-400 font-black">#SubscChecker</span>
             </div>
           </div>
         </div>
