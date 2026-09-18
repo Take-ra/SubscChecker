@@ -46,7 +46,9 @@ function updateButtonStyles(activeBtn, inactiveBtn) {
 // 2. グラフを描画する関数
 export function renderChart(data, type = currentChartType) {
   currentChartType = type; // 外部（app.js）から直接呼ばれた時のために更新しておく
-  const ctx = document.getElementById("resultChart").getContext("2d");
+  const canvas = document.getElementById("resultChart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
   let labels = [];
   let chartData = [];
   let bgColors = [

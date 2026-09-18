@@ -77,8 +77,10 @@ export function calculateAggregation(
       genreTotals[catName].yearly += yCost;
     }
     selectedItems.push({
+      id: subData.id,
       name: subData.name,
       category: catName,
+      categoryId: subData.categoryId,
       monthly: mCost,
       yearly: yCost,
     });
@@ -109,8 +111,10 @@ export function calculateAggregation(
       genreTotals["独自のサブスク"].monthly += mCost;
       genreTotals["独自のサブスク"].yearly += yCost;
       selectedItems.push({
+        id: sub.id,
         name: sub.name,
         category: "独自のサブスク",
+        categoryId: "lifestyle",
         monthly: mCost,
         yearly: yCost,
       });

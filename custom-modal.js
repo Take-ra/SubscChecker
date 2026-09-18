@@ -55,9 +55,10 @@ export function initCustomModal(callbacks) {
   if (btnEmptyAddCustom)
     btnEmptyAddCustom.addEventListener("click", window.openModal);
   // 保存（追加・更新）ボタンを押した時
-  btnSaveCustom.addEventListener("click", () => {
-    const name = document.getElementById("custom-name").value.trim();
-    const price = document.getElementById("custom-price").value;
+  if (btnSaveCustom) {
+    btnSaveCustom.addEventListener("click", () => {
+      const name = document.getElementById("custom-name")?.value.trim() || "";
+      const price = document.getElementById("custom-price")?.value || "";
     const planType = customPlanType.value;
     const errorMsg = document.getElementById("custom-error-msg");
 
@@ -127,7 +128,8 @@ export function initCustomModal(callbacks) {
       searchInput.dispatchEvent(new Event("input"));
     }
     closeModal();
-  });
+    });
+  }
 
   // 数字の選択肢を生成する関数
   function updateCycleNumOptions() {
