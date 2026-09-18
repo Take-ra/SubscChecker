@@ -1,5 +1,4 @@
-// selected-sheet.js（選択中サブスク確認 コンパクトポップアップモジュール）
-import { getBrandBadge } from "./render-list.js";
+import { getBrandBadge, getBrandDomain } from "./render-list.js";
 import { escapeAttr } from "./render.js";
 
 export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze }) {
@@ -75,12 +74,15 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
     listEl.innerHTML = items
       .map((item) => {
         const badge = getBrandBadge(item.name, item.categoryId || "lifestyle");
+        const domain = getBrandDomain(item.name);
+        const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
         const priceStr = Number(item.monthly || 0).toLocaleString();
         return `
         <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50/80 hover:bg-blue-50/40 border border-slate-100 hover:border-blue-200/80 transition-all group">
           <div class="flex items-center gap-2.5 min-w-0 mr-2">
-            <div class="w-6 h-6 rounded-lg ${badge.bg} flex items-center justify-center font-black text-[11px] shrink-0 select-none shadow-2xs">
-              ${badge.label}
+            <div class="w-6 h-6 rounded-lg ${badge.bg} flex items-center justify-center font-black text-[11px] shrink-0 select-none shadow-2xs overflow-hidden relative">
+              <span class="absolute inset-0 flex items-center justify-center">${badge.label}</span>
+              ${faviconUrl ? `<img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-contain p-0.5 rounded-lg bg-white" onerror="this.remove()">` : ""}
             </div>
             <span class="text-xs font-black text-slate-800 truncate" title="${escapeAttr(item.name)}">
               ${escapeAttr(item.name)}

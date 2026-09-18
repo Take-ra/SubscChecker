@@ -113,11 +113,11 @@ export function renderMainList(cats, subs, savedState, container) {
       };
       const isChecked = state.checked;
 
-      // 金額表示（セレクトと固定金額で幅・高さ・中央揃えを完全統一してインデントを揃える）
+      // 金額表示（セレクトと固定金額で書式・文字サイズ・枠・中央揃えを完全統一）
       let planUI = "";
       if (sub.monthly && sub.yearly) {
         planUI = `
-          <select id="sel-${sub.id}" class="plan-selector w-full h-8 text-xs sm:text-sm font-black text-slate-800 py-0 px-1 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-1 focus:ring-blue-500 shadow-2xs transition-all text-center select-none" onclick="event.stopPropagation()">
+          <select id="sel-${sub.id}" class="plan-selector w-full h-8 text-xs sm:text-sm font-bold text-slate-800 py-0 px-1 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-1 focus:ring-blue-500 shadow-2xs transition-all text-center select-none" onclick="event.stopPropagation()">
             <option value="monthly" ${state.plan === "monthly" ? "selected" : ""}>月額 ¥${sub.monthly.toLocaleString()}</option>
             <option value="yearly" ${state.plan === "yearly" ? "selected" : ""}>年額 ¥${sub.yearly.toLocaleString()}</option>
           </select>`;
@@ -125,11 +125,10 @@ export function renderMainList(cats, subs, savedState, container) {
         const isYearly = !sub.monthly && sub.yearly;
         const priceVal = isYearly ? sub.yearly : sub.monthly;
         const prefix = isYearly ? "年額" : "月額";
-        const cycleSuffix = isYearly ? "/年" : "/月";
 
         planUI = `
-          <div class="w-full h-8 text-xs sm:text-sm font-black text-slate-800 py-0 px-1 border border-slate-200/70 bg-slate-50/70 rounded-xl flex items-center justify-center tabular-nums text-center select-none">
-            <span class="text-[10px] font-bold text-slate-400 mr-1">${prefix}</span>¥${Number(priceVal || 0).toLocaleString()}<span class="text-[10px] font-bold text-slate-400 ml-0.5">${cycleSuffix}</span>
+          <div class="w-full h-8 text-xs sm:text-sm font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-center tabular-nums text-center select-none shadow-2xs">
+            ${prefix} ¥${Number(priceVal || 0).toLocaleString()}
           </div>`;
       }
 
@@ -153,11 +152,12 @@ export function renderMainList(cats, subs, savedState, container) {
         </button>
       `;
 
-      // アイコン表示部（Google Favicon APIによる高画質アプリアイコン + フォールバック文字バッジ）
+      // アイコン表示部（Google公式高解像度ファビコン直リンク + フォールバック文字バッジ）
+      const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
       const iconHtml = `
-        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none overflow-hidden relative">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none overflow-hidden relative">
           <span class="absolute inset-0 flex items-center justify-center">${brandBadge.label}</span>
-          ${domain ? `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="" class="absolute inset-0 w-full h-full object-cover rounded-xl bg-white" onerror="this.remove()" loading="lazy">` : ""}
+          ${faviconUrl ? `<img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-contain p-1 rounded-xl bg-white" onerror="this.remove()">` : ""}
         </div>
       `;
 
@@ -260,10 +260,11 @@ export function renderCustomList(customSubscriptions, savedState, container) {
     const searchText = sub.name.toLowerCase();
 
     // アイコン表示部
+    const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
     const iconHtml = `
-      <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none overflow-hidden relative">
+      <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none overflow-hidden relative">
         <span class="absolute inset-0 flex items-center justify-center">${brandBadge.label}</span>
-        ${domain ? `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="" class="absolute inset-0 w-full h-full object-cover rounded-xl bg-white" onerror="this.remove()" loading="lazy">` : ""}
+        ${faviconUrl ? `<img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-contain p-1 rounded-xl bg-white" onerror="this.remove()">` : ""}
       </div>
     `;
 
@@ -280,8 +281,8 @@ export function renderCustomList(customSubscriptions, savedState, container) {
       <!-- 右側: 金額ボックス + ベル + 編集メニュー -->
       <div class="flex-shrink-0 flex items-center gap-1.5">
         <div class="w-[84px] sm:w-[96px] shrink-0">
-          <div class="w-full h-8 text-xs sm:text-sm font-black text-slate-800 py-0 px-1 border border-slate-200/70 bg-slate-50/70 rounded-xl flex items-center justify-center tabular-nums text-center select-none">
-            <span class="text-[10px] font-bold text-slate-400 mr-1">${planText}</span>¥${price.toLocaleString()}
+          <div class="w-full h-8 text-xs sm:text-sm font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-center tabular-nums text-center select-none shadow-2xs">
+            ${planText} ¥${price.toLocaleString()}
           </div>
         </div>
         
