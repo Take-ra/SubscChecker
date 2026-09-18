@@ -37,6 +37,17 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
     }
   }
 
+  // ポップアップが開いている場合にリアルタイムで中身を更新する関数
+  function updatePopupIfOpen() {
+    if (isOpen) {
+      renderPopupContent();
+      const data = getAggregatedData ? getAggregatedData() : { selectedItems: [] };
+      if (!data.selectedItems || data.selectedItems.length === 0) {
+        closePopup();
+      }
+    }
+  }
+
   function renderPopupContent() {
     const data = getAggregatedData ? getAggregatedData() : { selectedItems: [], totalMonthly: 0 };
     const items = data.selectedItems || [];
@@ -66,27 +77,27 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
         const badge = getBrandBadge(item.name, item.categoryId || "lifestyle");
         const priceStr = Number(item.monthly || 0).toLocaleString();
         return `
-        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50/90 hover:bg-slate-100/90 border border-slate-200/70 transition-colors">
-          <div class="flex items-center gap-2 min-w-0 mr-2">
-            <div class="w-6 h-6 rounded-lg ${badge.bg} flex items-center justify-center font-black text-[11px] shrink-0 select-none">
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50/80 hover:bg-blue-50/40 border border-slate-100 hover:border-blue-200/80 transition-all group">
+          <div class="flex items-center gap-2.5 min-w-0 mr-2">
+            <div class="w-6 h-6 rounded-lg ${badge.bg} flex items-center justify-center font-black text-[11px] shrink-0 select-none shadow-2xs">
               ${badge.label}
             </div>
             <span class="text-xs font-black text-slate-800 truncate" title="${escapeAttr(item.name)}">
               ${escapeAttr(item.name)}
             </span>
           </div>
-          <div class="flex items-center gap-1.5 shrink-0">
+          <div class="flex items-center gap-2 shrink-0">
             <span class="text-xs font-black text-slate-900 tabular-nums">
               ¥${priceStr}<span class="text-[10px] font-normal text-slate-400 ml-0.5">/月</span>
             </span>
             <button
               type="button"
               data-remove-sub-id="${escapeAttr(item.id)}"
-              class="w-6 h-6 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer"
+              class="w-6 h-6 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-all cursor-pointer"
               title="選択を解除"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </button>
           </div>
@@ -100,6 +111,7 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
   window.toggleSelectedSubsPopup = togglePopup;
   window.openSelectedSubsPopup = openPopup;
   window.closeSelectedSubsPopup = closePopup;
+  window.updateSelectedSubsPopup = updatePopupIfOpen;
 
   // イベント委譲（DOM読み込み順序に左右されない確実な動作）
   document.addEventListener("click", (e) => {
@@ -127,7 +139,6 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
       if (subId && onToggleSub) {
         onToggleSub(subId, false);
         renderPopupContent();
-        // 0件になったら閉じる
         const data = getAggregatedData ? getAggregatedData() : { selectedItems: [] };
         if (!data.selectedItems || data.selectedItems.length === 0) {
           closePopup();
@@ -137,7 +148,15 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
     }
 
     // ポップアップの外側をクリックしたら閉じる
-    if (isOpen && !e.target.closest("#selected-subs-popup")) {
+    // ※ ただし、サブスクカード(.sub-item, .custom-sub-item)やセレクタ等の操作中は閉じない
+    if (
+      isOpen &&
+      !e.target.closest("#selected-subs-popup") &&
+      !e.target.closest(".sub-item") &&
+      !e.target.closest(".custom-sub-item") &&
+      !e.target.closest(".plan-selector") &&
+      !e.target.closest("#btn-open-selected-sheet")
+    ) {
       closePopup();
     }
   });
@@ -146,6 +165,7 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
     openPopup,
     closePopup,
     togglePopup,
+    updatePopupIfOpen,
     renderPopupContent,
   };
 }

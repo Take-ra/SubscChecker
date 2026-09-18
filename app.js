@@ -240,6 +240,11 @@ export function initApp() {
         btnOpenSelected.style.display = "none";
       }
     }
+
+    // ポップアップが開いていればリアルタイムに同期更新
+    if (window.updateSelectedSubsPopup) {
+      window.updateSelectedSubsPopup();
+    }
   }
 
   // --- お金に関わる重要イベント（チェックボックス・プラン選択） ---
