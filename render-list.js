@@ -152,14 +152,18 @@ export function renderMainList(cats, subs, savedState, container) {
         </button>
       `;
 
-      // アイコン表示部（Google公式高解像度ファビコン直リンク + フォールバック文字バッジ）
+      // アイコン表示部（変な枠線や隙間漏れを解消し、アプリアイコンを高画質で全面フィット）
       const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
-      const iconHtml = `
-        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none overflow-hidden relative">
-          <span class="absolute inset-0 flex items-center justify-center">${brandBadge.label}</span>
-          ${faviconUrl ? `<img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-contain p-1 rounded-xl bg-white" onerror="this.remove()">` : ""}
-        </div>
-      `;
+      const iconHtml = faviconUrl
+        ? `
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-slate-200/80 shadow-2xs shrink-0 select-none overflow-hidden relative flex items-center justify-center">
+          <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.parentElement.className='w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none'; this.remove();">
+          <span class="sr-only">${brandBadge.label}</span>
+        </div>`
+        : `
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none">
+          ${brandBadge.label}
+        </div>`;
 
       itemsHtml += `
       <div class="sub-item relative flex items-center justify-between py-2.5 pl-3 pr-3.5 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">
@@ -261,12 +265,16 @@ export function renderCustomList(customSubscriptions, savedState, container) {
 
     // アイコン表示部
     const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
-    const iconHtml = `
-      <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none overflow-hidden relative">
-        <span class="absolute inset-0 flex items-center justify-center">${brandBadge.label}</span>
-        ${faviconUrl ? `<img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-contain p-1 rounded-xl bg-white" onerror="this.remove()">` : ""}
-      </div>
-    `;
+    const iconHtml = faviconUrl
+      ? `
+      <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-slate-200/80 shadow-2xs shrink-0 select-none overflow-hidden relative flex items-center justify-center">
+        <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.parentElement.className='w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none'; this.remove();">
+        <span class="sr-only">${brandBadge.label}</span>
+      </div>`
+      : `
+      <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none">
+        ${brandBadge.label}
+      </div>`;
 
     html += `
     <div class="custom-sub-item group relative flex items-center justify-between py-2.5 pl-3 pr-3.5 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">

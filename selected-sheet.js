@@ -74,16 +74,23 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
     listEl.innerHTML = items
       .map((item) => {
         const badge = getBrandBadge(item.name, item.categoryId || "lifestyle");
-        const domain = getBrandDomain(item.name);
         const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
         const priceStr = Number(item.monthly || 0).toLocaleString();
+        const iconHtml = faviconUrl
+          ? `
+          <div class="w-7 h-7 rounded-lg bg-white border border-slate-200/80 shadow-2xs shrink-0 select-none overflow-hidden relative flex items-center justify-center">
+            <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.parentElement.className='w-7 h-7 rounded-lg ${badge.bg} flex items-center justify-center font-black text-xs shadow-2xs shrink-0 select-none'; this.remove();">
+            <span class="sr-only">${badge.label}</span>
+          </div>`
+          : `
+          <div class="w-7 h-7 rounded-lg ${badge.bg} flex items-center justify-center font-black text-xs shrink-0 select-none shadow-2xs">
+            ${badge.label}
+          </div>`;
+
         return `
         <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50/80 hover:bg-blue-50/40 border border-slate-100 hover:border-blue-200/80 transition-all group">
           <div class="flex items-center gap-2.5 min-w-0 mr-2">
-            <div class="w-6 h-6 rounded-lg ${badge.bg} flex items-center justify-center font-black text-[11px] shrink-0 select-none shadow-2xs overflow-hidden relative">
-              <span class="absolute inset-0 flex items-center justify-center">${badge.label}</span>
-              ${faviconUrl ? `<img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-contain p-0.5 rounded-lg bg-white" onerror="this.remove()">` : ""}
-            </div>
+            ${iconHtml}
             <span class="text-xs font-black text-slate-800 truncate" title="${escapeAttr(item.name)}">
               ${escapeAttr(item.name)}
             </span>
