@@ -94,8 +94,12 @@ export default async function handler(req, res) {
     // ユーザープロンプトの構成
     const userPrompt = `以下は現在契約しているサブスクリプションの一覧です。\n${JSON.stringify(subscriptions, null, 2)}\n\nこの契約内容を診断し、指定スキーマのJSONで結果を返してください。`;
 
-    // 優先的に試行するモデル一覧（一時的高負荷503発生時に自動フォールバック）
-    const candidateModels = ["gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-pro"];
+    // 優先的に試行するモデル一覧（最軽量・高速な gemini-3.1-flash-lite を最優先、混雑時に自動フォールバック）
+    const candidateModels = [
+      "gemini-3.1-flash-lite",
+      "gemini-3-flash-preview",
+      "gemini-2.5-flash",
+    ];
     let rawJsonText = null;
     let lastError = null;
 
@@ -109,11 +113,23 @@ export default async function handler(req, res) {
             await new Promise((resolve) => setTimeout(resolve, 1000));
           }
 
+          const generationConfig = {
+            response_mime_type: "application/json",
+            response_schema: RESPONSE_SCHEMA,
+            temperature: 0.2,
+          };
+
+          // Gemini 2.5系では思考バジェットを512トークンに制限して高速化＆API負荷・コストを大幅削減
+          if (model.includes("2.5")) {
+            generationConfig.thinkingConfig = { thinkingBudget: 512 };
+          }
+
           const geminiRes = await fetch(geminiUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
+            signal: AbortSignal.timeout(15000), // 15秒タイムアウトで関数のハングを防止
             body: JSON.stringify({
               contents: [
                 {
@@ -123,11 +139,7 @@ export default async function handler(req, res) {
               system_instruction: {
                 parts: [{ text: SYSTEM_INSTRUCTION }],
               },
-              generationConfig: {
-                response_mime_type: "application/json",
-                response_schema: RESPONSE_SCHEMA,
-                temperature: 0.2,
-              },
+              generationConfig,
             }),
           });
 

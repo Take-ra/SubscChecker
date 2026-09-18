@@ -42,7 +42,7 @@ const server = http.createServer(async (req, res) => {
   // --- API Routes (/api/analyze) ---
   if (pathname === "/api/analyze") {
     try {
-      const { default: handler } = await import("./api/analyze.js");
+      const { default: handler } = await import(`./api/analyze.js?t=${Date.now()}`);
 
       // Bodyパーサー（POST JSON）
       let rawBody = "";

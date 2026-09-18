@@ -11,7 +11,7 @@ export function initAIAdvisor(getSelectedItems) {
   const btnTrigger = document.getElementById("btn-trigger-ai");
   if (btnTrigger) {
     btnTrigger.addEventListener("click", () => {
-      triggerAnalysis();
+      triggerAnalysis(true);
     });
   }
 }
@@ -56,6 +56,10 @@ export async function triggerAnalysis(force = false) {
   }
 
   const tracker = createProgressTracker(contentContainer);
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => {
+    abortController.abort(new Error("AIサーバーの応答時間が上限（30秒）を超えました。"));
+  }, 30000);
 
   try {
     const payload = items.map((item) => ({
@@ -70,8 +74,11 @@ export async function triggerAnalysis(force = false) {
       headers: {
         "Content-Type": "application/json",
       },
+      signal: abortController.signal,
       body: JSON.stringify({ subscriptions: payload }),
     });
+
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const errJson = await res.json().catch(() => ({}));
@@ -86,9 +93,14 @@ export async function triggerAnalysis(force = false) {
     await tracker.finish();
     renderAdvisor(contentContainer, data);
   } catch (error) {
+    clearTimeout(timeoutId);
     tracker.abort();
     console.error("AI Analysis Error:", error);
-    renderError(contentContainer, error.message);
+    const errorMsg =
+      error.name === "AbortError"
+        ? "AIサーバーの応答時間が上限（30秒）を超えました。通信環境をご確認のうえ再度お試しください。"
+        : error.message;
+    renderError(contentContainer, errorMsg);
   } finally {
     isAnalyzing = false;
     if (btnTrigger) {
@@ -162,6 +174,17 @@ function createProgressTracker(container) {
   const barEl = container.querySelector("#ai-progress-bar");
   const statusEl = container.querySelector("#ai-progress-status");
 
+  // ステップ要素を初期化時に一度だけ取得・キャッシュしてアニメーション中のDOM探索負荷をゼロにする
+  const cachedStepElements = PROGRESS_STEPS.map((step) => {
+    const el = container.querySelector(`[data-step-id="${step.id}"]`);
+    return {
+      step,
+      el,
+      badgeEl: el ? el.querySelector(".step-badge") : null,
+      titleEl: el ? el.querySelector(".truncate") : null,
+    };
+  });
+
   let currentPercent = 5;
   const startTime = Date.now();
 
@@ -170,18 +193,15 @@ function createProgressTracker(container) {
     if (barEl) barEl.style.width = `${Math.min(100, Math.max(5, percent))}%`;
     if (statusEl && statusText) statusEl.textContent = statusText;
 
-    PROGRESS_STEPS.forEach((step, idx) => {
-      const stepEl = container.querySelector(`[data-step-id="${step.id}"]`);
-      if (!stepEl) return;
-      const badgeEl = stepEl.querySelector(".step-badge");
-      const titleEl = stepEl.querySelector(".truncate");
+    cachedStepElements.forEach(({ step, el, badgeEl, titleEl }, idx) => {
+      if (!el) return;
 
       const nextThreshold = PROGRESS_STEPS[idx + 1]?.threshold ?? 92;
       const isDone = isCompleted || percent >= nextThreshold;
       const isActive = !isDone && percent >= step.threshold;
 
       if (isDone) {
-        stepEl.className =
+        el.className =
           "step-card flex items-center justify-between p-3 rounded-xl border bg-emerald-50/80 border-emerald-200 transition-all duration-300";
         if (titleEl) titleEl.className = "text-xs font-bold text-emerald-900 truncate";
         if (badgeEl) {
@@ -190,7 +210,7 @@ function createProgressTracker(container) {
           badgeEl.innerHTML = "✓";
         }
       } else if (isActive) {
-        stepEl.className =
+        el.className =
           "step-card flex items-center justify-between p-3 rounded-xl border bg-blue-50/90 border-blue-300 shadow-sm transition-all duration-300";
         if (titleEl) titleEl.className = "text-xs font-bold text-blue-900 truncate";
         if (badgeEl) {
@@ -199,7 +219,7 @@ function createProgressTracker(container) {
           badgeEl.innerHTML = "▶";
         }
       } else {
-        stepEl.className =
+        el.className =
           "step-card flex items-center justify-between p-3 rounded-xl border bg-slate-50/60 border-slate-200/80 opacity-60 transition-all duration-300";
         if (titleEl) titleEl.className = "text-xs font-semibold text-slate-500 truncate";
         if (badgeEl) {
