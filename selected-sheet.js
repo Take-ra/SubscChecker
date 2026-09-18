@@ -74,6 +74,7 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
     listEl.innerHTML = items
       .map((item) => {
         const badge = getBrandBadge(item.name, item.categoryId || "lifestyle");
+        const domain = getBrandDomain(item.name);
         const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
         const priceStr = Number(item.monthly || 0).toLocaleString();
         const iconHtml = faviconUrl
