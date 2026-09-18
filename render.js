@@ -19,11 +19,11 @@ export function updateHighlight(card, isChecked) {
   if (isChecked) {
     card.classList.remove("bg-white", "border-slate-100");
     card.classList.add("bg-blue-50", "border-blue-300", "shadow-md");
-    if (bellBtn) bellBtn.classList.remove("invisible");
+    if (bellBtn) bellBtn.classList.remove("invisible", "pointer-events-none");
   } else {
     card.classList.remove("bg-blue-50", "border-blue-300", "shadow-md");
     card.classList.add("bg-white", "border-slate-100");
-    if (bellBtn) bellBtn.classList.add("invisible");
+    if (bellBtn) bellBtn.classList.add("invisible", "pointer-events-none");
   }
 }
 

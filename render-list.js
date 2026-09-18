@@ -56,6 +56,50 @@ export function getBrandBadge(name = "", categoryId = "") {
   return { label: letter, bg };
 }
 
+// サービス名から公式ドメインを取得（アプリアイコン自動表示用）
+export function getBrandDomain(name = "") {
+  const n = (name || "").toLowerCase();
+  if (/netflix/i.test(n)) return "netflix.com";
+  if (/amazon|prime/i.test(n)) return "amazon.co.jp";
+  if (/youtube/i.test(n)) return "youtube.com";
+  if (/spotify/i.test(n)) return "spotify.com";
+  if (/apple|icloud/i.test(n)) return "apple.com";
+  if (/disney/i.test(n)) return "disneyplus.com";
+  if (/u-next/i.test(n)) return "unext.jp";
+  if (/chatgpt|openai/i.test(n)) return "openai.com";
+  if (/claude|anthropic/i.test(n)) return "anthropic.com";
+  if (/notion/i.test(n)) return "notion.so";
+  if (/line/i.test(n)) return "line.me";
+  if (/google|drive|gemini/i.test(n)) return "google.com";
+  if (/playstation|ps\b/i.test(n)) return "playstation.com";
+  if (/nintendo/i.test(n)) return "nintendo.co.jp";
+  if (/dアニメ|dマガジン|dフォト|dキッズ/i.test(n)) return "docomo.ne.jp";
+  if (/dラボ/i.test(n)) return "daigo.jp";
+  if (/hulu/i.test(n)) return "hulu.jp";
+  if (/abema/i.test(n)) return "abema.tv";
+  if (/dropbox/i.test(n)) return "dropbox.com";
+  if (/microsoft|office|365/i.test(n)) return "microsoft.com";
+  if (/canva/i.test(n)) return "canva.com";
+  if (/adobe/i.test(n)) return "adobe.com";
+  if (/uber/i.test(n)) return "ubereats.com";
+  if (/kindle|audible/i.test(n)) return "amazon.co.jp";
+  if (/dazn/i.test(n)) return "dazn.com";
+  if (/radiko/i.test(n)) return "radiko.jp";
+  if (/cookpad/i.test(n)) return "cookpad.com";
+  if (/pixiv/i.test(n)) return "pixiv.net";
+  if (/github/i.test(n)) return "github.com";
+  if (/slack/i.test(n)) return "slack.com";
+  if (/duolingo/i.test(n)) return "duolingo.com";
+  if (/pokekara/i.test(n)) return "pokekara.com";
+  if (/telasa/i.test(n)) return "telasa.jp";
+  if (/fod/i.test(n)) return "fod.fujitv.co.jp";
+  if (/wowow/i.test(n)) return "wowow.co.jp";
+  if (/dmm/i.test(n)) return "dmm.com";
+  if (/lemino|dtv/i.test(n)) return "lemino.docomo.ne.jp";
+  if (/paravi/i.test(n)) return "paravi.jp";
+  return null;
+}
+
 export function renderMainList(cats, subs, savedState, container) {
   if (!container) return;
   let htmlList = "";
@@ -69,11 +113,11 @@ export function renderMainList(cats, subs, savedState, container) {
       };
       const isChecked = state.checked;
 
-      // 金額表示（セレクトの余白を狭くし、固定表示と高さを揃えて左寄せ）
+      // 金額表示（セレクトと固定金額で幅・高さ・中央揃えを完全統一してインデントを揃える）
       let planUI = "";
       if (sub.monthly && sub.yearly) {
         planUI = `
-          <select id="sel-${sub.id}" class="plan-selector w-full text-xs sm:text-sm font-black text-slate-900 py-1 px-1.5 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-2 focus:ring-blue-500 shadow-2xs transition-all text-center select-none" onclick="event.stopPropagation()">
+          <select id="sel-${sub.id}" class="plan-selector w-full h-8 text-xs sm:text-sm font-black text-slate-800 py-0 px-1 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-1 focus:ring-blue-500 shadow-2xs transition-all text-center select-none" onclick="event.stopPropagation()">
             <option value="monthly" ${state.plan === "monthly" ? "selected" : ""}>月額 ¥${sub.monthly.toLocaleString()}</option>
             <option value="yearly" ${state.plan === "yearly" ? "selected" : ""}>年額 ¥${sub.yearly.toLocaleString()}</option>
           </select>`;
@@ -84,7 +128,7 @@ export function renderMainList(cats, subs, savedState, container) {
         const cycleSuffix = isYearly ? "/年" : "/月";
 
         planUI = `
-          <div class="w-full text-xs sm:text-sm font-black text-slate-900 py-1 px-2 border border-slate-200/60 bg-slate-50/60 rounded-xl flex items-center justify-end tabular-nums text-right select-none">
+          <div class="w-full h-8 text-xs sm:text-sm font-black text-slate-800 py-0 px-1 border border-slate-200/70 bg-slate-50/70 rounded-xl flex items-center justify-center tabular-nums text-center select-none">
             <span class="text-[10px] font-bold text-slate-400 mr-1">${prefix}</span>¥${Number(priceVal || 0).toLocaleString()}<span class="text-[10px] font-bold text-slate-400 ml-0.5">${cycleSuffix}</span>
           </div>`;
       }
@@ -99,31 +143,38 @@ export function renderMainList(cats, subs, savedState, container) {
         : "bg-white border-slate-200/80 shadow-2xs hover:border-slate-300";
 
       const brandBadge = getBrandBadge(sub.name, cat.id);
+      const domain = getBrandDomain(sub.name);
       const safeName = escapeAttr(sub.name);
 
-      // ベルボタン（元のサイズを保ちつつ、右端の内側に確実に収める）
+      // ベルボタン（枠線から離して少し左寄りに収まる配置）
       const bellBtnHtml = `
-        <button type="button" class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/70 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${state.plan}')" title="カレンダーに通知を登録">
+        <button type="button" class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/80 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${state.plan}')" title="カレンダーに通知を登録">
           <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
         </button>
       `;
 
+      // アイコン表示部（Google Favicon APIによる高画質アプリアイコン + フォールバック文字バッジ）
+      const iconHtml = `
+        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none overflow-hidden relative">
+          <span class="absolute inset-0 flex items-center justify-center">${brandBadge.label}</span>
+          ${domain ? `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="" class="absolute inset-0 w-full h-full object-cover rounded-xl bg-white" onerror="this.remove()" loading="lazy">` : ""}
+        </div>
+      `;
+
       itemsHtml += `
-      <div class="sub-item relative flex items-center justify-between py-2.5 pl-2.5 pr-3.5 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">
-        <!-- 左側: チェックボックス + アイコン + サービス名 -->
+      <div class="sub-item relative flex items-center justify-between py-2.5 pl-3 pr-3.5 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">
+        <!-- 左側: チェックボックス + アプリアイコン + サービス名 -->
         <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
           <input type="checkbox" id="chk-${sub.id}" class="sub-checkbox peer w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" ${isChecked ? "checked" : ""}>
-          <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none">
-            ${brandBadge.label}
-          </div>
+          ${iconHtml}
           <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-1 md:py-0 min-w-0">
             <div class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug line-clamp-2">${sub.name}</div>
           </label>
         </div>
 
-        <!-- 右側: 金額（幅をコンパクトにして全体を左寄せ） + ベルボタン（枠内に完全収容） -->
+        <!-- 右側: 金額（完全同一幅） + ベルボタン（枠線から離して左寄りに収容） -->
         <div class="flex-shrink-0 flex items-center gap-1.5 sm:gap-2">
-          <div class="w-[100px] sm:w-[112px] shrink-0">
+          <div class="w-[104px] sm:w-[114px] shrink-0">
             ${planUI}
           </div>
           <div class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center">
@@ -204,16 +255,23 @@ export function renderCustomList(customSubscriptions, savedState, container) {
     }
 
     const brandBadge = getBrandBadge(sub.name, "lifestyle");
+    const domain = getBrandDomain(sub.name);
     const safeName = escapeAttr(sub.name);
     const searchText = sub.name.toLowerCase();
 
+    // アイコン表示部
+    const iconHtml = `
+      <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none overflow-hidden relative">
+        <span class="absolute inset-0 flex items-center justify-center">${brandBadge.label}</span>
+        ${domain ? `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="" class="absolute inset-0 w-full h-full object-cover rounded-xl bg-white" onerror="this.remove()" loading="lazy">` : ""}
+      </div>
+    `;
+
     html += `
-    <div class="custom-sub-item group relative flex items-center justify-between py-2.5 pl-2.5 pr-3.5 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">
+    <div class="custom-sub-item group relative flex items-center justify-between py-2.5 pl-3 pr-3.5 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">
       <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
         <input type="checkbox" id="chk-${sub.id}" class="sub-checkbox peer w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" ${isChecked ? "checked" : ""}>
-        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none">
-          ${brandBadge.label}
-        </div>
+        ${iconHtml}
         <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-1 md:py-0 min-w-0">
           <div class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug line-clamp-2">${sub.name}</div>
         </label>
@@ -222,14 +280,14 @@ export function renderCustomList(customSubscriptions, savedState, container) {
       <!-- 右側: 金額ボックス + ベル + 編集メニュー -->
       <div class="flex-shrink-0 flex items-center gap-1.5">
         <div class="w-[84px] sm:w-[96px] shrink-0">
-          <div class="w-full text-xs sm:text-sm font-black text-slate-900 py-1 px-1.5 border border-slate-200/60 bg-slate-50/60 rounded-xl flex items-center justify-end tabular-nums text-right select-none">
+          <div class="w-full h-8 text-xs sm:text-sm font-black text-slate-800 py-0 px-1 border border-slate-200/70 bg-slate-50/70 rounded-xl flex items-center justify-center tabular-nums text-center select-none">
             <span class="text-[10px] font-bold text-slate-400 mr-1">${planText}</span>¥${price.toLocaleString()}
           </div>
         </div>
         
-        <div class="w-7 h-7 shrink-0 flex items-center justify-center">
-          <button type="button" class="bell-btn w-7 h-7 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/70 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType}', ${sub.cycleNum || 1}, '${sub.cycleUnit || "months"}')" title="カレンダーに通知を登録">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+        <div class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center">
+          <button type="button" class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/80 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType}', ${sub.cycleNum || 1}, '${sub.cycleUnit || "months"}')" title="カレンダーに通知を登録">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
           </button>
         </div>
 
