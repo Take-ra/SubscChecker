@@ -152,12 +152,12 @@ export function renderMainList(cats, subs, savedState, container) {
         </button>
       `;
 
-      // アイコン表示部（変な枠線や隙間漏れを解消し、アプリアイコンを高画質で全面フィット）
+      // アイコン表示部（余計な四角枠線を削除し、丸型・角丸アプリアイコンがそのまま自然に表示されるスタイル）
       const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
       const iconHtml = faviconUrl
         ? `
-        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-slate-200/80 shadow-2xs shrink-0 select-none overflow-hidden relative flex items-center justify-center">
-          <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.parentElement.className='w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none'; this.remove();">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shrink-0 select-none overflow-hidden relative flex items-center justify-center">
+          <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-contain" onerror="this.parentElement.className='w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none'; this.remove();">
           <span class="sr-only">${brandBadge.label}</span>
         </div>`
         : `
@@ -267,8 +267,8 @@ export function renderCustomList(customSubscriptions, savedState, container) {
     const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
     const iconHtml = faviconUrl
       ? `
-      <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-slate-200/80 shadow-2xs shrink-0 select-none overflow-hidden relative flex items-center justify-center">
-        <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.parentElement.className='w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none'; this.remove();">
+      <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shrink-0 select-none overflow-hidden relative flex items-center justify-center">
+        <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-contain" onerror="this.parentElement.className='w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none'; this.remove();">
         <span class="sr-only">${brandBadge.label}</span>
       </div>`
       : `
