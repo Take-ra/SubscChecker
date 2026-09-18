@@ -4,6 +4,40 @@ export function initUIEvents(callbacks) {
   // 目次クリックによる「自動スクロール中」かを判定するフラグ
   let isScrollingFromNav = false;
 
+  // 目次のアクティブ状態を更新するヘルパー関数
+  function updateNavActiveState(activeId) {
+    document.querySelectorAll(".nav-link").forEach((link) => {
+      const isTarget = link.getAttribute("data-target") === activeId;
+      if (isTarget) {
+        link.classList.add(
+          "text-blue-600",
+          "bg-blue-100",
+          "md:bg-blue-50/80",
+          "md:border-blue-500",
+        );
+        link.classList.remove(
+          "text-slate-500",
+          "bg-white",
+          "md:bg-transparent",
+          "md:border-transparent",
+        );
+      } else {
+        link.classList.remove(
+          "text-blue-600",
+          "bg-blue-100",
+          "md:bg-blue-50/80",
+          "md:border-blue-500",
+        );
+        link.classList.add(
+          "text-slate-500",
+          "bg-white",
+          "md:bg-transparent",
+          "md:border-transparent",
+        );
+      }
+    });
+  }
+
   // 1. 全体のクリックイベント（カード選択、アコーディオン開閉、目次スクロール）
   document.body.addEventListener("click", (e) => {
     // --- カードの余白クリックでチェックボックスを切り替える ---
@@ -57,43 +91,15 @@ export function initUIEvents(callbacks) {
       );
 
       if (targetSection && scrollContainer) {
-        // ★追加：スクロール追従を一時停止
+        // スクロール追従を一時停止
         isScrollingFromNav = true;
 
-        document.querySelectorAll(".nav-link").forEach((link) => {
-          if (link === navLink) {
-            link.classList.add(
-              "text-blue-600",
-              "bg-blue-100",
-              "md:bg-blue-50/80",
-              "md:border-blue-500",
-            );
-            link.classList.remove(
-              "text-slate-500",
-              "bg-slate-100",
-              "md:bg-transparent",
-              "md:border-transparent",
-            );
-          } else {
-            link.classList.remove(
-              "text-blue-600",
-              "bg-blue-100",
-              "md:bg-blue-50/80",
-              "md:border-blue-500",
-            );
-            link.classList.add(
-              "text-slate-500",
-              "bg-slate-100",
-              "md:bg-transparent",
-              "md:border-transparent",
-            );
-          }
-        });
+        updateNavActiveState(targetId);
 
         const isPC = window.innerWidth >= 768;
         const headerOffset = isPC
           ? 0
-          : document.querySelector("nav").offsetHeight;
+          : (document.querySelector("nav")?.offsetHeight || 0);
         const containerRect = scrollContainer.getBoundingClientRect();
         const targetRect = targetSection.getBoundingClientRect();
         const targetPosition =
@@ -112,7 +118,7 @@ export function initUIEvents(callbacks) {
           if (icon) icon.classList.add("rotate-180");
         }
 
-        // ★追加：自動スクロールが完了する頃（約800ミリ秒後）に、手動追従を再開する
+        // 自動スクロール完了後に手動追従を再開
         setTimeout(() => {
           isScrollingFromNav = false;
         }, 800);
@@ -120,7 +126,7 @@ export function initUIEvents(callbacks) {
     }
   });
 
-  // ★新規追加：手動スクロール時の目次追従（スクロールスパイ）
+  // 手動スクロール時の目次追従（スクロールスパイ）
   const scrollContainer = document.querySelector(
     ".h-full.w-full.overflow-y-auto",
   );
@@ -128,7 +134,7 @@ export function initUIEvents(callbacks) {
     scrollContainer.addEventListener(
       "scroll",
       () => {
-        // 目次クリックでの自動移動中は、ここの処理を無視する
+        // 目次クリックでの自動移動中は処理をスキップ
         if (isScrollingFromNav) return;
 
         const sections = document.querySelectorAll(
@@ -136,53 +142,30 @@ export function initUIEvents(callbacks) {
         );
         let currentId = "";
 
-        // 画面上部から少し下（ヘッダー高＋100px程度のゆとり）に引いた「判定ライン」
-        const isPC = window.innerWidth >= 768;
-        const headerOffset = isPC
-          ? 0
-          : document.querySelector("nav").offsetHeight;
-        const scrollPos = scrollContainer.scrollTop + headerOffset + 100;
+        // 最下部に到達している場合は最後のセクションをアクティブにする
+        const isNearBottom =
+          scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 50;
 
-        sections.forEach((section) => {
-          const top = section.offsetTop;
-          const bottom = top + section.offsetHeight;
-          // 判定ラインがそのジャンルの箱の中に入っていれば、それを「今見ているジャンル」とする
-          if (scrollPos >= top && scrollPos <= bottom) {
-            currentId = section.getAttribute("id");
-          }
-        });
+        if (isNearBottom && sections.length > 0) {
+          currentId = sections[sections.length - 1].getAttribute("id");
+        } else {
+          const containerRect = scrollContainer.getBoundingClientRect();
+          const isPC = window.innerWidth >= 768;
+          const headerOffset = isPC
+            ? 0
+            : (document.querySelector("nav")?.offsetHeight || 0);
+          const checkLine = containerRect.top + headerOffset + 120;
 
-        // 目次の色を「今見ているジャンル」に合わせて更新
-        if (currentId) {
-          document.querySelectorAll(".nav-link").forEach((link) => {
-            if (link.getAttribute("data-target") === currentId) {
-              link.classList.add(
-                "text-blue-600",
-                "bg-blue-100",
-                "md:bg-blue-50/80",
-                "md:border-blue-500",
-              );
-              link.classList.remove(
-                "text-slate-500",
-                "bg-slate-100",
-                "md:bg-transparent",
-                "md:border-transparent",
-              );
-            } else {
-              link.classList.remove(
-                "text-blue-600",
-                "bg-blue-100",
-                "md:bg-blue-50/80",
-                "md:border-blue-500",
-              );
-              link.classList.add(
-                "text-slate-500",
-                "bg-slate-100",
-                "md:bg-transparent",
-                "md:border-transparent",
-              );
+          sections.forEach((section) => {
+            const rect = section.getBoundingClientRect();
+            if (rect.top <= checkLine && rect.bottom >= checkLine) {
+              currentId = section.getAttribute("id");
             }
           });
+        }
+
+        if (currentId) {
+          updateNavActiveState(currentId);
         }
       },
       { passive: true },

@@ -61,7 +61,9 @@ export function initCustomModal(callbacks) {
     const planType = customPlanType.value;
     const errorMsg = document.getElementById("custom-error-msg");
 
-    if (!name || !price) {
+    const numPrice = parseInt(price, 10);
+    if (!name || isNaN(numPrice) || numPrice <= 0) {
+      errorMsg.textContent = "サービス名と1円以上の料金を入力してください。";
       errorMsg.classList.remove("hidden");
       return;
     } else {

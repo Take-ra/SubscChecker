@@ -26,10 +26,12 @@ export function initSearch() {
     );
     let totalVisibleItems = 0;
 
-    if (keywords.length > 0) {
-      searchClearBtn.classList.remove("hidden");
-    } else {
-      searchClearBtn.classList.add("hidden");
+    if (searchClearBtn) {
+      if (keywords.length > 0) {
+        searchClearBtn.classList.remove("hidden");
+      } else {
+        searchClearBtn.classList.add("hidden");
+      }
     }
 
     sections.forEach((section) => {
@@ -134,7 +136,7 @@ export function initSearch() {
         section.style.removeProperty("padding-top");
         section.style.removeProperty("border-top");
         if (content) content.style.removeProperty("padding-top");
-        if (trigger) trigger.style.setProperty("display", "", "important");
+        if (trigger) trigger.style.removeProperty("display");
       }
 
       totalVisibleItems += visibleCount;
@@ -149,9 +151,11 @@ export function initSearch() {
     }
   });
 
-  searchClearBtn.addEventListener("click", () => {
-    searchInput.value = "";
-    searchInput.dispatchEvent(new Event("input"));
-    searchInput.focus();
-  });
+  if (searchClearBtn) {
+    searchClearBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      searchInput.dispatchEvent(new Event("input"));
+      searchInput.focus();
+    });
+  }
 }

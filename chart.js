@@ -88,7 +88,8 @@ export function renderChart(data, type = currentChartType) {
     });
   }
 
-  if (chartData.length === 0) {
+  const isEmpty = chartData.length === 0;
+  if (isEmpty) {
     labels = ["選択なし"];
     chartData = [1];
     bgColors = ["#f1f5f9"];
@@ -114,12 +115,12 @@ export function renderChart(data, type = currentChartType) {
       plugins: {
         legend: { position: "bottom" },
         tooltip: {
-          enabled: true,
+          enabled: !isEmpty,
           callbacks: {
             label: function (context) {
               const value = context.raw;
               const sum = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = ((value * 100) / sum).toFixed(1) + "%";
+              const percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + "%" : "0%";
               return ` ${value.toLocaleString()}円 (${percentage})`;
             },
           },

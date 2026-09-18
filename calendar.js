@@ -119,6 +119,14 @@ function calculateSingleEventDate(notifyDays) {
   return eventDate;
 }
 
+// 日付を YYYYMMDD 形式にフォーマットする（ローカルタイムゾーン基準）
+function formatDateToYYYYMMDD(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
 // Googleカレンダーへ追加（複数ある場合は1つずつボタンを押してもらう）
 export function addToGoogleCalendar() {
   // ボタンを初めて押した時に、チェックされている日付をすべて取得する
@@ -135,12 +143,14 @@ export function addToGoogleCalendar() {
 
   const title = `【更新${notifyDays}日前】${currentCalSub.name}`;
   const details = `${currentCalSub.name} の契約更新が近づいています。\n意図しない自動更新を防ぐために確認してください。`;
-  const dateStr = eventDate
-    .toISOString()
-    .replace(/-|:|\.\d\d\d/g, "")
-    .slice(0, 8);
 
-  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dateStr}/${dateStr}&details=${encodeURIComponent(details)}`;
+  // 終日イベントの場合、終了日は翌日（exclusive）を指定する
+  const nextDay = new Date(eventDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  const dateStr = formatDateToYYYYMMDD(eventDate);
+  const nextDateStr = formatDateToYYYYMMDD(nextDay);
+
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dateStr}/${nextDateStr}&details=${encodeURIComponent(details)}`;
   window.open(
     url,
     "_blank",
@@ -170,6 +180,7 @@ export async function addToAppleCalendar() {
     }
 
     let icsEvents = "";
+    const stampDateStr = formatDateToYYYYMMDD(new Date());
 
     for (const notifyDays of daysArray) {
       const eventDate = calculateSingleEventDate(notifyDays);
@@ -180,14 +191,18 @@ export async function addToAppleCalendar() {
 
       const title = `【更新${notifyDays}日前】${currentCalSub.name}`;
       const details = `${currentCalSub.name} の契約更新が近づいています。確認してください。`;
-      const dateStr = eventDate
-        .toISOString()
-        .replace(/-|:|\.\d\d\d/g, "")
-        .slice(0, 8);
+      const nextDay = new Date(eventDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const dateStr = formatDateToYYYYMMDD(eventDate);
+      const nextDateStr = formatDateToYYYYMMDD(nextDay);
+      const uid = `${Date.now()}-${notifyDays}-${Math.random().toString(36).substring(2, 9)}@subsc-checker`;
 
       icsEvents += `BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${stampDateStr}T000000Z
 SUMMARY:${title}
 DTSTART;VALUE=DATE:${dateStr}
+DTEND;VALUE=DATE:${nextDateStr}
 DESCRIPTION:${details}
 END:VEVENT
 `;
@@ -195,6 +210,9 @@ END:VEVENT
 
     const icsData = `BEGIN:VCALENDAR
 VERSION:2.0
+PRODID:-//SubscChecker//JP//JA
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
 ${icsEvents}END:VCALENDAR`;
 
     // ▼▼ 修正：アクセスしている端末とブラウザを判定する ▼▼

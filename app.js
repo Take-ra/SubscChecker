@@ -5,6 +5,7 @@ import * as RenderList from "./render-list.js";
 import * as CustomModal from "./custom-modal.js";
 import * as ChartApp from "./chart.js";
 import * as CalendarApp from "./calendar.js";
+import { categories, subscriptions } from "./data.js";
 import { initSearch } from "./search.js";
 import { initUIEvents } from "./ui-events.js";
 
