@@ -62,8 +62,10 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
 
     if (items.length === 0) {
       listEl.innerHTML = `
-        <div class="py-6 text-center text-slate-400 space-y-1">
-          <span class="text-2xl block">🧺</span>
+        <div class="py-6 text-center text-slate-400 space-y-1.5 flex flex-col items-center justify-center">
+          <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+          </div>
           <p class="text-xs font-bold text-slate-600">選択中のサブスクはありません</p>
           <p class="text-[10px] text-slate-400">リストからチェックを入れてみましょう</p>
         </div>

@@ -45,7 +45,11 @@ export function calculateAggregation(
   categories.forEach((cat) => {
     genreTotals[cat.name] = { monthly: 0, yearly: 0, icon: cat.icon };
   });
-  genreTotals["独自のサブスク"] = { monthly: 0, yearly: 0, icon: "✨" };
+  genreTotals["独自のサブスク"] = {
+    monthly: 0,
+    yearly: 0,
+    icon: `<svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>`,
+  };
 
   // ① 既存のサブスクの集計（HTMLを見ず、保存データから計算する）
   Object.keys(savedState).forEach((subId) => {

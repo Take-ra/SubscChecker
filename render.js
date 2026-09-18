@@ -28,7 +28,9 @@ export function renderNav(cats, container) {
     htmlNav += `
     <button data-target="section-${cat.id}" class="nav-link group px-4 py-2 md:py-2.5 md:px-4 text-slate-500 bg-white border border-slate-200 md:border-transparent md:bg-transparent rounded-full md:rounded-r-2xl md:rounded-l-none text-sm md:text-base font-bold hover:bg-slate-50 md:hover:bg-blue-50/50 md:hover:text-blue-600 transition-all duration-200 whitespace-nowrap md:w-full md:text-left flex items-center justify-center md:justify-start border-l-0 md:border-l-4 focus:outline-none">
       <span class="flex items-center w-full">
-        <span class="w-6 md:w-8 text-lg md:text-xl text-center">${cat.icon}</span>
+        <span class="w-6 md:w-8 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors">
+          <span class="w-4 h-4 md:w-5 md:h-5 inline-block">${cat.icon}</span>
+        </span>
         <span class="ml-1.5 md:ml-3 text-left flex-1">${cat.name}</span>
       </span>
     </button>`;
@@ -124,9 +126,9 @@ export function renderResultScreen(data) {
       '<p class="text-slate-400 text-xs text-center py-6">サブスクが選択されていません</p>';
   } else {
     const rankIcons = [
-      "🥇",
-      "🥈",
-      "🥉",
+      '<span class="text-xs font-black text-amber-900 bg-gradient-to-br from-amber-200 to-amber-400 rounded-full w-5 h-5 flex items-center justify-center shadow-2xs ring-1 ring-amber-300">1</span>',
+      '<span class="text-xs font-black text-slate-800 bg-gradient-to-br from-slate-100 to-slate-300 rounded-full w-5 h-5 flex items-center justify-center shadow-2xs ring-1 ring-slate-300">2</span>',
+      '<span class="text-xs font-black text-amber-950 bg-gradient-to-br from-amber-600/30 to-amber-700/50 rounded-full w-5 h-5 flex items-center justify-center shadow-2xs ring-1 ring-amber-700/30">3</span>',
       '<span class="text-xs font-black text-slate-500 bg-slate-200/80 rounded-full w-5 h-5 flex items-center justify-center">4</span>',
       '<span class="text-xs font-black text-slate-500 bg-slate-200/80 rounded-full w-5 h-5 flex items-center justify-center">5</span>',
     ];

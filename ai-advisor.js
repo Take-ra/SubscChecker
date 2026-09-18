@@ -31,7 +31,7 @@ function updateMockToggleUI() {
   const toggleBtn = document.getElementById("btn-toggle-mock");
   if (!toggleBtn) return;
   const active = isMockMode();
-  toggleBtn.innerHTML = `<span>🛠️ 開発モック:</span> <span class="font-black ${active ? "text-emerald-700 underline" : "text-slate-400"}">${active ? "ON" : "OFF"}</span>`;
+  toggleBtn.innerHTML = `<svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><span>開発モック:</span> <span class="font-black ${active ? "text-emerald-700 underline" : "text-slate-400"}">${active ? "ON" : "OFF"}</span>`;
   toggleBtn.className = `text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all flex items-center gap-1 cursor-pointer ${
     active
       ? "bg-emerald-50 border-emerald-300 text-emerald-800 shadow-sm"
@@ -322,8 +322,10 @@ export async function triggerAnalysis(force = false) {
 
   if (!items || items.length === 0) {
     contentContainer.innerHTML = `
-      <div class="text-center py-6 px-4 bg-white/90 rounded-2xl border border-slate-200">
-        <span class="text-3xl mb-2 block">📝</span>
+      <div class="text-center py-8 px-4 bg-white/90 rounded-2xl border border-slate-200">
+        <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 mx-auto mb-3 flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        </div>
         <p class="text-sm font-bold text-slate-700">サブスクが1つも選択されていません</p>
         <p class="text-xs text-slate-500 mt-1">前の画面に戻り、現在利用しているサブスクにチェックを入れてからAI診断をお試しください。</p>
       </div>
@@ -356,7 +358,7 @@ export async function triggerAnalysis(force = false) {
 
     // 開発用モックモード（APIクォータ消費ゼロ）
     if (isMockMode()) {
-      console.log("🛠️ [SubscChecker] 開発モックモードで実行中（Gemini API消費ゼロ）");
+      console.log("[SubscChecker] 開発モックモードで実行中（Gemini API消費ゼロ）");
       // アニメーション確認用に0.6秒待機
       await new Promise((resolve) => setTimeout(resolve, 650));
       data = MOCK_DIAGNOSIS_DATA;
@@ -406,7 +408,7 @@ export async function triggerAnalysis(force = false) {
     if (btnTrigger) {
       btnTrigger.disabled = false;
       btnTrigger.classList.remove("opacity-50", "cursor-not-allowed");
-      btnTrigger.innerHTML = `<span>🔄</span><span>再診断する</span>`;
+      btnTrigger.innerHTML = `<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg><span>再診断する</span>`;
     }
   }
 }
@@ -509,7 +511,7 @@ function createProgressTracker(container) {
         if (badgeEl) {
           badgeEl.className =
             "step-badge w-5 h-5 shrink-0 flex items-center justify-center rounded-full bg-emerald-500 text-white text-[11px] font-black";
-          badgeEl.innerHTML = "✓";
+          badgeEl.innerHTML = `<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>`;
         }
       } else if (isActive) {
         el.className =
@@ -562,7 +564,7 @@ function createProgressTracker(container) {
   return {
     finish: async () => {
       clearInterval(timer);
-      updateUI(100, "✨ 分析完了！診断レポートを生成しました", true);
+      updateUI(100, "分析完了！診断レポートを生成しました", true);
       await new Promise((resolve) => setTimeout(resolve, 500));
     },
     abort: () => {

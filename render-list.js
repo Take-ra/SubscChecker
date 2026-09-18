@@ -86,8 +86,8 @@ export function renderMainList(cats, subs, savedState, container) {
       <button class="accordion-trigger w-full flex items-center justify-between py-2 pr-4 text-left hover:bg-slate-50 transition-colors focus:outline-none rounded-xl relative group z-10">
         <div class="flex items-center gap-3 md:gap-4">
           <div class="w-1.5 h-12 md:h-14 bg-blue-600 rounded-r-md flex-shrink-0"></div>
-          <div class="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-blue-50 rounded-full flex-shrink-0 group-hover:bg-blue-100 transition-colors">
-            <span class="text-2xl md:text-3xl">${cat.icon}</span>
+          <div class="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-blue-50 rounded-2xl flex-shrink-0 text-blue-600 p-2.5 md:p-3 group-hover:bg-blue-100 transition-colors">
+            ${cat.icon}
           </div>
           <div class="flex flex-col md:flex-row md:items-baseline md:gap-4">
             <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-wider">${cat.name}</h2>

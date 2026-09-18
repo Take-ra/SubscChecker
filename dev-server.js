@@ -17,7 +17,7 @@ try {
     const match = envContent.match(/GEMINI_API_KEY=([^\r\n]+)/);
     if (match) {
       process.env.GEMINI_API_KEY = match[1].trim();
-      console.log("🔑 Loaded GEMINI_API_KEY from .env.local");
+      console.log("[Config] Loaded GEMINI_API_KEY from .env.local");
     }
   }
 } catch (e) {
@@ -119,8 +119,8 @@ const server = http.createServer(async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`\n🚀 Local Dev Server running at: http://localhost:${PORT}`);
-  console.log(`✨ AI Advisor endpoint (/api/analyze) is ready!`);
+  console.log(`\nLocal Dev Server running at: http://localhost:${PORT}`);
+  console.log(`AI Advisor endpoint (/api/analyze) is ready!`);
   console.log(`Press Ctrl+C to stop.\n`);
 });
 

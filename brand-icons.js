@@ -56,7 +56,7 @@ export function getBrandBadge(name = "", categoryId = "") {
 
   // 先頭の文字（アルファベット、漢字、カナ）
   const clean = n.replace(/^[^\w\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/, "");
-  const letter = clean.charAt(0).toUpperCase() || n.charAt(0) || "★";
+  const letter = clean.charAt(0).toUpperCase() || n.charAt(0) || "S";
 
   return { label: letter, bg };
 }

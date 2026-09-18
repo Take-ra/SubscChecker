@@ -28,7 +28,10 @@ export function openCalendarModal(subId, subName, plan, cycleNum = 1, cycleUnit 
   });
   customContainer.classList.add("hidden");
   if (googleBtn) {
-    googleBtn.innerHTML = "📅 Googleカレンダーに追加";
+    googleBtn.innerHTML = `
+      <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+      <span>Googleカレンダーに追加</span>
+    `;
     googleBtn.classList.replace("bg-blue-50", "bg-white");
   }
 
@@ -164,7 +167,10 @@ export function addToGoogleCalendar() {
   if (pendingGoogleCalendarDays.length > 0) {
     const googleBtn = document.getElementById("btn-google-cal");
     if (googleBtn) {
-      googleBtn.innerHTML = `📅 次の予定を登録する (残り${pendingGoogleCalendarDays.length}件)`;
+      googleBtn.innerHTML = `
+        <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+        <span>次の予定を登録する (残り${pendingGoogleCalendarDays.length}件)</span>
+      `;
       googleBtn.classList.replace("bg-white", "bg-blue-50"); // 色を少し変えてアピール
     }
   } else {
@@ -228,7 +234,7 @@ ${icsEvents}END:VCALENDAR`;
         // パターンA：iPhoneだけど、Chromeを使っている場合
         // ゴミファイルを残さないためにダウンロードをブロックし、案内を出す
         alert(
-          "iOS版Chromeの仕様により、カレンダーアプリへの直接連携が制限されています。\nお手数ですが、上の「Googleカレンダーに追加」をご利用いただくか、Safariブラウザで開き直してお試しください🙇‍♂️",
+          "iOS版Chromeの仕様により、カレンダーアプリへの直接連携が制限されています。\nお手数ですが、上の「Googleカレンダーに追加」をご利用いただくか、Safariブラウザで開き直してお試しください。",
         );
         return;
       } else {

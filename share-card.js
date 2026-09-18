@@ -10,14 +10,14 @@ export function buildShareTweetText({ profileType, totalMonthly, serviceCount, p
     ? `（年間約${Number(priorityAction.annual_saving).toLocaleString()}円の節約余地あり）`
     : "";
   const actionTitle = priorityAction?.title
-    ? `\n💡 改善プラン：${priorityAction.title}${savingStr}`
+    ? `\n【改善プラン】${priorityAction.title}${savingStr}`
     : "";
 
   return `私のサブスク固定費は月額【${formattedMonthly}円】（${serviceCount}契約）でした！
 
 AI診断タイプ：【${profileType || "固定費チェック完了"}】${actionTitle}
 
-あなたの固定費もチェック👇
+▼ あなたの固定費もチェック
 https://subsc-checker.vercel.app/
 #SubscChecker #固定費見直し #サブスク管理 #節約`;
 }
