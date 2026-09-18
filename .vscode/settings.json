@@ -36,7 +36,8 @@
     "DAZN",
     "unext",
     "animestore",
-    "openai"
+    "openai",
+    "html2canvas"
   ],
   "cSpell.ignorePaths": [
     "**/.git/**",

@@ -4,6 +4,10 @@ import {
   PROMO_CARDS,
   MOCK_DIAGNOSIS_DATA,
 } from "./action-data.js";
+import {
+  createShareSectionHtml,
+  initShareCardActions,
+} from "./share-card.js";
 
 let currentSelectedItemsGetter = null;
 let isAnalyzing = false;
@@ -345,6 +349,20 @@ function renderAdvisor(container, data, items = []) {
     ? Number(priority_action.annual_saving).toLocaleString()
     : null;
 
+  // 合計金額の計算（シェアカード用）
+  const totalMonthly = items.reduce((sum, i) => sum + (Number(i.monthly) || 0), 0);
+  const totalYearly = items.reduce(
+    (sum, i) => sum + (Number(i.yearly) || (Number(i.monthly) || 0) * 12),
+    0
+  );
+
+  const shareHtml = createShareSectionHtml({
+    data,
+    items,
+    totalMonthly,
+    totalYearly,
+  });
+
   let duplicateHtml = "";
   if (duplicate_warnings.length > 0) {
     duplicateHtml = `
@@ -536,6 +554,9 @@ function renderAdvisor(container, data, items = []) {
           : ""
       }
 
+      <!-- 📱 SNSシェアカード（画像化 ＆ Xでポスト） -->
+      ${shareHtml}
+
       <!-- 重複警告 & プラン最適化の2カラム (PC時) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         ${duplicateHtml}
@@ -566,6 +587,14 @@ function renderAdvisor(container, data, items = []) {
       ${promoHtml}
     </div>
   `;
+
+  // SNSシェアカードのアクション（Xシェア / 画像ダウンロード）を初期化
+  initShareCardActions({
+    data,
+    items,
+    totalMonthly,
+    totalYearly,
+  });
 }
 
 function renderError(container, message) {
