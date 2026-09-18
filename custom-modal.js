@@ -96,6 +96,10 @@ export function initCustomModal(callbacks) {
           cycle,
         };
       }
+      // 保存状態のプランタイプも同期する
+      if (savedState[editingSubId]) {
+        savedState[editingSubId].plan = planType;
+      }
       editingSubId = null;
     } else {
       const newId = "c_" + Date.now();
@@ -130,13 +134,6 @@ export function initCustomModal(callbacks) {
   updateCycleNumOptions();
   customCycleUnit.addEventListener("change", updateCycleNumOptions);
 
-  customPlanType.addEventListener("change", () => {
-    if (customPlanType.value === "custom") {
-      customCycleContainer.classList.remove("hidden");
-    } else {
-      customCycleContainer.classList.add("hidden");
-    }
-  });
 
   window.toggleEditMenu = function (id) {
     const menu = document.getElementById(`edit-menu-${id}`);
@@ -157,9 +154,10 @@ export function initCustomModal(callbacks) {
     document.getElementById("custom-price").value = sub.price;
     customPlanType.value = sub.planType;
 
-    if (sub.planType === "custom" && sub.cycle) {
+    if (sub.planType === "custom" && sub.cycle != null) {
       customCycleContainer.classList.remove("hidden");
-      if (sub.cycle < 1) {
+      if (sub.cycle < 1 || (sub.cycle > 0 && sub.cycle < 3 && sub.cycle % 1 !== 0)) {
+        // 小数値のサイクルは週単位として解釈する
         customCycleUnit.value = "weeks";
         updateCycleNumOptions();
         customCycleNum.value = Math.round(sub.cycle * 4.345);

@@ -60,6 +60,7 @@ export function renderChart(data, type = currentChartType) {
     "#f97316",
     "#6366f1",
     "#84cc16",
+    "#64748b",
   ];
 
   if (type === "genre") {
@@ -112,7 +113,6 @@ export function renderChart(data, type = currentChartType) {
       maintainAspectRatio: true,
       plugins: {
         legend: { position: "bottom" },
-        datalabels: { display: false },
         tooltip: {
           enabled: true,
           callbacks: {

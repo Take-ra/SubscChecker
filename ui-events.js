@@ -258,7 +258,8 @@ export function initUIEvents(callbacks) {
         resultScr.style.display = "block";
       }
 
-      window.scrollTo(0, 0);
+      const sc = document.querySelector(".h-full.w-full.overflow-y-auto");
+      if (sc) sc.scrollTo(0, 0);
 
       setTimeout(() => {
         if (data) callbacks.onAnalyzeRender(data);
@@ -282,7 +283,8 @@ export function initUIEvents(callbacks) {
       if (inputScr) inputScr.style.display = "";
       if (footCtrl) footCtrl.style.display = "";
 
-      window.scrollTo(0, 0);
+      const sc = document.querySelector(".h-full.w-full.overflow-y-auto");
+      if (sc) sc.scrollTo(0, 0);
     });
   }
 }

@@ -61,9 +61,9 @@ export function calculateAggregation(
 
     if (selectedPlan === "monthly") {
       mCost = subData.monthly || 0;
-      yCost = subData.yearly || mCost * 12;
+      yCost = mCost * 12;
     } else {
-      yCost = subData.yearly || subData.monthly * 12;
+      yCost = subData.yearly || (subData.monthly || 0) * 12;
       mCost = Math.round(yCost / 12);
     }
 

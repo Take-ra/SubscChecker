@@ -1,6 +1,7 @@
 // app.js
 import * as Logic from "./logic.js";
 import * as Render from "./render.js";
+import * as RenderList from "./render-list.js";
 import * as CustomModal from "./custom-modal.js";
 import * as ChartApp from "./chart.js";
 import * as CalendarApp from "./calendar.js";
@@ -47,8 +48,8 @@ export function initApp() {
   function init() {
     loadData();
     Render.renderNav(cats, navContainer);
-    Render.renderMainList(cats, subs, savedState, listContainer);
-    Render.renderCustomList(
+    RenderList.renderMainList(cats, subs, savedState, listContainer);
+    RenderList.renderCustomList(
       customSubscriptions,
       savedState,
       customListContainer,
@@ -80,22 +81,19 @@ export function initApp() {
           searchInput.dispatchEvent(new Event("input"));
         }
 
-        Render.renderMainList(cats, subs, savedState, listContainer);
-        Render.renderCustomList(
+        RenderList.renderMainList(cats, subs, savedState, listContainer);
+        RenderList.renderCustomList(
           customSubscriptions,
           savedState,
           customListContainer,
         );
-        isFirstLoad = false;
         calculateTotal();
         window.showToast("reset-toast");
       },
     });
 
-    // 画面をフワッと表示
-    document.getElementById("header-content")?.classList.remove("opacity-0");
+    // 画面をフワッと表示（main-content のみ opacity-0 が付いている）
     document.getElementById("main-content")?.classList.remove("opacity-0");
-    document.getElementById("footer-controls")?.classList.remove("opacity-0");
   }
 
   // --- モジュールの初期化 ---
@@ -107,7 +105,7 @@ export function initApp() {
     getSavedState: () => savedState,
     onUpdate: () => {
       saveData();
-      Render.renderCustomList(
+      RenderList.renderCustomList(
         customSubscriptions,
         savedState,
         customListContainer,

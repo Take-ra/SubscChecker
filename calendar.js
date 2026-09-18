@@ -19,14 +19,18 @@ export function openCalendarModal(subId, subName, plan) {
   if (!modal) return;
 
   nameEl.textContent = subName;
-  dateInput.value = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  dateInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
   // UIリセット：デフォルトで「1週間前」だけチェックを入れておく
   document.querySelectorAll(".cal-notify-cb").forEach((cb) => {
     cb.checked = cb.value === "7";
   });
   customContainer.classList.add("hidden");
-  if (googleBtn) googleBtn.innerHTML = "📅 Googleカレンダーに追加";
+  if (googleBtn) {
+    googleBtn.innerHTML = "📅 Googleカレンダーに追加";
+    googleBtn.classList.replace("bg-blue-50", "bg-white");
+  }
 
   modal.classList.remove("hidden");
   modal.classList.add("flex");
@@ -85,19 +89,20 @@ function calculateSingleEventDate(notifyDays) {
   const start = new Date(startDateStr);
   let nextRenewal = new Date(start);
 
-  if (currentCalSub.plan === "monthly") {
-    nextRenewal.setMonth(nextRenewal.getMonth() + 1);
-  } else {
-    nextRenewal.setFullYear(nextRenewal.getFullYear() + 1);
-  }
-
-  const now = new Date();
-  while (nextRenewal < now) {
-    if (currentCalSub.plan === "monthly") {
+  const plan = currentCalSub.plan;
+  const advanceRenewal = () => {
+    if (plan === "monthly" || plan === "custom") {
       nextRenewal.setMonth(nextRenewal.getMonth() + 1);
     } else {
       nextRenewal.setFullYear(nextRenewal.getFullYear() + 1);
     }
+  };
+
+  advanceRenewal();
+
+  const now = new Date();
+  while (nextRenewal < now) {
+    advanceRenewal();
   }
 
   const eventDate = new Date(nextRenewal);
