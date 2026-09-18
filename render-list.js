@@ -69,11 +69,11 @@ export function renderMainList(cats, subs, savedState, container) {
       };
       const isChecked = state.checked;
 
-      // 金額表示（文字サイズを大きくし、切り替え可能・固定で高さ・横幅・枠線を完全一致）
+      // 金額表示（セレクトの余白を狭くし、固定表示と高さを揃えて左寄せ）
       let planUI = "";
       if (sub.monthly && sub.yearly) {
         planUI = `
-          <select id="sel-${sub.id}" class="plan-selector w-full text-xs sm:text-sm font-black text-slate-900 py-1.5 px-2 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-2 focus:ring-blue-500 shadow-2xs transition-all text-center select-none" onclick="event.stopPropagation()">
+          <select id="sel-${sub.id}" class="plan-selector w-full text-xs sm:text-sm font-black text-slate-900 py-1 px-1.5 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-2 focus:ring-blue-500 shadow-2xs transition-all text-center select-none" onclick="event.stopPropagation()">
             <option value="monthly" ${state.plan === "monthly" ? "selected" : ""}>月額 ¥${sub.monthly.toLocaleString()}</option>
             <option value="yearly" ${state.plan === "yearly" ? "selected" : ""}>年額 ¥${sub.yearly.toLocaleString()}</option>
           </select>`;
@@ -84,7 +84,7 @@ export function renderMainList(cats, subs, savedState, container) {
         const cycleSuffix = isYearly ? "/年" : "/月";
 
         planUI = `
-          <div class="w-full text-sm sm:text-base font-black text-slate-900 py-1.5 pl-2 pr-2.5 border border-slate-200/60 bg-slate-50/60 rounded-xl flex items-center justify-end tabular-nums text-right select-none">
+          <div class="w-full text-xs sm:text-sm font-black text-slate-900 py-1 px-2 border border-slate-200/60 bg-slate-50/60 rounded-xl flex items-center justify-end tabular-nums text-right select-none">
             <span class="text-[10px] font-bold text-slate-400 mr-1">${prefix}</span>¥${Number(priceVal || 0).toLocaleString()}<span class="text-[10px] font-bold text-slate-400 ml-0.5">${cycleSuffix}</span>
           </div>`;
       }
@@ -101,15 +101,15 @@ export function renderMainList(cats, subs, savedState, container) {
       const brandBadge = getBrandBadge(sub.name, cat.id);
       const safeName = escapeAttr(sub.name);
 
-      // ベルボタン（カード枠内に収まる小さめサイズ）
+      // ベルボタン（元のサイズを保ちつつ、右端の内側に確実に収める）
       const bellBtnHtml = `
-        <button type="button" class="bell-btn w-6 h-6 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/70 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${state.plan}')" title="カレンダーに通知を登録">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+        <button type="button" class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/70 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${state.plan}')" title="カレンダーに通知を登録">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
         </button>
       `;
 
       itemsHtml += `
-      <div class="sub-item relative flex items-center justify-between p-2.5 sm:p-3.5 md:px-4 md:py-3 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">
+      <div class="sub-item relative flex items-center justify-between py-2.5 pl-2.5 pr-3.5 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">
         <!-- 左側: チェックボックス + アイコン + サービス名 -->
         <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
           <input type="checkbox" id="chk-${sub.id}" class="sub-checkbox peer w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" ${isChecked ? "checked" : ""}>
@@ -121,12 +121,12 @@ export function renderMainList(cats, subs, savedState, container) {
           </label>
         </div>
 
-        <!-- 右側: 金額 + ベルボタン（余裕を持ってカード枠内に収める） -->
-        <div class="flex-shrink-0 flex items-center gap-1.5 pr-2 sm:pr-3">
-          <div class="w-[120px] sm:w-[132px] shrink-0">
+        <!-- 右側: 金額（幅をコンパクトにして全体を左寄せ） + ベルボタン（枠内に完全収容） -->
+        <div class="flex-shrink-0 flex items-center gap-1.5 sm:gap-2">
+          <div class="w-[100px] sm:w-[112px] shrink-0">
             ${planUI}
           </div>
-          <div class="w-6 h-6 shrink-0 flex items-center justify-center">
+          <div class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center">
             ${bellBtnHtml}
           </div>
         </div>
@@ -208,7 +208,7 @@ export function renderCustomList(customSubscriptions, savedState, container) {
     const searchText = sub.name.toLowerCase();
 
     html += `
-    <div class="custom-sub-item group relative flex items-center justify-between p-2.5 sm:p-3.5 md:px-4 md:py-3 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">
+    <div class="custom-sub-item group relative flex items-center justify-between py-2.5 pl-2.5 pr-3.5 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}">
       <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
         <input type="checkbox" id="chk-${sub.id}" class="sub-checkbox peer w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" ${isChecked ? "checked" : ""}>
         <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${brandBadge.bg} flex items-center justify-center font-black text-xs sm:text-sm shadow-2xs shrink-0 select-none">
@@ -220,16 +220,16 @@ export function renderCustomList(customSubscriptions, savedState, container) {
       </div>
 
       <!-- 右側: 金額ボックス + ベル + 編集メニュー -->
-      <div class="flex-shrink-0 flex items-center gap-1 pr-2 sm:pr-3">
-        <div class="w-[96px] sm:w-[108px] shrink-0">
-          <div class="w-full text-xs sm:text-sm font-black text-slate-900 py-1.5 px-2 border border-slate-200/60 bg-slate-50/60 rounded-xl flex items-center justify-end tabular-nums text-right select-none">
+      <div class="flex-shrink-0 flex items-center gap-1.5">
+        <div class="w-[84px] sm:w-[96px] shrink-0">
+          <div class="w-full text-xs sm:text-sm font-black text-slate-900 py-1 px-1.5 border border-slate-200/60 bg-slate-50/60 rounded-xl flex items-center justify-end tabular-nums text-right select-none">
             <span class="text-[10px] font-bold text-slate-400 mr-1">${planText}</span>¥${price.toLocaleString()}
           </div>
         </div>
         
-        <div class="w-6 h-6 shrink-0 flex items-center justify-center">
-          <button type="button" class="bell-btn w-6 h-6 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/70 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType}', ${sub.cycleNum || 1}, '${sub.cycleUnit || "months"}')" title="カレンダーに通知を登録">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+        <div class="w-7 h-7 shrink-0 flex items-center justify-center">
+          <button type="button" class="bell-btn w-7 h-7 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/70 shadow-2xs border border-blue-200/80 cursor-pointer ${isChecked ? "" : "invisible pointer-events-none"}" onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType}', ${sub.cycleNum || 1}, '${sub.cycleUnit || "months"}')" title="カレンダーに通知を登録">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
           </button>
         </div>
 
