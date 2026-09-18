@@ -9,6 +9,7 @@ import { categories, subscriptions } from "./data.js";
 import { initSearch } from "./search.js";
 import { initUIEvents } from "./ui-events.js";
 import * as AIAdvisor from "./ai-advisor.js";
+import * as SelectedSheet from "./selected-sheet.js";
 
 export function initApp() {
   // --- グローバル関数の登録 ---
@@ -124,6 +125,26 @@ export function initApp() {
 
   ChartApp.initChartControls(() => analyzedData);
 
+  SelectedSheet.initSelectedSheet({
+    getAggregatedData: () => aggregateData(),
+    onToggleSub: (subId, isChecked) => {
+      if (!savedState[subId]) savedState[subId] = {};
+      savedState[subId].checked = isChecked;
+      saveData();
+
+      const chk = document.getElementById(`chk-${subId}`);
+      if (chk) {
+        chk.checked = isChecked;
+        const card = chk.closest(".sub-item, .custom-sub-item");
+        if (card) Render.updateHighlight(card, isChecked);
+      }
+      calculateTotal();
+    },
+    onAnalyze: () => {
+      document.getElementById("btn-analyze")?.click();
+    },
+  });
+
   // --- データ処理と計算 ---
   function loadData() {
     const loaded = Logic.loadDataFromStorage();
@@ -202,6 +223,20 @@ export function initApp() {
         500,
       );
       Render.animateValue(yearlyTotalEl, currentYearly, data.totalYearly, 500);
+    }
+
+    // フッターの「〇件 選択中」ボタンの更新
+    const footerCountEl = document.getElementById("footer-selected-count");
+    if (footerCountEl) {
+      footerCountEl.textContent = `${data.selectedItems.length}件 選択中`;
+    }
+    const btnOpenSelected = document.getElementById("btn-open-selected-sheet");
+    if (btnOpenSelected) {
+      if (data.selectedItems.length > 0) {
+        btnOpenSelected.classList.remove("opacity-50", "pointer-events-none");
+      } else {
+        btnOpenSelected.classList.add("opacity-50");
+      }
     }
   }
 
