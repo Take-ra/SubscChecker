@@ -94,41 +94,70 @@ export default async function handler(req, res) {
     // ユーザープロンプトの構成
     const userPrompt = `以下は現在契約しているサブスクリプションの一覧です。\n${JSON.stringify(subscriptions, null, 2)}\n\nこの契約内容を診断し、指定スキーマのJSONで結果を返してください。`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    // 優先的に試行するモデル一覧（一時的高負荷503発生時に自動フォールバック）
+    const candidateModels = ["gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-pro"];
+    let rawJsonText = null;
+    let lastError = null;
 
-    const geminiRes = await fetch(geminiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: userPrompt }],
-          },
-        ],
-        system_instruction: {
-          parts: [{ text: SYSTEM_INSTRUCTION }],
-        },
-        generationConfig: {
-          response_mime_type: "application/json",
-          response_schema: RESPONSE_SCHEMA,
-          temperature: 0.2,
-        },
-      }),
-    });
+    for (const model of candidateModels) {
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      console.error("Gemini API Error:", geminiRes.status, errText);
-      return res.status(502).json({ error: "AI診断の実行中にエラーが発生しました。" });
+      // 各モデルごとに最大2回リトライ（一時的混雑への指数バックオフ）
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          if (attempt > 0) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+
+          const geminiRes = await fetch(geminiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [{ text: userPrompt }],
+                },
+              ],
+              system_instruction: {
+                parts: [{ text: SYSTEM_INSTRUCTION }],
+              },
+              generationConfig: {
+                response_mime_type: "application/json",
+                response_schema: RESPONSE_SCHEMA,
+                temperature: 0.2,
+              },
+            }),
+          });
+
+          if (geminiRes.ok) {
+            const geminiData = await geminiRes.json();
+            rawJsonText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (rawJsonText) break;
+          } else {
+            const errText = await geminiRes.text();
+            lastError = `[${geminiRes.status}] ${errText}`;
+            console.warn(`Model ${model} attempt ${attempt + 1} failed with ${geminiRes.status}:`, errText);
+            // 503(混雑)や429(レート制限)以外はリトライせず別モデルへ
+            if (geminiRes.status !== 503 && geminiRes.status !== 429) {
+              break;
+            }
+          }
+        } catch (fetchErr) {
+          lastError = fetchErr.message;
+          console.warn(`Fetch error on ${model}:`, fetchErr);
+        }
+      }
+
+      if (rawJsonText) break;
     }
 
-    const geminiData = await geminiRes.json();
-    const rawJsonText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-
     if (!rawJsonText) {
-      return res.status(502).json({ error: "AIから応答を取得できませんでした。" });
+      console.error("All Gemini models failed. Last error:", lastError);
+      return res.status(502).json({
+        error: "AIサーバーが現在大変混雑しています。数十秒後に再度お試しください。",
+      });
     }
 
     const analysisResult = JSON.parse(rawJsonText);

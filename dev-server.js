@@ -15,7 +15,7 @@ try {
   if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, "utf8");
     const match = envContent.match(/GEMINI_API_KEY=([^\r\n]+)/);
-    if (match && !process.env.GEMINI_API_KEY) {
+    if (match) {
       process.env.GEMINI_API_KEY = match[1].trim();
       console.log("🔑 Loaded GEMINI_API_KEY from .env.local");
     }
@@ -123,3 +123,4 @@ server.listen(PORT, () => {
   console.log(`✨ AI Advisor endpoint (/api/analyze) is ready!`);
   console.log(`Press Ctrl+C to stop.\n`);
 });
+
