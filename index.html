@@ -325,8 +325,57 @@
         </main>
       </div>
 
-      <div id="result-container"></div>
+    <!-- 選択中サブスク コンパクトポップアップ（画面を邪魔しないサイズ） -->
+    <div
+      id="selected-subs-popup"
+      class="hidden fixed bottom-20 left-4 right-4 md:left-auto md:right-8 lg:right-12 md:w-[400px] z-[95] pointer-events-auto animate-in fade-in zoom-in-95 duration-150"
+    >
+      <div
+        class="bg-white/98 backdrop-blur-md rounded-3xl shadow-2xl border border-slate-200/90 overflow-hidden flex flex-col max-h-[60vh]"
+      >
+        <!-- ヘッダー -->
+        <div
+          class="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/90"
+        >
+          <div class="flex items-center gap-2">
+            <span class="text-sm">📋</span>
+            <span class="text-xs md:text-sm font-black text-slate-800"
+              >選択中のサブスク</span
+            >
+            <span
+              id="popup-count-badge"
+              class="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-700"
+              >0件</span
+            >
+          </div>
+          <button
+            id="btn-close-selected-popup"
+            type="button"
+            class="w-6 h-6 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-500 hover:text-slate-800 flex items-center justify-center text-xs font-black transition-colors cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- リスト一覧 -->
+        <div
+          id="selected-popup-list"
+          class="p-3 space-y-2 overflow-y-auto max-h-[260px]"
+        ></div>
+
+        <!-- フッター -->
+        <div
+          class="px-4 py-2.5 border-t border-slate-100 bg-slate-50/90 flex items-center justify-between text-xs"
+        >
+          <span class="text-slate-400 font-bold">月額合計</span>
+          <div class="text-blue-600 font-black flex items-baseline">
+            <span id="popup-monthly-total" class="text-base md:text-lg">0</span>
+            <span class="text-[10px] ml-0.5">円/月</span>
+          </div>
+        </div>
+      </div>
     </div>
+
     <footer
       id="footer-controls"
       class="fixed bottom-0 left-0 right-0 z-[90] md:bottom-6 md:left-auto md:right-8 lg:right-12 md:w-[440px] w-full pointer-events-none"
