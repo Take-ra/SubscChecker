@@ -48,7 +48,9 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
         <!-- ヘッダータイトル -->
         <div class="text-center mb-6">
           <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-black tracking-wide mb-2.5">
-            <span>✨</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
             <span>診断結果をシェア</span>
           </div>
           <h3 class="text-lg md:text-2xl font-black text-white tracking-tight">
@@ -82,7 +84,9 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
           <!-- OGPカード風プレビュー -->
           <div class="rounded-xl border border-white/10 bg-white/5 p-3 flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-blue-600/30 border border-blue-400/30 flex items-center justify-center text-blue-300 text-lg shrink-0">
-              📊
+              <svg class="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
             </div>
             <div class="min-w-0">
               <p class="text-xs font-bold text-white truncate">SubscChecker | サブスク固定費の見える化・AI診断</p>
@@ -111,14 +115,18 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
             type="button"
             class="flex items-center justify-center gap-2 py-3.5 px-5 bg-white/10 hover:bg-white/20 active:scale-98 text-white font-bold text-sm rounded-2xl border border-white/15 transition-all cursor-pointer"
           >
-            <span id="copy-icon">📋</span>
+            <span id="copy-icon">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+              </svg>
+            </span>
             <span id="copy-label">ツイート文をコピー</span>
           </button>
         </div>
 
         <!-- トースト案内 -->
         <div id="share-card-toast" class="mt-3 text-center text-xs font-bold text-emerald-400 hidden animate-fade-in">
-          ✨ クリップボードにコピーしました！
+          クリップボードにコピーしました！
         </div>
       </div>
     </div>
@@ -166,14 +174,14 @@ export function initShareCardActions({ data, items, totalMonthly, totalYearly })
       try {
         await navigator.clipboard.writeText(tweetText);
         if (copyIcon && copyLabel) {
-          copyIcon.textContent = "✅";
+          copyIcon.innerHTML = `<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>`;
           copyLabel.textContent = "コピー完了！";
           setTimeout(() => {
-            copyIcon.textContent = "📋";
+            copyIcon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>`;
             copyLabel.textContent = "ツイート文をコピー";
           }, 2500);
         }
-        showToast("✨ ツイート文をコピーしました！Xに貼り付けてポストできます");
+        showToast("ツイート文をコピーしました！Xに貼り付けてポストできます");
       } catch (err) {
         console.error("Clipboard copy error:", err);
         // フォールバック: prompt
