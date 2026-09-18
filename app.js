@@ -8,6 +8,7 @@ import * as CalendarApp from "./calendar.js";
 import { categories, subscriptions } from "./data.js";
 import { initSearch } from "./search.js";
 import { initUIEvents } from "./ui-events.js";
+import * as AIAdvisor from "./ai-advisor.js";
 
 export function initApp() {
   // --- グローバル関数の登録 ---
@@ -58,6 +59,10 @@ export function initApp() {
     calculateTotal();
 
     initSearch();
+    AIAdvisor.initAIAdvisor(() => {
+      const data = aggregateData();
+      return data ? data.selectedItems : [];
+    });
 
     // 切り出したUIイベントを起動。app.jsが持っているデータ処理を「リモコン(コールバック)」として渡す
     initUIEvents({
@@ -66,6 +71,7 @@ export function initApp() {
         analyzedData = data;
         Render.renderResultScreen(analyzedData);
         ChartApp.renderChart(analyzedData);
+        AIAdvisor.triggerAnalysis();
       },
       onBack: () => {
         ChartApp.clearChart();

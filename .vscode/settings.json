@@ -1,0 +1,42 @@
+{
+  "cSpell.words": [
+    "Subsc",
+    "subsc",
+    "crios",
+    "CriOS",
+    "bgcolor",
+    "datalabels",
+    "subtotal",
+    "subtotals",
+    "netflix",
+    "NFKC",
+    "prodid",
+    "PRODID",
+    "calscale",
+    "CALSCALE",
+    "dtstamp",
+    "DTSTAMP",
+    "dtstart",
+    "DTSTART",
+    "dtend",
+    "DTEND",
+    "vevent",
+    "VEVENT",
+    "vcalendar",
+    "VCALENDAR",
+    "adcenter",
+    "adsense",
+    "Adsense",
+    "kondate",
+    "lineclamp",
+    "linecap",
+    "linejoin",
+    "chartjs"
+  ],
+  "cSpell.ignorePaths": [
+    "**/.git/**",
+    "**/.vercel/**",
+    "**/node_modules/**"
+  ]
+}
+
