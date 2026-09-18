@@ -106,35 +106,52 @@ export function renderNav(cats, container) {
 }
 
 export function renderResultScreen(data) {
-  document.getElementById("res-monthly-total").textContent =
-    data.totalMonthly.toLocaleString();
-  document.getElementById("res-yearly-total").textContent =
-    data.totalYearly.toLocaleString();
-  const rankContainer = document.getElementById("res-top3-list");
+  const monthlyEl = document.getElementById("res-monthly-total");
+  const yearlyEl = document.getElementById("res-yearly-total");
+  const countBadge = document.getElementById("res-count-badge");
+  const genreBadge = document.getElementById("res-genre-summary-badge");
 
-  if (data.top5.length === 0) {
+  if (monthlyEl) monthlyEl.textContent = Number(data.totalMonthly || 0).toLocaleString();
+  if (yearlyEl) yearlyEl.textContent = Number(data.totalYearly || 0).toLocaleString();
+
+  const count = data.selectedItems?.length || 0;
+  if (countBadge) {
+    countBadge.textContent = `${count}件 契約中`;
+  }
+
+  const genreCount = Object.keys(data.genreTotals || {}).filter(
+    (g) => (data.genreTotals[g]?.monthly || 0) > 0
+  ).length;
+  if (genreBadge && genreCount > 0) {
+    genreBadge.textContent = `（${genreCount}ジャンル）`;
+  }
+
+  const rankContainer = document.getElementById("res-top3-list");
+  if (!rankContainer) return;
+
+  if (!data.top5 || data.top5.length === 0) {
     rankContainer.innerHTML =
-      '<p class="text-slate-500 text-sm text-center py-4">サブスクが選択されていません</p>';
+      '<p class="text-slate-400 text-xs text-center py-6">サブスクが選択されていません</p>';
   } else {
     const rankIcons = [
       "🥇",
       "🥈",
       "🥉",
-      '<span class="text-lg font-bold text-slate-400">4</span>',
-      '<span class="text-lg font-bold text-slate-400">5</span>',
+      '<span class="text-xs font-black text-slate-500 bg-slate-200/80 rounded-full w-5 h-5 flex items-center justify-center">4</span>',
+      '<span class="text-xs font-black text-slate-500 bg-slate-200/80 rounded-full w-5 h-5 flex items-center justify-center">5</span>',
     ];
     rankContainer.innerHTML = data.top5
       .map(
         (item, i) => `
-      <div class="flex items-center w-full bg-slate-50 p-3 md:px-4 rounded-xl border border-slate-100">
-        <div class="w-7 md:w-8 flex-shrink-0 flex justify-center items-center">${rankIcons[i]}</div>
-        
-        <div class="ml-2 md:ml-3 flex-1 text-left font-extrabold text-slate-900 truncate text-base md:text-lg" title="${item.name}">
-          ${item.name}
+      <div class="flex items-center justify-between w-full bg-slate-50/80 hover:bg-slate-100/70 p-3 rounded-2xl border border-slate-200/70 transition-colors">
+        <div class="flex items-center gap-2.5 min-w-0 mr-2">
+          <div class="w-6 shrink-0 flex justify-center items-center text-base">${rankIcons[i]}</div>
+          <span class="font-extrabold text-slate-800 truncate text-xs md:text-sm" title="${escapeAttr(item.name)}">
+            ${escapeAttr(item.name)}
+          </span>
         </div>
-        
-        <div class="flex-shrink-0 ml-3 font-bold text-slate-700 text-base md:text-lg text-right whitespace-nowrap">
-          ${item.monthly.toLocaleString()}円<span class="text-xs md:text-sm font-normal text-slate-400">/月</span>
+        <div class="shrink-0 font-black text-slate-900 text-xs md:text-sm text-right">
+          ¥${Number(item.monthly || 0).toLocaleString()}<span class="text-[10px] font-normal text-slate-400 ml-0.5">/月</span>
         </div>
       </div>
     `,
@@ -142,3 +159,4 @@ export function renderResultScreen(data) {
       .join("");
   }
 }
+

@@ -51,7 +51,6 @@ export function initAIAdvisor(getSelectedItems) {
   // 開発用モックモード切り替えボタンの初期化
   const container = document.getElementById("ai-advisor-container");
   if (container && !document.getElementById("btn-toggle-mock")) {
-    const titleArea = container.querySelector(".flex-col, .sm\\:flex-row") || container.firstElementChild;
     const subText = container.querySelector("p");
     if (subText && subText.parentNode) {
       const mockWrapper = document.createElement("div");
@@ -70,6 +69,179 @@ export function initAIAdvisor(getSelectedItems) {
       updateMockToggleUI();
     }
   }
+
+  // 結果画面のタブ切り替え初期化
+  initResultTabs();
+}
+
+/**
+ * 分析結果画面の3タブ（内訳 / AI診断 / 解約・乗り換え）の切り替え制御
+ */
+export function initResultTabs() {
+  const tabs = [
+    { id: "breakdown", btn: document.getElementById("tab-btn-breakdown"), content: document.getElementById("tab-content-breakdown") },
+    { id: "advisor", btn: document.getElementById("tab-btn-advisor"), content: document.getElementById("tab-content-advisor") },
+    { id: "actions", btn: document.getElementById("tab-btn-actions"), content: document.getElementById("tab-content-actions") },
+  ];
+
+  window.switchResultTab = function (activeId) {
+    tabs.forEach(({ id, btn, content }) => {
+      if (!btn || !content) return;
+      const isActive = id === activeId;
+      if (isActive) {
+        content.classList.remove("hidden");
+        btn.classList.add("bg-white", "text-blue-600", "shadow-xs");
+        btn.classList.remove("text-slate-600", "hover:text-slate-900");
+      } else {
+        content.classList.add("hidden");
+        btn.classList.remove("bg-white", "text-blue-600", "shadow-xs");
+        btn.classList.add("text-slate-600", "hover:text-slate-900");
+      }
+    });
+
+    if (activeId === "advisor") {
+      const dot = document.getElementById("tab-advisor-dot");
+      if (dot) dot.classList.add("hidden");
+    }
+  };
+
+  tabs.forEach(({ id, btn }) => {
+    if (btn) {
+      btn.onclick = () => window.switchResultTab(id);
+    }
+  });
+}
+
+export function resetResultTabs() {
+  if (typeof window.switchResultTab === "function") {
+    window.switchResultTab("breakdown");
+  }
+}
+
+/**
+ * タブ3（解約・乗り換え）のレンダリング
+ */
+export function renderActionsTab(items = []) {
+  const actionsContainer = document.getElementById("actions-container");
+  if (!actionsContainer) return;
+
+  let cancelHtml = "";
+  if (items && items.length > 0) {
+    const cancelCards = items
+      .map((item) => {
+        const info = findCancelInfo(item.name);
+        const monthlyStr = item.monthly ? `¥${Number(item.monthly).toLocaleString()}/月` : "";
+        return `
+          <div class="flex flex-col justify-between p-4 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 shadow-xs transition-all">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="font-extrabold text-xs md:text-sm text-slate-800 truncate">${escapeHtml(item.name)}</span>
+                ${monthlyStr ? `<span class="text-[11px] font-black text-slate-500 shrink-0">${monthlyStr}</span>` : ""}
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3.5 leading-relaxed">
+                ${escapeHtml(info.guide)}
+              </p>
+            </div>
+            <a
+              href="${escapeHtml(info.url)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-3 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-300/80 rounded-xl shadow-2xs hover:bg-slate-100 hover:text-slate-900 active:scale-98 transition-all text-center"
+            >
+              <span>${info.isDirect ? "公式の解約・設定管理を開く" : "公式の解約手順を検索"}</span>
+              <span class="text-xs">↗</span>
+            </a>
+          </div>
+        `;
+      })
+      .join("");
+
+    cancelHtml = `
+      <div class="bg-white rounded-3xl p-5 md:p-6 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2 border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🔒</span>
+            <h3 class="text-base md:text-lg font-black text-slate-800">
+              見直し・公式解約サポート
+            </h3>
+            <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full">公式リンク</span>
+          </div>
+          <span class="text-[11px] text-slate-400 font-medium">※各社の公式管理画面へ安全に遷移します</span>
+        </div>
+        <p class="text-xs text-slate-500 font-medium leading-relaxed">
+          見直しや解約を検討したいサービスは、以下の各社公式アカウントページから直接手続きを行えます。
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          ${cancelCards}
+        </div>
+      </div>
+    `;
+  }
+
+  const promoCardsHtml = PROMO_CARDS.map((card) => {
+    return `
+      <div class="flex flex-col justify-between p-4 md:p-5 rounded-2xl border ${card.theme.border} bg-gradient-to-b ${card.theme.bgGradient} shadow-xs hover:shadow-sm transition-all">
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${card.theme.badgeBg}">
+              ${escapeHtml(card.badge)}
+            </span>
+            <span class="text-[9px] font-bold px-1.5 py-0.5 bg-white/90 text-slate-400 rounded border border-slate-200/80">PR</span>
+          </div>
+
+          <h4 class="text-xs md:text-sm font-black text-slate-900 leading-snug mb-2">
+            ${escapeHtml(card.title)}
+          </h4>
+
+          <div class="inline-block mb-2.5 px-2.5 py-1 bg-white/95 rounded-lg border border-slate-200/80 shadow-2xs">
+            <p class="text-[11px] md:text-xs font-black ${card.theme.highlightColor}">
+              ${escapeHtml(card.savingHighlight)}
+            </p>
+          </div>
+
+          <p class="text-xs text-slate-600 leading-relaxed mb-4 font-medium">
+            ${escapeHtml(card.description)}
+          </p>
+        </div>
+
+        <a
+          href="${escapeHtml(card.url)}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-3 text-xs font-black rounded-xl shadow-xs ${card.theme.buttonBg} active:scale-95 transition-all text-center"
+        >
+          <span>${escapeHtml(card.buttonText)}</span>
+        </a>
+      </div>
+    `;
+  }).join("");
+
+  const promoHtml = `
+    <div class="bg-gradient-to-br from-slate-50 via-white to-blue-50/40 rounded-3xl p-5 md:p-6 border border-blue-200/70 shadow-sm space-y-4">
+      <div class="flex items-center justify-between flex-wrap gap-2 border-b border-blue-100/70 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">💡</span>
+          <h3 class="text-base md:text-lg font-black text-slate-800">
+            固定費を圧縮するお得な代替案・乗り換え特典
+          </h3>
+        </div>
+        <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded border border-slate-200">おすすめ提案</span>
+      </div>
+      <p class="text-xs text-slate-500 font-medium leading-relaxed">
+        複数の単体契約から集約プランや無料体験を活用することで、サービスの質を落とさずに月々の支出だけを圧縮できます。
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+        ${promoCardsHtml}
+      </div>
+    </div>
+  `;
+
+  actionsContainer.innerHTML = `
+    <div class="space-y-6">
+      ${cancelHtml}
+      ${promoHtml}
+    </div>
+  `;
 }
 
 // サブスクリストの内容が変わったかを判定するための簡易ハッシュ
@@ -87,6 +259,9 @@ export async function triggerAnalysis(force = false) {
 
   const items = currentSelectedItemsGetter ? currentSelectedItemsGetter() : [];
 
+  // 解約・代替案タブを事前描画（AI診断を待たずに閲覧可能にする）
+  renderActionsTab(items);
+
   if (!items || items.length === 0) {
     contentContainer.innerHTML = `
       <div class="text-center py-6 px-4 bg-white/90 rounded-2xl border border-slate-200">
@@ -97,6 +272,7 @@ export async function triggerAnalysis(force = false) {
     `;
     return;
   }
+
 
   const currentHash = getItemsHash(items);
   if (!force && cachedResult && lastAnalyzedHash === currentHash) {
@@ -349,24 +525,30 @@ function renderAdvisor(container, data, items = []) {
     ? Number(priority_action.annual_saving).toLocaleString()
     : null;
 
-  // 合計金額の計算（シェアカード用）
+  // 1. 上部の総額カルテ内「節約ポテンシャル」バナーの更新
+  const savingBanner = document.getElementById("res-saving-banner");
+  const savingText = document.getElementById("res-saving-text");
+  if (savingBanner && savingText) {
+    if (savingAmount) {
+      savingText.innerHTML = `年間最大 <strong class="text-emerald-700 font-black text-base md:text-lg">約${savingAmount}円</strong> 削減できる余地があります`;
+      savingBanner.classList.remove("hidden");
+    } else {
+      savingBanner.classList.add("hidden");
+    }
+  }
+
+  // 2. 合計金額の計算（シェア用）
   const totalMonthly = items.reduce((sum, i) => sum + (Number(i.monthly) || 0), 0);
   const totalYearly = items.reduce(
     (sum, i) => sum + (Number(i.yearly) || (Number(i.monthly) || 0) * 12),
     0
   );
 
-  const shareHtml = createShareSectionHtml({
-    data,
-    items,
-    totalMonthly,
-    totalYearly,
-  });
-
+  // 3. 重複警告 & プラン最適化のHTML作成
   let duplicateHtml = "";
   if (duplicate_warnings.length > 0) {
     duplicateHtml = `
-      <div class="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-4 md:p-5">
+      <div class="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 md:p-5">
         <div class="flex items-center gap-2 mb-2">
           <span class="text-base">⚠️</span>
           <h3 class="text-sm md:text-base font-black text-amber-900">重複・二重課金の懸念</h3>
@@ -381,7 +563,7 @@ function renderAdvisor(container, data, items = []) {
   let planHtml = "";
   if (plan_optimizations.length > 0) {
     planHtml = `
-      <div class="bg-blue-50/80 border border-blue-200/80 rounded-2xl p-4 md:p-5">
+      <div class="bg-blue-50/90 border border-blue-200/90 rounded-2xl p-4 md:p-5">
         <div class="flex items-center gap-2 mb-2">
           <span class="text-base">💡</span>
           <h3 class="text-sm md:text-base font-black text-blue-900">プラン・契約形態の最適化</h3>
@@ -393,126 +575,14 @@ function renderAdvisor(container, data, items = []) {
     `;
   }
 
-  // ①【見直し・公式解約サポート】ブロック
-  let cancelHtml = "";
-  if (items && items.length > 0) {
-    const cancelCards = items
-      .map((item) => {
-        const info = findCancelInfo(item.name);
-        const monthlyStr = item.monthly ? `¥${Number(item.monthly).toLocaleString()}/月` : "";
-        return `
-          <div class="flex flex-col justify-between p-3.5 rounded-xl border border-slate-200/90 bg-slate-50/70 hover:bg-slate-50 hover:border-slate-300 transition-all">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-1.5">
-                <span class="font-bold text-xs md:text-sm text-slate-800 truncate">${escapeHtml(item.name)}</span>
-                ${monthlyStr ? `<span class="text-[11px] font-bold text-slate-500 shrink-0">${monthlyStr}</span>` : ""}
-              </div>
-              <p class="text-[11px] text-slate-500 mb-3 leading-relaxed">
-                ${escapeHtml(info.guide)}
-              </p>
-            </div>
-            <a
-              href="${escapeHtml(info.url)}"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-2xs hover:bg-slate-100 hover:text-slate-900 active:scale-98 transition-all text-center"
-            >
-              <span>${info.isDirect ? "公式の解約・設定管理を開く" : "公式の解約手順を検索"}</span>
-              <span class="text-xs">↗</span>
-            </a>
-          </div>
-        `;
-      })
-      .join("");
-
-    cancelHtml = `
-      <div class="bg-white/95 rounded-2xl p-5 md:p-6 border border-slate-200/90 shadow-sm space-y-3">
-        <div class="flex items-center justify-between flex-wrap gap-2 border-b border-slate-100 pb-3">
-          <div class="flex items-center gap-2">
-            <span class="text-base">🔒</span>
-            <h3 class="text-sm md:text-base font-black text-slate-800">
-              見直し・公式解約サポート
-            </h3>
-            <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full">公式リンク</span>
-          </div>
-          <span class="text-[11px] text-slate-400 font-medium">※外部の各社公式ログイン・管理画面へ安全に遷移します</span>
-        </div>
-        <p class="text-xs text-slate-500 font-medium leading-relaxed">
-          見直しや解約を検討したいサービスは、以下の各社公式アカウントページから手続きを行えます。
-        </p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          ${cancelCards}
-        </div>
-      </div>
-    `;
-  }
-
-  // ②【お得な最適化プラン / 代替案】ブロック
-  const promoCardsHtml = PROMO_CARDS.map((card) => {
-    return `
-      <div class="flex flex-col justify-between p-4 md:p-5 rounded-2xl border ${card.theme.border} bg-gradient-to-b ${card.theme.bgGradient} shadow-sm hover:shadow-md transition-all">
-        <div>
-          <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${card.theme.badgeBg}">
-              ${escapeHtml(card.badge)}
-            </span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 bg-white/90 text-slate-400 rounded border border-slate-200/80">PR</span>
-          </div>
-
-          <h4 class="text-xs md:text-sm font-black text-slate-900 leading-snug mb-2">
-            ${escapeHtml(card.title)}
-          </h4>
-
-          <div class="inline-block mb-2.5 px-2.5 py-1 bg-white/95 rounded-lg border border-slate-200/80 shadow-2xs">
-            <p class="text-[11px] md:text-xs font-black ${card.theme.highlightColor}">
-              ${escapeHtml(card.savingHighlight)}
-            </p>
-          </div>
-
-          <p class="text-xs text-slate-600 leading-relaxed mb-4 font-medium">
-            ${escapeHtml(card.description)}
-          </p>
-        </div>
-
-        <a
-          href="${escapeHtml(card.url)}"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-3 text-xs font-black rounded-xl shadow-sm ${card.theme.buttonBg} active:scale-95 transition-all text-center"
-        >
-          <span>${escapeHtml(card.buttonText)}</span>
-        </a>
-      </div>
-    `;
-  }).join("");
-
-  const promoHtml = `
-    <div class="bg-gradient-to-br from-slate-50 via-white to-blue-50/40 rounded-2xl p-5 md:p-6 border border-blue-200/70 shadow-sm space-y-3">
-      <div class="flex items-center justify-between flex-wrap gap-2 border-b border-blue-100/70 pb-3">
-        <div class="flex items-center gap-2">
-          <span class="text-base">💡</span>
-          <h3 class="text-sm md:text-base font-black text-slate-800">
-            固定費を圧縮するお得な代替案・乗り換え特典
-          </h3>
-        </div>
-        <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded border border-slate-200">おすすめ提案</span>
-      </div>
-      <p class="text-xs text-slate-500 font-medium leading-relaxed">
-        複数の単体契約から集約プランや無料体験を活用することで、サービスの質を落とさずに月々の支出だけを圧縮できます。
-      </p>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
-        ${promoCardsHtml}
-      </div>
-    </div>
-  `;
-
+  // 4. タブ2（AI診断・提案）のレンダリング
   container.innerHTML = `
     <div class="space-y-5 pt-1 animate-in fade-in duration-300">
       <!-- 診断タイプ & 総評 -->
-      <div class="bg-white/90 rounded-2xl p-4 md:p-6 border border-slate-200 shadow-sm">
+      <div class="bg-slate-50/90 rounded-2xl p-4 md:p-6 border border-slate-200/80">
         <div class="flex flex-wrap items-center gap-2 mb-2.5">
           <span class="text-xs font-bold text-slate-400">あなたの支出傾向:</span>
-          <span class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs md:text-sm rounded-full shadow-sm">
+          <span class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs md:text-sm rounded-full shadow-xs">
             ${escapeHtml(profile_type || "固定費分析完了")}
           </span>
         </div>
@@ -525,7 +595,7 @@ function renderAdvisor(container, data, items = []) {
       ${
         priority_action
           ? `
-      <div class="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 border-2 border-emerald-400/80 rounded-2xl p-4 md:p-6 shadow-sm relative overflow-hidden">
+      <div class="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 border-2 border-emerald-400/80 rounded-2xl p-4 md:p-6 shadow-xs relative overflow-hidden">
         <div class="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] md:text-xs font-black px-3 py-1 rounded-bl-xl tracking-wider">
           ★ 最優先タスク
         </div>
@@ -555,16 +625,22 @@ function renderAdvisor(container, data, items = []) {
       }
 
       <!-- 重複警告 & プラン最適化の2カラム (PC時) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        ${duplicateHtml}
-        ${planHtml}
-      </div>
+      ${
+        duplicateHtml || planHtml
+          ? `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          ${duplicateHtml}
+          ${planHtml}
+        </div>
+      `
+          : ""
+      }
 
       <!-- 資産形成・再投資インパクト -->
       ${
         investment_impact
           ? `
-      <div class="bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 border border-purple-200/70 rounded-2xl p-4 md:p-5">
+      <div class="bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 border border-purple-200/80 rounded-2xl p-4 md:p-5">
         <div class="flex items-center gap-2 mb-2">
           <span class="text-base">📈</span>
           <h3 class="text-sm md:text-base font-black text-indigo-950">削減資金の再投資インパクト</h3>
@@ -577,25 +653,51 @@ function renderAdvisor(container, data, items = []) {
           : ""
       }
 
-      <!-- ①【見直し・公式解約サポート】（信頼性向上のための公式導線） -->
-      ${cancelHtml}
-
-      <!-- ②【お得な最適化プラン / 代替案】（アフィリエイト・マネタイズ導線） -->
-      ${promoHtml}
-
-      <!-- 📱 SNSシェアカード（画像化 ＆ Xでポスト: 一番最後に配置） -->
-      ${shareHtml}
+      <!-- タブ3（解約・乗り換え）へのクイック遷移ボタン -->
+      <div class="pt-2">
+        <button
+          type="button"
+          onclick="window.switchResultTab('actions')"
+          class="w-full py-3.5 px-4 bg-gradient-to-r from-slate-900 to-indigo-950 hover:from-slate-800 hover:to-indigo-900 active:scale-98 text-white font-black text-xs md:text-sm rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer group"
+        >
+          <span>🔒</span>
+          <span>公式の解約リンク ＆ お得な代替案を見る</span>
+          <span class="text-xs group-hover:translate-x-1 transition-transform">→</span>
+        </button>
+      </div>
     </div>
   `;
 
-  // SNSシェアカードのアクション（Xシェア / 画像ダウンロード）を初期化
-  initShareCardActions({
-    data,
-    items,
-    totalMonthly,
-    totalYearly,
-  });
+  // 5. タブ3（解約・乗り換え）のレンダリング
+  renderActionsTab(items);
+
+
+  // 6. 画面最下部: 𝕏 シェアブロックのレンダリング
+  const shareContainer = document.getElementById("res-share-container");
+  if (shareContainer) {
+    shareContainer.innerHTML = createShareSectionHtml({
+      data,
+      items,
+      totalMonthly,
+      totalYearly,
+    });
+
+    initShareCardActions({
+      data,
+      items,
+      totalMonthly,
+      totalYearly,
+    });
+  }
+
+  // 7. タブの通知ドット（AI診断が完了したことを通知）
+  const tabAdvisorContent = document.getElementById("tab-content-advisor");
+  const dot = document.getElementById("tab-advisor-dot");
+  if (dot && tabAdvisorContent && tabAdvisorContent.classList.contains("hidden")) {
+    dot.classList.remove("hidden");
+  }
 }
+
 
 function renderError(container, message) {
   container.innerHTML = `

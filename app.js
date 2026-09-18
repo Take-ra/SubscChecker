@@ -71,6 +71,7 @@ export function initApp() {
         analyzedData = data;
         Render.renderResultScreen(analyzedData);
         ChartApp.renderChart(analyzedData);
+        AIAdvisor.resetResultTabs();
         AIAdvisor.triggerAnalysis();
       },
       onBack: () => {
