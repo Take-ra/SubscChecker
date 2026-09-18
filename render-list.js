@@ -35,6 +35,12 @@ export function getBrandBadge(name = "", categoryId = "") {
   if (/dazn/i.test(n)) return { label: "D", bg: "bg-slate-900 text-yellow-300" };
   if (/audible/i.test(n)) return { label: "A", bg: "bg-amber-500 text-white" };
   if (/dマガジン/i.test(n)) return { label: "d", bg: "bg-red-600 text-white" };
+  if (/wowow/i.test(n)) return { label: "W", bg: "bg-blue-600 text-white" };
+  if (/楽天/i.test(n)) return { label: "R", bg: "bg-red-600 text-white" };
+  if (/chocozap|チョコザップ/i.test(n)) return { label: "C", bg: "bg-yellow-500 text-white" };
+  if (/game\s*pass|xbox/i.test(n)) return { label: "X", bg: "bg-emerald-600 text-white" };
+  if (/kinto/i.test(n)) return { label: "K", bg: "bg-teal-600 text-white" };
+  if (/タイムズ|times/i.test(n)) return { label: "T", bg: "bg-yellow-500 text-slate-900" };
 
   // カテゴリ別のグラデーションカラー
   const catColors = {
@@ -68,14 +74,18 @@ export function getBrandDomain(name = "") {
   if (/u-next/i.test(n)) return "unext.jp";
   if (/chatgpt|openai/i.test(n)) return "openai.com";
   if (/claude|anthropic/i.test(n)) return "anthropic.com";
+  if (/cursor/i.test(n)) return "cursor.com";
   if (/notion/i.test(n)) return "notion.so";
   if (/line/i.test(n)) return "line.me";
   if (/google|drive|gemini/i.test(n)) return "google.com";
   if (/playstation|ps\b/i.test(n)) return "playstation.com";
-  if (/nintendo/i.test(n)) return "nintendo.co.jp";
+  if (/nintendo|switch/i.test(n)) return "nintendo.com";
+  if (/xbox/i.test(n)) return "xbox.com";
+  if (/ea play/i.test(n)) return "ea.com";
+  if (/ubisoft/i.test(n)) return "ubisoft.com";
+  if (/geforce/i.test(n)) return "nvidia.com";
   if (/dマガジン/i.test(n)) return "magazine.dmkt-sp.jp";
   if (/dアニメ/i.test(n)) return "animestore.docomo.ne.jp";
-  if (/dフォト|dキッズ/i.test(n)) return "docomo.ne.jp";
   if (/dラボ/i.test(n)) return "daigo.jp";
   if (/hulu/i.test(n)) return "hulu.jp";
   if (/abema/i.test(n)) return "abema.tv";
@@ -84,6 +94,7 @@ export function getBrandDomain(name = "") {
   if (/canva/i.test(n)) return "canva.com";
   if (/adobe/i.test(n)) return "adobe.com";
   if (/uber/i.test(n)) return "ubereats.com";
+  if (/出前館/i.test(n)) return "demae-can.com";
   if (/kindle|audible/i.test(n)) return "amazon.co.jp";
   if (/dazn/i.test(n)) return "dazn.com";
   if (/radiko/i.test(n)) return "radiko.jp";
@@ -91,6 +102,7 @@ export function getBrandDomain(name = "") {
   if (/pixiv/i.test(n)) return "pixiv.net";
   if (/github/i.test(n)) return "github.com";
   if (/slack/i.test(n)) return "slack.com";
+  if (/zoom/i.test(n)) return "zoom.us";
   if (/duolingo/i.test(n)) return "duolingo.com";
   if (/pokekara/i.test(n)) return "pokekara.com";
   if (/telasa/i.test(n)) return "telasa.jp";
@@ -99,6 +111,26 @@ export function getBrandDomain(name = "") {
   if (/dmm/i.test(n)) return "dmm.com";
   if (/lemino|dtv/i.test(n)) return "lemino.docomo.ne.jp";
   if (/paravi/i.test(n)) return "paravi.jp";
+  if (/楽天/i.test(n)) return "rakuten.co.jp";
+  if (/ジャンプ/i.test(n)) return "shonenjumpplus.com";
+  if (/マガポケ/i.test(n)) return "pocket.shonenmagazine.com";
+  if (/book.*walker/i.test(n)) return "bookwalker.jp";
+  if (/ブック放題/i.test(n)) return "bookhodai.jp";
+  if (/ameba/i.test(n)) return "ameba.jp";
+  if (/awa\b/i.test(n)) return "awa.fm";
+  if (/kkbox/i.test(n)) return "kkbox.com";
+  if (/game\s*pass/i.test(n)) return "xbox.com";
+  if (/terabox/i.test(n)) return "terabox.com";
+  if (/pcloud/i.test(n)) return "pcloud.com";
+  if (/chocozap|チョコザップ/i.test(n)) return "chocozap.jp";
+  if (/anytime/i.test(n)) return "anytimefitness.co.jp";
+  if (/kinto/i.test(n)) return "kinto-jp.com";
+  if (/タイムズ|times/i.test(n)) return "timescar.jp";
+  if (/bloomee|ブルーミー/i.test(n)) return "bloomeelife.com";
+  if (/postcoffee/i.test(n)) return "postcoffee.co";
+  if (/goopass/i.test(n)) return "goopass.jp";
+  if (/oisix|オイシックス/i.test(n)) return "oisix.com";
+  if (/メチャカリ/i.test(n)) return "mechakari.com";
   return null;
 }
 
@@ -115,11 +147,11 @@ export function renderMainList(cats, subs, savedState, container) {
       };
       const isChecked = state.checked;
 
-      // 金額表示（矢印被り防止の右パディング確保・幅拡大・書式統一）
+      // 金額表示（必ず文字の始まりが縦一直線に揃うように左揃え pl-2.5 に統一）
       let planUI = "";
       if (sub.monthly && sub.yearly) {
         planUI = `
-          <select id="sel-${sub.id}" class="plan-selector w-full h-8 text-xs sm:text-sm font-bold text-slate-800 py-0 pl-1.5 pr-6 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-1 focus:ring-blue-500 shadow-2xs transition-all text-center select-none" onclick="event.stopPropagation()">
+          <select id="sel-${sub.id}" class="plan-selector w-full h-8 text-xs sm:text-sm font-bold text-slate-800 py-0 pl-2.5 pr-6 border border-slate-200 rounded-xl bg-slate-100/70 hover:bg-white focus:bg-white cursor-pointer focus:ring-1 focus:ring-blue-500 shadow-2xs transition-all text-left tabular-nums select-none" onclick="event.stopPropagation()">
             <option value="monthly" ${state.plan === "monthly" ? "selected" : ""}>月額 ¥${sub.monthly.toLocaleString()}</option>
             <option value="yearly" ${state.plan === "yearly" ? "selected" : ""}>年額 ¥${sub.yearly.toLocaleString()}</option>
           </select>`;
@@ -129,7 +161,7 @@ export function renderMainList(cats, subs, savedState, container) {
         const prefix = isYearly ? "年額" : "月額";
 
         planUI = `
-          <div class="w-full h-8 text-xs sm:text-sm font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-center tabular-nums text-center select-none shadow-2xs px-1">
+          <div class="w-full h-8 text-xs sm:text-sm font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-start text-left tabular-nums select-none shadow-2xs pl-2.5 py-0">
             ${prefix} ¥${Number(priceVal || 0).toLocaleString()}
           </div>`;
       }
@@ -291,7 +323,7 @@ export function renderCustomList(customSubscriptions, savedState, container) {
       <!-- 右側: 金額ボックス + ベル + 編集メニュー -->
       <div class="flex-shrink-0 flex items-center gap-1.5">
         <div class="w-[84px] sm:w-[96px] shrink-0">
-          <div class="w-full h-8 text-xs sm:text-sm font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-center tabular-nums text-center select-none shadow-2xs">
+          <div class="w-full h-8 text-xs sm:text-sm font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-start text-left tabular-nums select-none shadow-2xs pl-2.5 py-0">
             ${planText} ¥${price.toLocaleString()}
           </div>
         </div>
