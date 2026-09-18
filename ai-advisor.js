@@ -8,6 +8,7 @@ import {
   createShareSectionHtml,
   initShareCardActions,
 } from "./share-card.js";
+import { escapeHtml } from "./utils.js";
 
 let currentSelectedItemsGetter = null;
 let isAnalyzing = false;
@@ -717,14 +718,4 @@ function renderError(container, message) {
   window.retryAIAdvisor = () => {
     triggerAnalysis(true);
   };
-}
-
-function escapeHtml(str) {
-  if (!str) return "";
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }

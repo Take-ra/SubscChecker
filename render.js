@@ -1,14 +1,5 @@
-// render.js（ユーティリティ、ナビゲーション、結果画面の描画）
-
-// HTML属性内に埋め込む文字列をエスケープする（XSS/構文エラー対策）
-export function escapeAttr(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/'/g, "&#39;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
+// render.js（ナビゲーション、ハイライト、結果画面の描画）
+export { escapeAttr, animateValue, escapeHtml, formatCurrency } from "./utils.js";
 
 export function updateHighlight(card, isChecked) {
   if (!card) return;
@@ -27,25 +18,7 @@ export function updateHighlight(card, isChecked) {
   }
 }
 
-export function animateValue(element, start, end, duration) {
-  if (start === end) return;
-  if (element.animationId) cancelAnimationFrame(element.animationId);
-  let startTimestamp = null;
-  const step = (timestamp) => {
-    if (!startTimestamp) startTimestamp = timestamp;
-    const t = Math.min((timestamp - startTimestamp) / duration, 1);
-    const progress = t * (2 - t);
-    const currentVal = Math.floor(start + (end - start) * progress);
-    element.textContent = currentVal.toLocaleString();
-    if (t < 1) {
-      element.animationId = window.requestAnimationFrame(step);
-    } else {
-      element.textContent = end.toLocaleString();
-      element.animationId = null;
-    }
-  };
-  element.animationId = window.requestAnimationFrame(step);
-}
+
 
 export function renderNav(cats, container) {
   if (!container) return;

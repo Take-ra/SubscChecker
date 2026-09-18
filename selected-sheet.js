@@ -1,5 +1,5 @@
-import { getBrandBadge, getBrandDomain } from "./render-list.js";
-import { escapeAttr } from "./render.js";
+import { renderBrandIcon } from "./brand-icons.js";
+import { escapeAttr } from "./utils.js";
 
 export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze }) {
   const getPopupEl = () => document.getElementById("selected-subs-popup");
@@ -73,20 +73,8 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
 
     listEl.innerHTML = items
       .map((item) => {
-        const badge = getBrandBadge(item.name, item.categoryId || "lifestyle");
-        const domain = getBrandDomain(item.name);
-        const faviconUrl = domain ? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128` : "";
         const priceStr = Number(item.monthly || 0).toLocaleString();
-        const iconHtml = faviconUrl
-          ? `
-          <div class="w-8 h-8 rounded-xl shrink-0 select-none overflow-hidden relative flex items-center justify-center">
-            <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-contain p-0.5" onerror="this.parentElement.className='w-8 h-8 rounded-xl ${badge.bg} flex items-center justify-center font-black text-xs shadow-2xs shrink-0 select-none'; this.remove();">
-            <span class="sr-only">${badge.label}</span>
-          </div>`
-          : `
-          <div class="w-8 h-8 rounded-xl ${badge.bg} flex items-center justify-center font-black text-xs shrink-0 select-none shadow-2xs">
-            ${badge.label}
-          </div>`;
+        const iconHtml = renderBrandIcon(item.name, item.categoryId || "lifestyle", "w-8 h-8", "text-xs");
 
         return `
         <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50/80 hover:bg-blue-50/40 border border-slate-100 hover:border-blue-200/80 transition-all group">
