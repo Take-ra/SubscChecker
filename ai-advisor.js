@@ -546,8 +546,9 @@ function renderAdvisor(container, data, items = []) {
   );
 
   // 3. 重複警告 & プラン最適化のHTML作成
+  const safeDuplicateWarnings = Array.isArray(duplicate_warnings) ? duplicate_warnings : [];
   let duplicateHtml = "";
-  if (duplicate_warnings.length > 0) {
+  if (safeDuplicateWarnings.length > 0) {
     duplicateHtml = `
       <div class="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 md:p-5">
         <div class="flex items-center gap-2 mb-2">
@@ -555,14 +556,15 @@ function renderAdvisor(container, data, items = []) {
           <h3 class="text-sm md:text-base font-black text-amber-900">重複・二重課金の懸念</h3>
         </div>
         <ul class="space-y-2 text-xs md:text-sm text-amber-800 leading-relaxed list-disc list-inside">
-          ${duplicate_warnings.map((w) => `<li>${escapeHtml(w)}</li>`).join("")}
+          ${safeDuplicateWarnings.map((w) => `<li>${escapeHtml(w)}</li>`).join("")}
         </ul>
       </div>
     `;
   }
 
+  const safePlanOptimizations = Array.isArray(plan_optimizations) ? plan_optimizations : [];
   let planHtml = "";
-  if (plan_optimizations.length > 0) {
+  if (safePlanOptimizations.length > 0) {
     planHtml = `
       <div class="bg-blue-50/90 border border-blue-200/90 rounded-2xl p-4 md:p-5">
         <div class="flex items-center gap-2 mb-2">
@@ -570,7 +572,7 @@ function renderAdvisor(container, data, items = []) {
           <h3 class="text-sm md:text-base font-black text-blue-900">プラン・契約形態の最適化</h3>
         </div>
         <ul class="space-y-2 text-xs md:text-sm text-blue-800 leading-relaxed list-disc list-inside">
-          ${plan_optimizations.map((p) => `<li>${escapeHtml(p)}</li>`).join("")}
+          ${safePlanOptimizations.map((p) => `<li>${escapeHtml(p)}</li>`).join("")}
         </ul>
       </div>
     `;

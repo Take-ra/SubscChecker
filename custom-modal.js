@@ -101,7 +101,7 @@ export function initCustomModal(callbacks) {
         customSubs[index] = {
           ...customSubs[index],
           name,
-          price,
+          price: numPrice,
           planType,
           cycle,
           cycleNum,
@@ -115,7 +115,7 @@ export function initCustomModal(callbacks) {
       editingSubId = null;
     } else {
       const newId = "c_" + Date.now();
-      customSubs.push({ id: newId, name, price, planType, cycle, cycleNum, cycleUnit });
+      customSubs.push({ id: newId, name, price: numPrice, planType, cycle, cycleNum, cycleUnit });
       savedState[newId] = { checked: true, plan: planType };
     }
 
@@ -133,6 +133,7 @@ export function initCustomModal(callbacks) {
 
   // 数字の選択肢を生成する関数
   function updateCycleNumOptions() {
+    if (!customCycleUnit || !customCycleNum) return;
     const unit = customCycleUnit.value;
     let max = 24;
     if (unit === "weeks") max = 12;
@@ -145,7 +146,9 @@ export function initCustomModal(callbacks) {
   }
 
   updateCycleNumOptions();
-  customCycleUnit.addEventListener("change", updateCycleNumOptions);
+  if (customCycleUnit) {
+    customCycleUnit.addEventListener("change", updateCycleNumOptions);
+  }
 
 
   window.toggleEditMenu = function (id) {

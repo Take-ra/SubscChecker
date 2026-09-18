@@ -59,3 +59,4 @@ export function animateValue(element, start, end, duration = 500) {
   };
   element.animationId = window.requestAnimationFrame(step);
 }
+

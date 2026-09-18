@@ -83,10 +83,13 @@ function getSelectedNotifyDays() {
 
 // 特定の通知日数から「予定日」を計算する
 function calculateSingleEventDate(notifyDays) {
-  const startDateStr = document.getElementById("cal-start-date").value;
+  if (!currentCalSub) return null;
+  const startDateStr = document.getElementById("cal-start-date")?.value;
   if (!startDateStr) return null;
 
-  const start = new Date(startDateStr);
+  const parts = startDateStr.split("-").map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return null;
+  const start = new Date(parts[0], parts[1] - 1, parts[2]);
   let nextRenewal = new Date(start);
 
   const plan = currentCalSub.plan;

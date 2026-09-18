@@ -167,3 +167,4 @@ export function renderBrandIcon(
       ${brandBadge.label}
     </div>`;
 }
+

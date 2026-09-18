@@ -1,4 +1,5 @@
 // share-card.js (ワンタップXシェア & ツイート文コピー特化型モジュール)
+import { escapeHtml } from "./utils.js";
 
 /**
  * SNSシェア用テキストテンプレート
@@ -182,12 +183,3 @@ export function initShareCardActions({ data, items, totalMonthly, totalYearly })
   }
 }
 
-function escapeHtml(str) {
-  if (!str) return "";
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}

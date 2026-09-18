@@ -172,7 +172,16 @@ export default async function handler(req, res) {
       });
     }
 
-    const analysisResult = JSON.parse(rawJsonText);
+    let analysisResult;
+    try {
+      const cleanJson = rawJsonText.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+      analysisResult = JSON.parse(cleanJson);
+    } catch (parseErr) {
+      console.error("JSON parse error:", parseErr, "Raw output:", rawJsonText);
+      return res.status(502).json({
+        error: "AIの応答形式が正しくありませんでした。再度お試しください。",
+      });
+    }
     return res.status(200).json(analysisResult);
   } catch (error) {
     console.error("Handler error:", error);
