@@ -23,19 +23,22 @@ export function renderOverlookedSection(subs = [], savedState = {}, container = 
         (sub.plans || []).find((p) => p.id === sub.defaultPlanId) ||
         (sub.plans || [])[0];
       const priceText = defaultPlan ? `¥${defaultPlan.monthly.toLocaleString()}/月` : "";
+      const reasonTag = sub.overlookedReason
+        ? `<span class="text-[9px] font-bold text-amber-800 bg-amber-100/90 px-1.5 py-0.5 rounded leading-none shrink-0 whitespace-nowrap">${escapeHtml(sub.overlookedReason)}</span>`
+        : "";
 
       return `
         <button
           type="button"
           data-sub-id="${sub.id}"
           data-overlooked-id="${sub.id}"
-          class="overlooked-chip flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all shrink-0 cursor-pointer text-left select-none active:scale-95 ${
+          class="overlooked-chip flex items-center gap-2.5 px-3 py-2 rounded-2xl border transition-all shrink-0 cursor-pointer text-left select-none active:scale-95 ${
             isChecked
               ? "bg-blue-50 border-blue-400 shadow-xs ring-1 ring-blue-300"
               : "bg-white border-slate-200 hover:border-slate-300 shadow-2xs"
           }"
         >
-          ${renderBrandIcon(sub.name, sub.categoryId, "w-6 h-6", "text-xs")}
+          ${renderBrandIcon(sub.name, sub.categoryId, "w-7 h-7", "text-xs")}
           <div class="min-w-0">
             <div class="text-xs font-black text-slate-800 truncate leading-tight flex items-center gap-1">
               <span>${escapeAttr(sub.name)}</span>
@@ -43,7 +46,10 @@ export function renderOverlookedSection(subs = [], savedState = {}, container = 
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
-            <div class="text-[10px] text-slate-400 font-bold tabular-nums">${priceText}</div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="text-[10px] text-slate-400 font-bold tabular-nums">${priceText}</span>
+              ${reasonTag}
+            </div>
           </div>
         </button>
       `;
@@ -59,17 +65,58 @@ export function renderOverlookedSection(subs = [], savedState = {}, container = 
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
             </svg>
           </div>
-          <h3 class="text-xs sm:text-sm font-black text-amber-950">
-            見落としがちな定番サブスク
-          </h3>
+          <div>
+            <h3 class="text-xs sm:text-sm font-black text-amber-950 leading-tight">
+              見落としがちな定番サブスク
+            </h3>
+          </div>
         </div>
-        <span class="text-[10px] font-bold text-amber-800/80">無料体験・スマホ特典の放置に注意</span>
+        <div class="flex items-center gap-1.5">
+          <span class="hidden sm:inline-block text-[10px] font-bold text-amber-800/80 bg-amber-100/70 px-2 py-0.5 rounded-md">無料体験・少額明細の放置に注意</span>
+          <button
+            type="button"
+            id="overlooked-scroll-prev"
+            class="w-6 h-6 rounded-full bg-white/80 hover:bg-white border border-amber-200/90 text-amber-800 flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-90"
+            aria-label="前へスクロール"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          <button
+            type="button"
+            id="overlooked-scroll-next"
+            class="w-6 h-6 rounded-full bg-white/80 hover:bg-white border border-amber-200/90 text-amber-800 flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-90"
+            aria-label="次へスクロール"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
       </div>
-      <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        ${chipsHtml}
+      <div class="relative">
+        <div id="overlooked-scroll-container" class="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar scroll-smooth">
+          ${chipsHtml}
+        </div>
+        <div class="pointer-events-none absolute right-0 top-0 bottom-1 w-12 bg-gradient-to-l from-amber-50/90 via-amber-50/40 to-transparent rounded-r-2xl z-10"></div>
       </div>
     </div>
   `;
+
+  // 左右矢印ボタンのスクロール操作リスナーを登録
+  const scrollContainer = container.querySelector("#overlooked-scroll-container");
+  const prevBtn = container.querySelector("#overlooked-scroll-prev");
+  const nextBtn = container.querySelector("#overlooked-scroll-next");
+
+  if (scrollContainer && prevBtn && nextBtn) {
+    prevBtn.addEventListener("click", () => {
+      scrollContainer.scrollBy({ left: -260, behavior: "smooth" });
+    });
+    nextBtn.addEventListener("click", () => {
+      scrollContainer.scrollBy({ left: 260, behavior: "smooth" });
+    });
+  }
 }
 
 export function renderMainList(cats, subs, savedState, container) {

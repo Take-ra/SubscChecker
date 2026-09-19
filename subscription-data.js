@@ -138,6 +138,7 @@ export const subscriptions = [
     categoryId: "video",
     name: "Netflix",
     isOverlooked: true,
+    overlookedReason: "作品視聴後の放置注意",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "スタンダード (月払い)", monthly: 1590, note: "フルHD・2画面同時" },
@@ -153,6 +154,7 @@ export const subscriptions = [
     categoryId: "video",
     name: "Amazon Prime",
     isOverlooked: true,
+    overlookedReason: "30日無料の自動更新",
     defaultPlanId: "monthly",
     plans: [
       { id: "monthly", name: "月払い", monthly: 600, note: "月額 ¥600" },
@@ -168,6 +170,7 @@ export const subscriptions = [
     categoryId: "video",
     name: "YouTube Premium",
     isOverlooked: true,
+    overlookedReason: "3ヶ月無料の自動移行",
     defaultPlanId: "web-monthly",
     plans: [
       { id: "web-monthly", name: "Web/Android (月払い)", monthly: 1280, note: "公式Web価格" },
@@ -185,6 +188,7 @@ export const subscriptions = [
     categoryId: "video",
     name: "Disney+",
     isOverlooked: true,
+    overlookedReason: "特定作品の視聴後放置",
     defaultPlanId: "std-monthly",
     plans: [
       { id: "std-monthly", name: "スタンダード (月払い)", monthly: 990, note: "フルHD・2画面" },
@@ -331,6 +335,7 @@ export const subscriptions = [
     categoryId: "music",
     name: "Spotify",
     isOverlooked: true,
+    overlookedReason: "無料体験後の自動移行",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "Standard (月払い)", monthly: 1080, note: "個人向け標準" },
@@ -347,6 +352,7 @@ export const subscriptions = [
     categoryId: "music",
     name: "Apple Music",
     isOverlooked: true,
+    overlookedReason: "端末購入特典の放置",
     defaultPlanId: "ind-monthly",
     plans: [
       { id: "ind-monthly", name: "個人 (月払い)", monthly: 1080, note: "月額 ¥1,080" },
@@ -437,6 +443,7 @@ export const subscriptions = [
     categoryId: "ebook",
     name: "Kindle Unlimited",
     isOverlooked: true,
+    overlookedReason: "無料/99円CP自動移行",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "月額プラン", monthly: 980, note: "200万冊読み放題" },
@@ -449,6 +456,7 @@ export const subscriptions = [
     categoryId: "ebook",
     name: "Audible (オーディブル)",
     isOverlooked: true,
+    overlookedReason: "無料体験後の自動継続",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "月額プラン", monthly: 1500, note: "聴く読書・オーディオブック" },
@@ -516,6 +524,7 @@ export const subscriptions = [
     categoryId: "game",
     name: "Nintendo Switch Online",
     isOverlooked: true,
+    overlookedReason: "年額自動更新で失念",
     defaultPlanId: "ind-yearly",
     plans: [
       { id: "ind-yearly", name: "個人プラン (年払い)", monthly: 200, yearly: 2400, note: "年額 ¥2,400" },
@@ -570,6 +579,7 @@ export const subscriptions = [
     categoryId: "tool",
     name: "Microsoft 365 (Office)",
     isOverlooked: true,
+    overlookedReason: "PC試用後の自動更新",
     defaultPlanId: "personal-yearly",
     plans: [
       { id: "personal-yearly", name: "Personal (年払い)", monthly: 1242, yearly: 14900, note: "年額 ¥14,900（年約¥3,000お得）" },
@@ -649,6 +659,7 @@ export const subscriptions = [
     categoryId: "storage",
     name: "iCloud+",
     isOverlooked: true,
+    overlookedReason: "月¥150〜少額明細埋没",
     defaultPlanId: "200gb",
     plans: [
       { id: "50gb", name: "50GB (月額)", monthly: 150, note: "最小容量・月¥150" },
@@ -665,6 +676,7 @@ export const subscriptions = [
     categoryId: "storage",
     name: "Google One",
     isOverlooked: true,
+    overlookedReason: "月¥250〜少額明細埋没",
     defaultPlanId: "100gb-monthly",
     plans: [
       { id: "100gb-monthly", name: "100GB (月払い)", monthly: 250, note: "月額 ¥250" },
@@ -683,6 +695,7 @@ export const subscriptions = [
     categoryId: "storage",
     name: "Apple One",
     isOverlooked: true,
+    overlookedReason: "無料体験の自動更新",
     defaultPlanId: "ind",
     plans: [
       { id: "ind", name: "個人 (月払い)", monthly: 1200, note: "Music/TV+/Arcade/iCloud 50GB" },
@@ -712,6 +725,7 @@ export const subscriptions = [
     categoryId: "delivery",
     name: "Uber One",
     isOverlooked: true,
+    overlookedReason: "初月無料の自動更新",
     defaultPlanId: "monthly",
     plans: [
       { id: "monthly", name: "月払い", monthly: 498, note: "月額 ¥498" },
@@ -725,6 +739,7 @@ export const subscriptions = [
     categoryId: "delivery",
     name: "LYPプレミアム (旧Yahoo!プレミアム)",
     isOverlooked: true,
+    overlookedReason: "スマホ特典終了後の放置",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "月額プラン", monthly: 508, note: "LINEアルバム高画質・ヤフー特典" },
@@ -753,6 +768,7 @@ export const subscriptions = [
     categoryId: "lifestyle",
     name: "chocoZAP",
     isOverlooked: true,
+    overlookedReason: "入会後の利用休眠",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "月額プラン", monthly: 3278, note: "全店24時間使い放題" },
