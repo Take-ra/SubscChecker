@@ -45,66 +45,95 @@
         class="space-y-6 text-slate-700 leading-relaxed text-sm md:text-base mb-10"
       >
         <p>
-          SubscCheckerは、皆様のフィードバックをもとに継続的にアップデートしています。今後の予定は以下のとおりです。
+          SubscCheckerは、皆様のフィードバックをもとに継続的にアップデートしています。現在の開発状況および今後のリリース計画は以下のとおりです。
         </p>
 
         <div class="space-y-6">
-          <div class="p-5 rounded-2xl bg-blue-50/50 border border-blue-100">
+          <!-- 完了した機能 -->
+          <div class="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80">
             <div class="flex items-center gap-2 mb-2">
-              <span
-                class="px-2.5 py-0.5 bg-blue-600 text-white font-black text-xs rounded-md"
-                >Phase 1</span
-              >
+              <span class="px-2.5 py-0.5 bg-emerald-600 text-white font-black text-xs rounded-md">
+                Released
+              </span>
               <h3 class="font-bold text-slate-900 text-base">
-                データベースの拡充・料金改定自動追従（進行中）
+                主要機能のリリース完了
               </h3>
             </div>
-            <p class="text-sm text-slate-600">
-              最新の価格改定への対応と、ニッチなSaaSや専門ツールのリクエスト対応を順次進めています。
-            </p>
+            <ul class="text-sm text-slate-600 space-y-1.5 list-disc list-inside mt-2">
+              <li><strong>UI/UXリニューアル:</strong> 1サービス1行化・プランドロップダウン統合・PC3カラム表示</li>
+              <li><strong>高速検索システム:</strong> ひらがな・略称・ジャンル名に対応したゼロリフロー高速検索</li>
+              <li><strong>カレンダー通知リマインダー:</strong> 更新日・無料体験終了日のGoogleカレンダー / iCal登録機能</li>
+              <li><strong>SNSシェア & カルテ画像生成:</strong> 診断結果・ジャンル構成比の高画質画像生成とXシェア機能</li>
+              <li><strong>主要サブスクの解約手順ガイド:</strong> Web/アプリ課金別の公式解約手順・注意点の公開</li>
+              <li><strong>独自サブスクの登録・編集:</strong> ジムや習い事など一覧にない定期支出の自由追加</li>
+              <li><strong>安心の完全ローカル保存:</strong> 会員登録不要・外部サーバー送信なしのプライバシー保護</li>
+            </ul>
           </div>
 
-          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+          <!-- 進行中の開発 -->
+          <div class="p-5 rounded-2xl bg-blue-50/60 border border-blue-200/80">
             <div class="flex items-center gap-2 mb-2">
-              <span
-                class="px-2.5 py-0.5 bg-slate-700 text-white font-black text-xs rounded-md"
-                >Phase 2</span
-              >
+              <span class="px-2.5 py-0.5 bg-blue-600 text-white font-black text-xs rounded-md">
+                In Progress
+              </span>
               <h3 class="font-bold text-slate-900 text-base">
-                SNSシェア機能 & 診断カード生成
+                AI見直しアドバイザーの高度化 & データベース拡充
               </h3>
             </div>
-            <p class="text-sm text-slate-600">
-              「私のサブスク総額」をビジュアルな画像にして、Xなどにワンタップでシェアできる機能を開発予定です。
-            </p>
+            <ul class="text-sm text-slate-600 space-y-1.5 list-disc list-inside mt-2">
+              <li><strong>Gemini AI による見直しアドバイス:</strong> 重複契約の検知・プラン見直し・年払い切り替えによる具体的削減シミュレーションの精度向上</li>
+              <li><strong>価格改定への随時追従:</strong> 各社サブスクの最新料金・プラン変更への継続的なアップデート</li>
+              <li><strong>リクエスト追加:</strong> ユーザーから要望のあった専門ツールやニッチSaaSの追加</li>
+            </ul>
           </div>
 
+          <!-- 今後の計画 -->
           <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
             <div class="flex items-center gap-2 mb-2">
-              <span
-                class="px-2.5 py-0.5 bg-slate-700 text-white font-black text-xs rounded-md"
-                >Phase 3</span
-              >
+              <span class="px-2.5 py-0.5 bg-slate-700 text-white font-black text-xs rounded-md">
+                Upcoming
+              </span>
               <h3 class="font-bold text-slate-900 text-base">
-                AIパーソナライズ診断の精度向上
+                今後のアップデート計画
               </h3>
             </div>
-            <p class="text-sm text-slate-600">
-              家族構成や学生・社会人などの属性に合わせたプリセット機能と、AIによる削減シミュレーションの精度向上を予定しています。
-            </p>
+            <ul class="text-sm text-slate-600 space-y-1.5 list-disc list-inside mt-2">
+              <li><strong>属性別プリセット機能:</strong> 「学生」「テレワーカー」「ファミリー」など、よく使われるサブスクをワンタップで一括選択できるプリセット</li>
+              <li><strong>年間更新カレンダービュー:</strong> 年間契約の更新月や次回引き落としタイミングを一目で把握できる年次タイムライン</li>
+              <li><strong>データのエクスポート / インポート:</strong> 登録データをCSVやJSONで保存・別端末へ引き継ぎできる機能</li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <div class="pt-6 border-t border-slate-100 text-center">
+      <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-center gap-3">
         <a
           href="https://docs.google.com/forms/d/e/1FAIpQLSdLrJ6cIUE84Elo7LQelJyOHsWM-3415BwIp8oDActYUvmTeg/viewform?usp=header"
           target="_blank"
-          class="inline-block px-6 py-3 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-700 transition-colors"
+          rel="noopener noreferrer"
+          class="inline-block w-full sm:w-auto px-6 py-3 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-700 transition-colors text-center"
         >
           機能・サブスク追加のリクエストはこちら
         </a>
+        <a
+          href="/"
+          class="inline-block w-full sm:w-auto px-6 py-3 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors text-center shadow-sm"
+        >
+          アプリに戻る
+        </a>
       </div>
+
+      <footer class="mt-8 pt-6 border-t border-slate-100 text-center text-xs text-slate-400 space-y-3">
+        <div class="flex flex-wrap justify-center gap-4 text-slate-500 font-medium">
+          <a href="/" class="hover:text-blue-600 transition-colors">アプリトップ</a>
+          <a href="/guide.html" class="hover:text-blue-600 transition-colors">ご利用ガイド・FAQ</a>
+          <a href="/cancel/" class="hover:text-rose-600 transition-colors">解約手順ガイド</a>
+          <a href="/story.html" class="hover:text-amber-600 transition-colors">開発背景・コンセプト</a>
+          <a href="/about.html" class="hover:text-purple-600 transition-colors">運営者情報</a>
+          <a href="/policy.html" class="hover:text-blue-600 transition-colors">利用規約・ポリシー</a>
+        </div>
+        <p>© 2026 SubscChecker</p>
+      </footer>
     </div>
   </body>
 </html>
