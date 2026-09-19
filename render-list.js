@@ -117,7 +117,7 @@ export function renderMainList(cats, subs, savedState, container) {
         planUI = `
           <select
             id="sel-${sub.id}"
-            class="plan-selector w-full h-8 text-xs font-bold text-slate-800 py-0 pl-2.5 pr-6 border border-slate-200 rounded-xl bg-slate-100/80 hover:bg-white focus:bg-white cursor-pointer focus:ring-1 focus:ring-blue-500 shadow-2xs transition-all text-left tabular-nums select-none"
+            class="plan-selector w-full h-8 text-xs font-bold text-slate-800 py-0 pl-2.5 pr-7 border border-slate-200 rounded-xl bg-slate-100/80 hover:bg-white focus:bg-white cursor-pointer focus:ring-1 focus:ring-blue-500 shadow-2xs transition-all text-left tabular-nums select-none"
             onclick="event.stopPropagation()"
           >
             ${optionsHtml}
@@ -175,15 +175,14 @@ export function renderMainList(cats, subs, savedState, container) {
             ${isChecked ? "checked" : ""}
           >
           ${iconHtml}
-          <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-1 md:py-0 min-w-0 flex items-center gap-2">
+          <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-1 md:py-0 min-w-0 flex items-center">
             <span class="text-sm md:text-base font-extrabold text-slate-800 leading-snug truncate">${escapeHtml(sub.name)}</span>
-            <span class="sub-cat-badge text-[10px] md:text-xs font-bold text-slate-400 bg-slate-100/90 px-2 py-0.5 rounded-md shrink-0 whitespace-nowrap">${escapeHtml(cat.name)}</span>
           </label>
         </div>
 
         <!-- 右側: プランドロップダウン -->
         <div class="flex-shrink-0 flex items-center">
-          <div class="w-[130px] sm:w-[155px] md:w-[175px] shrink-0">
+          <div class="w-[145px] sm:w-[185px] md:w-[220px] lg:w-[245px] shrink-0">
             ${planUI}
           </div>
         </div>
