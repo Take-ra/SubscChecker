@@ -101,7 +101,7 @@ export function renderChart(data, type = currentChartType) {
 
   const totalSum = chartData.reduce((a, b) => a + b, 0);
 
-  // スライス上にパーセンテージを描画するプラグイン（ホバー時や吹き出しと重なる位置の文字は自動的に非表示にする）
+  // スライス上にパーセンテージを描画するプラグイン（データセット直後に描画することで、吹き出しが上に重なり自然に隠れる）
   const slicePercentagePlugin = {
     id: "slicePercentagePlugin",
     afterDatasetDraw(chart) {
@@ -114,40 +114,6 @@ export function renderChart(data, type = currentChartType) {
       const sum = dataset.data.reduce((a, b) => a + b, 0);
       if (sum === 0) return;
 
-      // 現在ホバー（アクティブ）されているスライスのインデックスを取得
-      const activeElements = chart.getActiveElements ? chart.getActiveElements() : [];
-      const activeIndices = new Set(activeElements.map((el) => el.index));
-      if (chart.tooltip && chart.tooltip._active && Array.isArray(chart.tooltip._active)) {
-        chart.tooltip._active.forEach((el) => {
-          if (el.index !== undefined) activeIndices.add(el.index);
-          if (el.element && el.element.$context && el.element.$context.index !== undefined) {
-            activeIndices.add(el.element.$context.index);
-          }
-        });
-      }
-
-      // ツールチップの表示領域（吹き出しのバウンディングボックス）を取得
-      const tooltip = chart.tooltip;
-      const isTooltipVisible = tooltip && tooltip.opacity > 0;
-      let ttBox = null;
-
-      if (isTooltipVisible) {
-        const tx = typeof tooltip.x === "number" ? tooltip.x : tooltip.caretX;
-        const ty = typeof tooltip.y === "number" ? tooltip.y : tooltip.caretY;
-        const tw = tooltip.width || 140;
-        const th = tooltip.height || 60;
-
-        const coordsX = [tx, tooltip.caretX, tx - tw, tx + tw].filter((v) => typeof v === "number");
-        const coordsY = [ty, tooltip.caretY, ty - th, ty + th].filter((v) => typeof v === "number");
-
-        ttBox = {
-          left: Math.min(...coordsX) - 16,
-          right: Math.max(...coordsX) + 16,
-          top: Math.min(...coordsY) - 16,
-          bottom: Math.max(...coordsY) + 16,
-        };
-      }
-
       ctx.save();
       ctx.font = "bold 11px system-ui, -apple-system, sans-serif";
       ctx.fillStyle = "#ffffff";
@@ -155,28 +121,12 @@ export function renderChart(data, type = currentChartType) {
       ctx.textBaseline = "middle";
 
       meta.data.forEach((element, index) => {
-        // ① ホバー中のスライスはツールチップと重なるため非表示
-        if (activeIndices.has(index)) return;
-
         const value = dataset.data[index] || 0;
         const pct = (value / sum) * 100;
 
-        // 6%以上の面積があるスライスにのみパーセントを描画
+        // 6%以上の面積があるスライスにパーセントを描画
         if (pct >= 6.0) {
           const pos = element.getCenterPoint();
-
-          // ② ツールチップの吹き出し（他スライスから伸びたもの含む）と衝突する場合は描画をスキップ
-          if (ttBox) {
-            if (
-              pos.x >= ttBox.left &&
-              pos.x <= ttBox.right &&
-              pos.y >= ttBox.top &&
-              pos.y <= ttBox.bottom
-            ) {
-              return;
-            }
-          }
-
           const text = `${pct.toFixed(1)}%`;
 
           ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
@@ -237,7 +187,9 @@ export function renderChart(data, type = currentChartType) {
         },
         tooltip: {
           enabled: !isEmpty,
-          backgroundColor: "rgba(15, 23, 42, 0.95)",
+          backgroundColor: "#0f172a", // 100%完全不透明なソリッド背景（下の白文字を完全に覆う）
+          borderColor: "rgba(255, 255, 255, 0.15)",
+          borderWidth: 1,
           padding: 10,
           cornerRadius: 12,
           caretPadding: 8,
