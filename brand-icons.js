@@ -30,7 +30,7 @@ export function getBrandBadge(name = "", categoryId = "") {
   if (/canva/i.test(n)) return { label: "C", bg: "bg-cyan-600 text-white" };
   if (/adobe/i.test(n)) return { label: "A", bg: "bg-red-600 text-white" };
   if (/uber/i.test(n)) return { label: "U", bg: "bg-slate-950 text-white" };
-  if (/kindle/i.test(n)) return { label: "K", bg: "bg-amber-600 text-white" };
+  if (/kindle/i.test(n)) return { label: "K", bg: "bg-sky-600 text-white" };
   if (/dazn/i.test(n)) return { label: "D", bg: "bg-slate-900 text-yellow-300" };
   if (/audible/i.test(n)) return { label: "A", bg: "bg-amber-500 text-white" };
   if (/dマガジン/i.test(n)) return { label: "d", bg: "bg-red-600 text-white" };
@@ -95,8 +95,8 @@ export function getBrandDomain(name = "") {
   if (/canva/i.test(n)) return "canva.com";
   if (/adobe/i.test(n)) return "adobe.com";
   if (/uber/i.test(n)) return "ubereats.com";
-  if (/出前館/i.test(n)) return "demae-can.com";
-  if (/kindle|audible/i.test(n)) return "amazon.co.jp";
+  if (/kindle/i.test(n)) return "kdp.amazon.com";
+  if (/audible/i.test(n)) return "audible.co.jp";
   if (/dazn/i.test(n)) return "dazn.com";
   if (/radiko/i.test(n)) return "radiko.jp";
   if (/cookpad/i.test(n)) return "cookpad.com";

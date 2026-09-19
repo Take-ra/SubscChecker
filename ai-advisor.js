@@ -50,9 +50,12 @@ export function initAIAdvisor(getSelectedItems) {
     });
   }
 
-  // 開発用モックモード切り替えボタンの初期化
+  // 開発用モックモード切り替えボタンの初期化（URLに ?mock=1 または ?mock=true が指定されている場合のみ表示）
+  const urlParam = new URLSearchParams(window.location.search).get("mock");
+  const showDevMock = urlParam === "true" || urlParam === "1" || localStorage.getItem("subsc_dev_ui") === "true";
+
   const container = document.getElementById("ai-advisor-container");
-  if (container && !document.getElementById("btn-toggle-mock")) {
+  if (showDevMock && container && !document.getElementById("btn-toggle-mock")) {
     const subText = container.querySelector("p");
     if (subText && subText.parentNode) {
       const mockWrapper = document.createElement("div");
@@ -621,11 +624,11 @@ function renderAdvisor(container, data, items = []) {
   if (!data) return;
 
   // 下位互換用フォールバック（旧スキーマが万一返ってきた場合）
-  let actions = [];
+  let rawActions = [];
   if (Array.isArray(data.actions) && data.actions.length > 0) {
-    actions = data.actions;
+    rawActions = data.actions;
   } else if (data.priority_action) {
-    actions.push({
+    rawActions.push({
       id: "priority_action_fallback",
       service: items[0]?.name || "契約サブスク",
       action_type: "plan_change",
@@ -637,23 +640,54 @@ function renderAdvisor(container, data, items = []) {
       proposed_state: "年払いに切り替え",
       reason_short: data.priority_action.reason || "",
     });
-    if (Array.isArray(data.plan_optimizations)) {
-      data.plan_optimizations.forEach((p, idx) => {
-        actions.push({
-          id: `plan_fallback_${idx}`,
-          service: "契約サブスク",
-          action_type: "review",
-          title: p,
-          annual_saving: 0,
-          effort: "medium",
-          time_required_min: 5,
-          current_state: "",
-          proposed_state: "",
-          reason_short: "プラン内容の見直しをおすすめします。",
-        });
-      });
-    }
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // 実データ整合性ガードレール（信頼性・景表法リスクの根絶）
+  // ═══════════════════════════════════════════════════════════
+  const userItemNames = (items || []).map((i) => (i.name || "").toLowerCase().trim());
+
+  // ガードレール①: ユーザーが実際に契約していないサービスの提案を100%除外
+  let actions = rawActions.filter((act) => {
+    if (!act || !act.service) return false;
+    const actTarget = act.service.toLowerCase().trim();
+    const isMatched = userItemNames.some(
+      (uName) => uName.includes(actTarget) || actTarget.includes(uName)
+    );
+    if (!isMatched) {
+      console.warn(`[Guardrail] 契約外サービスの提案を除外しました: ${act.service} (${act.title})`);
+      return false;
+    }
+    return true;
+  });
+
+  // ガードレール②: ユーザーの登録実価格（月額）に基づく金額の決定論的バリデーション＆補正
+  actions.forEach((act) => {
+    const actTarget = (act.service || "").toLowerCase().trim();
+    const matchedUserItem = (items || []).find((i) => {
+      const uName = (i.name || "").toLowerCase().trim();
+      return uName.includes(actTarget) || actTarget.includes(uName);
+    });
+
+    if (matchedUserItem) {
+      const monthly = Number(matchedUserItem.monthly) || 0;
+      const yearly = Number(matchedUserItem.yearly) || monthly * 12;
+
+      if (act.action_type === "plan_change") {
+        // 年払い削減額は上限（月額×2.5）を超えないようにし、実登録月額ベースで整合
+        const maxSaving = Math.round(monthly * 2.5);
+        if (act.annual_saving > maxSaving || act.annual_saving <= 0) {
+          act.annual_saving = Math.round(monthly * 2); // 2ヶ月分を標準値として適用
+        }
+      } else if (act.action_type === "review" || act.title.includes("隔月")) {
+        // 隔月契約は年間の半額（月額 × 6）
+        const rotationSaving = Math.round(monthly * 6);
+        act.annual_saving = rotationSaving;
+        act.current_state = `通年契約 (年¥${(monthly * 12).toLocaleString()})`;
+        act.proposed_state = `見たい月のみ年6回契約 (年¥${rotationSaving.toLocaleString()})`;
+      }
+    }
+  });
 
   // アクションを削減見込み額（降順）でソート
   actions.sort((a, b) => (Number(b.annual_saving) || 0) - (Number(a.annual_saving) || 0));
@@ -688,7 +722,7 @@ function renderAdvisor(container, data, items = []) {
     const savingText = document.getElementById("res-saving-text");
     if (savingBanner && savingText) {
       if (totalPotentialSaving > 0) {
-        savingText.innerHTML = `年間最大 <strong class="text-emerald-700 font-black text-base md:text-lg">約${totalPotentialSaving.toLocaleString()}円</strong> 削減できる余地があります`;
+        savingText.innerHTML = `削減できる余地: <strong class="text-emerald-700 font-black text-base md:text-lg">年¥${totalPotentialSaving.toLocaleString()}</strong>`;
         savingBanner.classList.remove("hidden");
       } else {
         savingBanner.classList.add("hidden");
@@ -699,15 +733,15 @@ function renderAdvisor(container, data, items = []) {
     let singleItemNoticeHtml = "";
     if (items && items.length === 1) {
       singleItemNoticeHtml = `
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 flex items-start gap-3">
-          <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-start gap-3">
+          <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
           <div>
             <h4 class="text-xs sm:text-sm font-black text-slate-800">契約数1件のため、重複・二重課金の心配はありません</h4>
-            <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">
               契約中のサブスクが1件のため、サービス間の重複はありません。年払い化でお得になるかの確認や、他のサブスクを追加登録すると二重課金チェックも行えます。
             </p>
           </div>
@@ -715,39 +749,29 @@ function renderAdvisor(container, data, items = []) {
       `;
     }
 
-    // 4. サマリー ＆ 削減達成プログレスバー
+    // 4. サマリー ＆ 削減達成プログレスバー（重複した長文解説を廃止しシンプル化）
     const summaryCardHtml = `
       <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-800">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span class="text-[11px] font-bold text-slate-400">見直しによる年間削減ポテンシャル</span>
-              <span class="text-[10px] font-extrabold px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30">
-                ${data.profile_type || "固定費分析"}
-              </span>
-            </div>
+            <span class="text-[11px] font-bold text-slate-400 block mb-1">削減ポテンシャル</span>
             <div class="flex items-baseline gap-2">
-              <span class="text-xs sm:text-sm font-extrabold text-emerald-400">年間最大</span>
+              <span class="text-xs sm:text-sm font-extrabold text-emerald-400">年間</span>
               <span class="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">
-                約${totalPotentialSaving.toLocaleString()}
+                ¥${totalPotentialSaving.toLocaleString()}
               </span>
-              <span class="text-sm sm:text-base font-bold text-slate-300">円 削減可能</span>
+              <span class="text-xs sm:text-sm font-bold text-slate-300">節約可能</span>
             </div>
-            ${
-              data.summary
-                ? `<p class="text-xs text-slate-300 font-medium mt-2 leading-relaxed max-w-xl">${escapeHtml(data.summary)}</p>`
-                : ""
-            }
           </div>
 
           <!-- 削減達成度メーター -->
-          <div class="sm:text-right bg-slate-800/80 p-3.5 rounded-xl border border-slate-700/60 shrink-0 min-w-[200px]">
+          <div class="sm:text-right bg-slate-800/80 p-3 rounded-xl border border-slate-700/60 shrink-0 min-w-[200px]">
             <div class="flex items-center justify-between sm:justify-end gap-2 text-xs font-bold text-slate-300 mb-1.5">
-              <span>削減達成:</span>
+              <span>達成:</span>
               <span class="font-black text-emerald-400 text-sm">¥${completedSaving.toLocaleString()}</span>
               <span class="text-slate-400 text-[11px]">(${completedCount}/${activeActions.length}完了)</span>
             </div>
-            <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-700">
+            <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden p-0.5 border border-slate-700">
               <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-300" style="width: ${progressPercent}%;"></div>
             </div>
           </div>
@@ -755,7 +779,7 @@ function renderAdvisor(container, data, items = []) {
       </div>
     `;
 
-    // 5. ToDoアクションカードリスト（縦積み1カラム・4重ネスト解消）
+    // 5. ToDoアクションカードリスト（1画面1主役：チェックボックス ＋ 公式で設定塗りボタン）
     let actionsListHtml = "";
     if (activeActions.length === 0) {
       actionsListHtml = `
@@ -774,7 +798,6 @@ function renderAdvisor(container, data, items = []) {
           const cancelInfo = findCancelInfo(act.service);
           const deepLinkUrl = act.deeplink || cancelInfo?.url;
 
-          // 手間・所要時間のバッジ表示
           let effortLabel = "手間: 低";
           if (act.effort === "medium") effortLabel = "手間: 中";
           if (act.effort === "high") effortLabel = "手間: 高";
@@ -782,9 +805,9 @@ function renderAdvisor(container, data, items = []) {
           const timeLabel = act.time_required_min ? `約${act.time_required_min}分` : "数分";
           const savingBadge =
             act.annual_saving > 0
-              ? `<span class="inline-flex items-center text-xs font-black px-2.5 py-1 rounded-lg ${
+              ? `<span class="inline-flex items-center text-xs font-black px-2 py-0.5 rounded-md ${
                   isDone
-                    ? "bg-slate-200 text-slate-600"
+                    ? "bg-slate-100 text-slate-500"
                     : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                 }">-¥${Number(act.annual_saving).toLocaleString()}/年</span>`
               : "";
@@ -792,110 +815,117 @@ function renderAdvisor(container, data, items = []) {
           return `
             <div
               data-action-id="${escapeHtml(act.id)}"
-              class="todo-card bg-white rounded-2xl p-4 sm:p-5 border transition-all duration-200 ${
+              class="todo-card bg-white rounded-2xl p-4 sm:p-5 border transition-all duration-200 relative ${
                 isDone
-                  ? "border-slate-200 bg-slate-50/60 opacity-75"
+                  ? "border-slate-200 bg-slate-50/60 opacity-60"
                   : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-xs"
               }"
             >
-              <!-- 上段: サービスロゴ + サービス名 + タスク見出し + 削減額 -->
-              <div class="flex items-start justify-between gap-3">
-                <div class="flex items-start gap-3 min-w-0">
-                  ${renderBrandIcon(act.service, "", "w-10 h-10 sm:w-11 sm:h-11", "text-sm")}
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span class="text-xs font-bold text-slate-600 truncate">${escapeHtml(act.service)}</span>
-                      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+              <!-- カード上部: チェックボックス ＋ サービスロゴ ＋ 見出し ＋ 右上スキップ -->
+              <div class="flex items-start gap-3">
+                <!-- ① チェックボックス（事後行動は控えめな☐に降格） -->
+                <button
+                  type="button"
+                  data-action-btn="toggle-done"
+                  data-action-id="${escapeHtml(act.id)}"
+                  class="w-6 h-6 mt-1 rounded-full border-2 transition-all flex items-center justify-center shrink-0 cursor-pointer ${
+                    isDone
+                      ? "bg-emerald-500 border-emerald-500 text-white"
+                      : "border-slate-300 hover:border-emerald-500 bg-white"
+                  }"
+                  title="${isDone ? "未完了に戻す" : "完了にする"}"
+                >
+                  ${
+                    isDone
+                      ? `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>`
+                      : ""
+                  }
+                </button>
+
+                <!-- アイコン -->
+                ${renderBrandIcon(act.service, "", "w-10 h-10 sm:w-11 sm:h-11 shrink-0", "text-sm")}
+
+                <!-- コンテンツ本体 -->
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 flex-wrap min-w-0">
+                      <span class="text-xs font-bold text-slate-500 truncate">${escapeHtml(act.service)}</span>
+                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
                         ${effortLabel} · ${timeLabel}
                       </span>
                     </div>
-                    <h4 class="text-sm sm:text-base font-black text-slate-900 mt-1 leading-snug ${
-                      isDone ? "line-through text-slate-500" : ""
-                    }">
-                      ${escapeHtml(act.title)}
-                    </h4>
-                  </div>
-                </div>
-                <div class="text-right shrink-0">
-                  ${savingBadge}
-                </div>
-              </div>
 
-              <!-- 中段: Before / After コンパクト対比（現在と推奨がある場合） -->
-              ${
-                act.current_state && act.proposed_state
-                  ? `
-                <div class="bg-slate-50/90 rounded-xl p-3 my-3 flex items-center justify-between text-xs border border-slate-200/70 gap-2">
-                  <div class="min-w-0 flex-1">
-                    <span class="text-[10px] font-bold text-slate-400 block">現在</span>
-                    <span class="font-bold text-slate-700 truncate block">${escapeHtml(act.current_state)}</span>
-                  </div>
-                  <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                  </svg>
-                  <div class="min-w-0 flex-1 text-right">
-                    <span class="text-[10px] font-bold text-emerald-600 block">推奨</span>
-                    <span class="font-black text-emerald-700 truncate block">${escapeHtml(act.proposed_state)}</span>
-                  </div>
-                </div>
-              `
-                  : ""
-              }
-
-              <!-- 下段: 理由の折りたたみ（アコーディオン） ＆ アクション操作ボタン -->
-              <div class="mt-3 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <!-- 理由アコーディオン -->
-                <details class="group text-xs text-slate-600">
-                  <summary class="cursor-pointer font-bold text-slate-400 hover:text-slate-600 flex items-center gap-1 select-none transition-colors">
-                    <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                    <span>なぜこの見直しが必要？</span>
-                  </summary>
-                  <p class="mt-2 pl-4 text-xs text-slate-600 border-l-2 border-slate-200 leading-relaxed font-medium">
-                    ${escapeHtml(act.reason_short)}
-                  </p>
-                </details>
-
-                <!-- 操作ボタン群 -->
-                <div class="flex items-center justify-end gap-2 shrink-0">
-                  ${
-                    deepLinkUrl
-                      ? `
-                    <a
-                      href="${escapeHtml(deepLinkUrl)}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                    <!-- 右上: スキップ（興味ない）ボタン -->
+                    <button
+                      type="button"
+                      data-action-btn="dismiss"
+                      data-action-id="${escapeHtml(act.id)}"
+                      class="text-slate-300 hover:text-slate-500 p-1 -mr-1 transition-colors cursor-pointer"
+                      title="この提案を非表示"
                     >
-                      <span>公式で設定</span>
-                      <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                       </svg>
-                    </a>
+                    </button>
+                  </div>
+
+                  <!-- タイトル（動詞の命令形） -->
+                  <h4 class="text-sm sm:text-base font-black text-slate-900 mt-0.5 leading-snug ${
+                    isDone ? "line-through text-slate-400" : ""
+                  }">
+                    ${escapeHtml(act.title)}
+                  </h4>
+
+                  <!-- Before / After（箱をなくしスッキリ1行表示） -->
+                  ${
+                    act.current_state && act.proposed_state
+                      ? `
+                    <div class="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1.5 flex-wrap">
+                      <span class="text-slate-400">${escapeHtml(act.current_state)}</span>
+                      <span class="text-slate-300">➔</span>
+                      <span class="font-bold text-slate-700">${escapeHtml(act.proposed_state)}</span>
+                    </div>
                   `
                       : ""
                   }
-                  <button
-                    type="button"
-                    data-action-btn="toggle-done"
-                    data-action-id="${escapeHtml(act.id)}"
-                    class="px-3.5 py-1.5 text-xs font-black rounded-xl transition-all active:scale-95 cursor-pointer flex items-center gap-1 ${
-                      isDone
-                        ? "bg-slate-200 text-slate-700 hover:bg-slate-300"
-                        : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-2xs"
-                    }"
-                  >
-                    <span>${isDone ? "✓ 完了済み" : "完了にする"}</span>
-                  </button>
-                  <button
-                    type="button"
-                    data-action-btn="dismiss"
-                    data-action-id="${escapeHtml(act.id)}"
-                    class="text-xs font-bold text-slate-400 hover:text-slate-600 px-2 py-1.5 transition-colors cursor-pointer"
-                  >
-                    興味ない
-                  </button>
+
+                  <!-- 理由アコーディオン ＆ 唯一の主役ボタン（公式で設定） -->
+                  <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <details class="group text-xs text-slate-500">
+                      <summary class="cursor-pointer font-bold text-slate-400 hover:text-slate-600 flex items-center gap-1 select-none transition-colors">
+                        <svg class="w-3 h-3 transition-transform group-open:rotate-90 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                        <span>なぜ？</span>
+                      </summary>
+                      <p class="mt-1.5 pl-3 text-xs text-slate-600 border-l-2 border-slate-200 leading-relaxed font-medium">
+                        ${escapeHtml(act.reason_short)}
+                      </p>
+                    </details>
+
+                    <div class="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
+                      ${savingBadge}
+
+                      <!-- ② 公式で設定（画面内の唯一の塗りボタン） -->
+                      ${
+                        deepLinkUrl
+                          ? `
+                        <a
+                          href="${escapeHtml(deepLinkUrl)}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="px-3.5 py-1.5 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>公式で設定</span>
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                          </svg>
+                        </a>
+                      `
+                          : ""
+                      }
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -904,95 +934,74 @@ function renderAdvisor(container, data, items = []) {
         .join("");
     }
 
-    // 6. 新NISA・再投資インパクト試算カード
+    // 6. 新NISA・再投資インパクト試算カード（数字はactionsの合計と完全連動）
     let investmentHtml = "";
-    if (data.investment_impact) {
-      const imp = data.investment_impact;
-      const principalStr = Number(imp.principal_20y || 0).toLocaleString();
-      const profitStr = Number(imp.profit_20y || 0).toLocaleString();
-      const totalStr = Number(imp.total_20y || 0).toLocaleString();
+    if (totalPotentialSaving > 0) {
+      const principal20y = totalPotentialSaving * 20;
+      const profit20y = Math.round(totalPotentialSaving * 14.1); // 年利5%・20年の想定運用益倍率
+      const total20y = principal20y + profit20y;
 
       investmentHtml = `
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
           <div class="flex items-center gap-2 mb-2">
-            <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-6 h-6 rounded-md bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
               </svg>
             </div>
-            <h3 class="text-sm sm:text-base font-black text-slate-900">
-              削減資金の再投資インパクト（新NISA試算）
+            <h3 class="text-xs sm:text-sm font-black text-slate-800">
+              削減資金の再投資インパクト（新NISA 20年試算）
             </h3>
           </div>
 
-          <div class="grid grid-cols-3 gap-2 my-3 text-center">
-            <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-100">
-              <span class="text-[10px] font-bold text-slate-400 block">20年積立元本</span>
-              <span class="text-xs sm:text-sm font-black text-slate-800">¥${principalStr}</span>
+          <div class="grid grid-cols-3 gap-2 my-2.5 text-center">
+            <div class="bg-slate-50 rounded-xl p-2 border border-slate-100">
+              <span class="text-[10px] font-bold text-slate-400 block">積立元本</span>
+              <span class="text-xs sm:text-sm font-black text-slate-700">¥${principal20y.toLocaleString()}</span>
             </div>
-            <div class="bg-emerald-50/70 rounded-xl p-2.5 border border-emerald-100">
-              <span class="text-[10px] font-bold text-emerald-600 block">運用益 (年利5%)</span>
-              <span class="text-xs sm:text-sm font-black text-emerald-700">+¥${profitStr}</span>
+            <div class="bg-emerald-50/70 rounded-xl p-2 border border-emerald-100">
+              <span class="text-[10px] font-bold text-emerald-600 block">想定運用益</span>
+              <span class="text-xs sm:text-sm font-black text-emerald-700">+¥${profit20y.toLocaleString()}</span>
             </div>
-            <div class="bg-indigo-50/70 rounded-xl p-2.5 border border-indigo-100">
+            <div class="bg-indigo-50/70 rounded-xl p-2 border border-indigo-100">
               <span class="text-[10px] font-bold text-indigo-600 block">20年後総額</span>
-              <span class="text-xs sm:text-sm font-black text-indigo-700">約¥${totalStr}</span>
+              <span class="text-xs sm:text-sm font-black text-indigo-700">約¥${total20y.toLocaleString()}</span>
             </div>
           </div>
 
-          <p class="text-xs text-slate-500 font-medium leading-relaxed mt-1">
-            ${escapeHtml(
-              imp.note ||
-                "固定費の削減分をそのままインデックス投資に回すことで、将来の資産形成に大きく貢献します。"
-            )}
+          <p class="text-[11px] text-slate-400 font-medium leading-relaxed">
+            ※浮いた固定費（年¥${totalPotentialSaving.toLocaleString()}）を新NISAのインデックス投信（年利5%想定）に20年積立運用した場合の試算です。
           </p>
         </div>
       `;
     }
 
-    // 7. 全体HTMLを結合
+    // 7. 全体HTMLを結合（重複していた下部の黒い巨大CTAを削除）
     container.innerHTML = `
       <div class="space-y-4 pt-1 animate-in fade-in duration-300">
         ${singleItemNoticeHtml}
         ${summaryCardHtml}
 
         <!-- ToDoアクション一覧セクション -->
-        <div class="space-y-3">
+        <div class="space-y-2.5">
           <div class="flex items-center justify-between px-1">
-            <h3 class="text-sm font-black text-slate-900 flex items-center gap-1.5">
-              <span>優先ToDoアクション</span>
+            <h3 class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+              <span>優先見直しToDo</span>
               <span class="text-xs font-bold text-slate-400">(${activeActions.length}件)</span>
             </h3>
-            <span class="text-[11px] text-slate-400 font-medium">削減効果の高い順に表示</span>
+            <span class="text-[10px] text-slate-400 font-medium">削減効果順</span>
           </div>
 
-          <div class="space-y-3">
+          <div class="space-y-2.5">
             ${actionsListHtml}
           </div>
         </div>
 
         ${investmentHtml}
-
-        <!-- 公式解約サポート＆お得な代替案へのクイック導線 -->
-        <div class="pt-2">
-          <button
-            type="button"
-            onclick="window.switchResultTab('actions')"
-            class="w-full py-3.5 px-4 bg-slate-900 hover:bg-slate-800 active:scale-98 text-white font-black text-xs sm:text-sm rounded-2xl shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer group"
-          >
-            <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-            </svg>
-            <span>公式の解約リンク ＆ お得な代替案を見る</span>
-            <svg class="w-3.5 h-3.5 text-slate-300 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-            </svg>
-          </button>
-        </div>
       </div>
     `;
 
-    // 8. イベントリスナー（完了・興味ないボタン）のバインド
+    // 8. イベントリスナー（チェックボックス・非表示ボタン）のバインド
     container.querySelectorAll('[data-action-btn="toggle-done"]').forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-action-id");

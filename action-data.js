@@ -199,9 +199,9 @@ export const PROMO_CARDS = [
  * 新しいToDoアクション構造と完全一致する決定論的データ
  */
 export const MOCK_DIAGNOSIS_DATA = {
-  profile_type: "エンタメ・動画重視型",
+  profile_type: "動画・エンタメ充実型",
   summary:
-    "動画や音楽などエンタメ系を中心に複数契約中。年払い化と重複機能の整理で、年間約23,200円の固定費を無理なく削減できます。",
+    "動画配信や配送特典などを中心にご利用中。年払いプランへの集約や配信サービスの隔月運用により、無理のない固定費削減が可能です。",
   actions: [
     {
       id: "act_prime_annual",
@@ -221,36 +221,37 @@ export const MOCK_DIAGNOSIS_DATA = {
       service: "Netflix",
       action_type: "review",
       title: "見たい月だけの隔月契約に切り替える",
-      annual_saving: 8940,
+      annual_saving: 5340,
       effort: "low",
       time_required_min: 2,
-      current_state: "通年契約 (年間¥17,880)",
-      proposed_state: "見たい月のみ年6回契約 (年間¥8,940)",
+      current_state: "通年契約 (年間¥10,680)",
+      proposed_state: "見たい月のみ年6回契約 (年間¥5,340)",
       reason_short:
-        "新作や見たい作品がある月だけ契約を再開・休会することで、満足度を落とさず出費を半額に圧縮できます。",
+        "新作や見たい作品がある月だけ契約を再開・休会することで、広告つきスタンダードの満足度を落とさず出費を半額に圧縮できます。",
     },
     {
-      id: "act_music_duplicate",
-      service: "Spotify",
-      action_type: "duplicate",
-      title: "音楽サブスクを1本に集約する",
-      annual_saving: 12960,
-      effort: "medium",
-      time_required_min: 5,
-      current_state: "複数音楽サービス併用 (月¥2,160)",
-      proposed_state: "どちらか1本に集約 (月¥1,080)",
+      id: "act_youtube_annual",
+      service: "YouTube Premium",
+      action_type: "plan_change",
+      title: "年払いプラン（Web経由）に切り替える",
+      annual_saving: 2560,
+      effort: "low",
+      time_required_min: 3,
+      current_state: "月払い ¥1,280/月 (年間¥15,360)",
+      proposed_state: "年払い ¥12,800/年 (Web版)",
       reason_short:
-        "楽曲ライブラリがほぼ重複しているため、普段よく使うアプリ1本に絞るだけで年間12,000円以上節約できます。",
+        "Webブラウザ経由で年払いプランに変更すると、約2ヶ月分（年間2,560円）お得に利用できます。",
     },
   ],
   investment_impact: {
-    yearly_amount: 23200,
-    monthly_amount: 1933,
-    principal_20y: 464000,
-    profit_20y: 325000,
-    total_20y: 789000,
-    note: "削減できた年間約2.3万円（月約1,930円）を新NISA（年利5%）で20年積立運用した場合の試算です。",
+    yearly_amount: 9200,
+    monthly_amount: 766,
+    principal_20y: 184000,
+    profit_20y: 129000,
+    total_20y: 313000,
+    note: "削減できた年間約9,200円（月約760円）を新NISA（年利5%）で20年積立運用した場合の試算です。",
   },
 };
+
 
 
