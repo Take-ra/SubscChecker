@@ -131,15 +131,14 @@ export const PROMO_CARDS = [
     badge: "王道まとめ割",
     isPR: true,
     title: "Amazonプライム",
-    subTitle: "動画・音楽・配送特典をこれ1本に集約",
+    subTitle: "動画・音楽・配送を1本に集約",
     savingHighlight: "年間 約14,000円 お得",
     points: [
-      "Prime Videoで話題の映画・アニメが見放題",
-      "お急ぎ便・日時指定便が何度でも無料",
-      "単体契約を一本化して固定費を最大圧縮",
+      "Prime Video見放題 ＋ お急ぎ便・日時指定便が何度でも無料",
+      "単体契約を一本化して月々の固定費を大幅圧縮",
     ],
-    buttonText: "30日間の無料体験を試す",
-    microCopy: "※いつでもWebから即時解約可能・違約金なし",
+    buttonText: "30日間無料体験を試す",
+    microCopy: "※Webからいつでも即時解約可能・違約金ゼロ",
     url: "https://www.amazon.co.jp/prime",
     theme: {
       border: "border-blue-200 hover:border-blue-400",
@@ -154,15 +153,14 @@ export const PROMO_CARDS = [
     badge: "動画・マンガ集約",
     isPR: true,
     title: "U-NEXT",
-    subTitle: "見放題作品数No.1 ＋ 毎月1,200pt還元",
+    subTitle: "見放題作品数No.1 ＋ 毎月1,200pt",
     savingHighlight: "実質月額 約989円",
     points: [
-      "映画・アニメ31万本＋雑誌200誌が見放題",
-      "毎月1,200円分のポイントで新作やマンガ購入",
-      "最大4アカウント対応で家族みんなで使える",
+      "映画・アニメ31万本＋雑誌200誌以上が見放題",
+      "毎月1,200円分のポイントで最新作やマンガも購入可能",
     ],
-    buttonText: "31日間無料トライアルはこちら",
-    microCopy: "※無料期間内の解約なら料金は一切かかりません",
+    buttonText: "31日間無料トライアル",
+    microCopy: "※無料期間内に解約すれば料金は一切かかりません",
     url: "https://video.unext.jp/",
     theme: {
       border: "border-slate-300 hover:border-slate-500",
@@ -177,15 +175,14 @@ export const PROMO_CARDS = [
     badge: "通信費＋サブスク",
     isPR: true,
     title: "楽天モバイル",
-    subTitle: "スマホ代大幅削減 ＆ エンタメ無料付帯",
+    subTitle: "スマホ代大幅削減 ＆ 特典無料付帯",
     savingHighlight: "月 約4,000円 節約",
     points: [
-      "データ無制限で月額3,278円の圧倒的低価格",
-      "Rakuten TVのパ・リーグ＆NBAが見放題",
-      "YouTube Premium 初回3ヶ月無料特典あり",
+      "データ無制限で月3,278円の圧倒的コストパフォーマンス",
+      "NBAやパ・リーグが見放題 ＋ YouTube Premium 3ヶ月無料",
     ],
     buttonText: "料金シミュレーションを見る",
-    microCopy: "※契約事務手数料0円・いつでも解約金なし",
+    microCopy: "※事務手数料0円・いつでも解約金なし",
     url: "https://network.mobile.rakuten.co.jp/",
     theme: {
       border: "border-rose-200 hover:border-rose-400",
@@ -199,27 +196,61 @@ export const PROMO_CARDS = [
 
 /**
  * 開発用モックデータ（UI確認時にGemini APIのクォータを一切消費しないためのダミー）
+ * 新しいToDoアクション構造と完全一致する決定論的データ
  */
 export const MOCK_DIAGNOSIS_DATA = {
-  profile_type: "エンタメ・ショッピング充実型",
+  profile_type: "エンタメ・動画重視型",
   summary:
-    "動画配信や音楽配信を中心に複数のサブスクをご利用中です。一部のサービスでコンテンツや機能の重複が見られ、年払いへの切り替えや契約の見直しを行うことで、年間15,000円以上の固定費削減が期待できます。",
-  priority_action: {
-    title: "Amazonプライムの月払いから年払いへの切り替え",
-    annual_saving: 1300,
-    reason:
-      "月額600円（年間7,200円）から年払い（5,900円/年）に切り替えるだけで、サービス内容は一切変えずに年間1,300円を確実に即座に節約できます。",
+    "動画や音楽などエンタメ系を中心に複数契約中。年払い化と重複機能の整理で、年間約23,200円の固定費を無理なく削減できます。",
+  actions: [
+    {
+      id: "act_prime_annual",
+      service: "Amazonプライム",
+      action_type: "plan_change",
+      title: "年払いに切り替える",
+      annual_saving: 1300,
+      effort: "low",
+      time_required_min: 3,
+      current_state: "月払い ¥600/月 (年間¥7,200)",
+      proposed_state: "年払い ¥5,900/年",
+      reason_short:
+        "サービス内容はそのまま、年払いに変更するだけで実質2ヶ月分（年間1,300円）が確実に浮きます。",
+    },
+    {
+      id: "act_netflix_rotation",
+      service: "Netflix",
+      action_type: "review",
+      title: "見たい月だけの隔月契約に切り替える",
+      annual_saving: 8940,
+      effort: "low",
+      time_required_min: 2,
+      current_state: "通年契約 (年間¥17,880)",
+      proposed_state: "見たい月のみ年6回契約 (年間¥8,940)",
+      reason_short:
+        "新作や見たい作品がある月だけ契約を再開・休会することで、満足度を落とさず出費を半額に圧縮できます。",
+    },
+    {
+      id: "act_music_duplicate",
+      service: "Spotify",
+      action_type: "duplicate",
+      title: "音楽サブスクを1本に集約する",
+      annual_saving: 12960,
+      effort: "medium",
+      time_required_min: 5,
+      current_state: "複数音楽サービス併用 (月¥2,160)",
+      proposed_state: "どちらか1本に集約 (月¥1,080)",
+      reason_short:
+        "楽曲ライブラリがほぼ重複しているため、普段よく使うアプリ1本に絞るだけで年間12,000円以上節約できます。",
+    },
+  ],
+  investment_impact: {
+    yearly_amount: 23200,
+    monthly_amount: 1933,
+    principal_20y: 464000,
+    profit_20y: 325000,
+    total_20y: 789000,
+    note: "削減できた年間約2.3万円（月約1,930円）を新NISA（年利5%）で20年積立運用した場合の試算です。",
   },
-  duplicate_warnings: [
-    "NetflixとAmazon Prime Videoで動画配信のジャンルが重複しています。見たい作品がある時期だけ交互に契約するローテーション契約を検討すると年間約1万円の節約になります。",
-    "音楽配信サービスと動画サービスの付帯音楽特典（Prime Music等）の重複利用がないかご確認ください。",
-  ],
-  plan_optimizations: [
-    "Amazonプライムを年払いに変更（年間1,300円削減）",
-    "動画配信を単月契約のローテーション運用に切り替え（年間約8,000〜14,000円削減）",
-    "ご家族で利用中のサービスがあればファミリープランへの集約を検討",
-  ],
-  investment_impact:
-    "見直しによって浮いた年間約15,000円（月額1,250円）を新NISAの全世界株式等に年利5%で20年間積立投資した場合、元本30万円に対して運用益が約21万円加わり、将来約51万円の資産形成につながります。",
 };
+
 

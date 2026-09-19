@@ -27,7 +27,7 @@ https://subsc-checker.com/
  */
 export function createShareSectionHtml({ data, items, totalMonthly, totalYearly }) {
   const profileType = data?.profile_type || "固定費分析完了";
-  const priorityAction = data?.priority_action;
+  const priorityAction = data?.priority_action || (Array.isArray(data?.actions) ? data.actions[0] : null);
   const serviceCount = items?.length || 0;
 
   const tweetText = buildShareTweetText({
@@ -147,7 +147,7 @@ export function initShareCardActions({ data, items, totalMonthly, totalYearly })
     profileType: data?.profile_type,
     totalMonthly,
     serviceCount: items?.length || 0,
-    priorityAction: data?.priority_action,
+    priorityAction: data?.priority_action || (Array.isArray(data?.actions) ? data.actions[0] : null),
   });
 
   const showToast = (msg) => {
