@@ -138,7 +138,7 @@ export function initUIEvents(callbacks) {
         if (isScrollingFromNav) return;
 
         const sections = document.querySelectorAll(
-          "main > div > section, #section-custom",
+          "#subscription-list > section, #section-custom",
         );
         let currentId = "";
 

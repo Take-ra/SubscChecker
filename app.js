@@ -203,7 +203,7 @@ export function initApp() {
     Render.updateNavBadges(genreItemCounts);
 
     // ジャンルごとの小計を更新（未選択・0円時は非表示にして視覚ノイズを削減）
-    const sections = document.querySelectorAll("main > div > section");
+    const sections = document.querySelectorAll("#subscription-list > section");
     sections.forEach((section) => {
       const catNameText = section.querySelector("h2")?.textContent?.trim() || "";
       const subtotalEl = section.querySelector(".subtotal-val");
@@ -387,7 +387,9 @@ export function initApp() {
     }
 
     // PCサイドバー内の分析ボタン
-    if (e.target.closest("#pc-btn-analyze")) {
+    const pcAnalyzeBtn = e.target.closest("#pc-btn-analyze");
+    if (pcAnalyzeBtn) {
+      if (pcAnalyzeBtn.disabled || pcAnalyzeBtn.classList.contains("cursor-not-allowed")) return;
       document.getElementById("btn-analyze")?.click();
       return;
     }
