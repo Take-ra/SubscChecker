@@ -1,4 +1,4 @@
-// custom-modal.js
+// custom-subscription-modal.js (独自サブスク追加・編集モーダルの制御)
 
 let editingSubId = null; // 編集中のID
 let app = {}; // app.js から渡される「データ操作用リモコン」を入れる箱

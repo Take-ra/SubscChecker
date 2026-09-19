@@ -1,4 +1,4 @@
-// chart.js(グラフの描画と切り替えボタンの管理)
+// expense-chart.js(支出内訳グラフの描画と切り替えボタンの管理)
 
 let resultChart = null;
 let currentChartType = "sub";

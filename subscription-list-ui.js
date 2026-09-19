@@ -1,4 +1,4 @@
-// render-list.js（サブスクリプションカード & 見落としがち枠の描画）
+// subscription-list-ui.js（サブスクリプションカード & 見落としがち枠の描画）
 import { escapeAttr, escapeHtml } from "./utils.js";
 import { renderBrandIcon, getBrandBadge, getBrandDomain } from "./brand-icons.js";
 

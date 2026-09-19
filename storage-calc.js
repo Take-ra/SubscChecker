@@ -1,4 +1,4 @@
-// logic.js(データの読み込み、保存、計算など、裏方の処理)
+// storage-calc.js (データの読み込み・保存、月額・年額の集計計算)
 
 export function loadDataFromStorage() {
   let state = {};

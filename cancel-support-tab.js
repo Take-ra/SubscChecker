@@ -1,5 +1,5 @@
-// actions-tab.js (解約サポート & お得な代替案タブの描画モジュール)
-import { findCancelInfo, getMatchedPromoCards } from "./action-data.js";
+// cancel-support-tab.js (解約サポート & お得な代替案タブの描画モジュール)
+import { findCancelInfo, getMatchedPromoCards } from "./cancel-promo-data.js";
 import { escapeHtml } from "./utils.js";
 import { renderBrandIcon } from "./brand-icons.js";
 
@@ -223,3 +223,4 @@ export function renderActionsTab(items = []) {
     </div>
   `;
 }
+

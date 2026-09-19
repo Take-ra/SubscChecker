@@ -4,7 +4,7 @@ import {
   PROMO_CARDS,
   getMatchedPromoCards,
   MOCK_DIAGNOSIS_DATA,
-} from "./action-data.js";
+} from "./cancel-promo-data.js";
 import {
   createShareSectionHtml,
   initShareCardActions,
@@ -13,7 +13,7 @@ import {
 } from "./share-card.js";
 import { escapeHtml } from "./utils.js";
 import { renderBrandIcon } from "./brand-icons.js";
-import { renderActionsTab } from "./actions-tab.js";
+import { renderActionsTab } from "./cancel-support-tab.js";
 import { createProgressTracker } from "./ai-progress.js";
 
 // 後方互換性のための再エクスポート

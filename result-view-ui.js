@@ -1,4 +1,4 @@
-// render.js（ナビゲーション、ハイライト、結果画面の描画）
+// result-view-ui.js（ナビゲーション、結果画面内訳、PC選択中パネルの描画）
 import { escapeAttr, animateValue, escapeHtml, formatCurrency } from "./utils.js";
 import { renderBrandIcon } from "./brand-icons.js";
 export { escapeAttr, animateValue, escapeHtml, formatCurrency };

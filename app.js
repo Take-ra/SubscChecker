@@ -1,11 +1,11 @@
 // app.js
-import * as Logic from "./logic.js";
-import * as Render from "./render.js";
-import * as RenderList from "./render-list.js";
-import * as CustomModal from "./custom-modal.js";
-import * as ChartApp from "./chart.js";
+import * as Logic from "./storage-calc.js";
+import * as Render from "./result-view-ui.js";
+import * as RenderList from "./subscription-list-ui.js";
+import * as CustomModal from "./custom-subscription-modal.js";
+import * as ChartApp from "./expense-chart.js";
 import * as CalendarApp from "./calendar.js";
-import { categories, subscriptions } from "./data.js";
+import { categories, subscriptions } from "./subscription-data.js";
 import { initSearch } from "./search.js";
 import { initUIEvents } from "./ui-events.js";
 import * as AIAdvisor from "./ai-advisor.js";

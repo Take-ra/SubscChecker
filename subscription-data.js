@@ -1,4 +1,4 @@
-// data.js
+// subscription-data.js (サブスクリプション全件 ＆ カテゴリのマスタデータ)
 export const CATEGORY_THEMES = {
   video: {
     bg: "bg-rose-50/90",
