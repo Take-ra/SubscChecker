@@ -155,8 +155,12 @@ export function initSearch() {
           if (trigger)
             trigger.style.setProperty("display", "none", "important");
           if (wrapper) {
-            wrapper.classList.remove("grid-rows-[0fr]", "opacity-0");
-            wrapper.classList.add("grid-rows-[1fr]", "opacity-100");
+            if (wrapper.classList.contains("accordion-wrapper")) {
+              wrapper.classList.remove("grid-rows-[0fr]", "opacity-0");
+              wrapper.classList.add("grid-rows-[1fr]", "opacity-100");
+            } else if (wrapper.classList.contains("accordion-content")) {
+              wrapper.classList.remove("hidden");
+            }
           }
         }
       } else {

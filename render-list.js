@@ -1,5 +1,5 @@
 // render-list.js（サブスクリプションカード & 見落としがち枠の描画）
-import { escapeAttr } from "./utils.js";
+import { escapeAttr, escapeHtml } from "./utils.js";
 import { renderBrandIcon, getBrandBadge, getBrandDomain } from "./brand-icons.js";
 
 // 後方互換性のための再エクスポート
@@ -165,8 +165,8 @@ export function renderMainList(cats, subs, savedState, container) {
       const iconHtml = renderBrandIcon(sub.name, cat.id);
 
       itemsHtml += `
-      <div class="sub-item relative flex items-center justify-between py-2.5 pl-3 pr-3 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-4 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}" data-sub-id="${sub.id}">
-        <!-- 左側: チェックボックス + アプリアイコン + サービス名 -->
+      <div class="sub-item relative flex items-center justify-between py-2.5 pl-3 pr-3 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-4 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}" data-sub-id="${sub.id}" data-category-name="${escapeAttr(cat.name)}">
+        <!-- 左側: チェックボックス + アプリアイコン + サービス名 + ジャンルバッジ -->
         <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
           <input
             type="checkbox"
@@ -175,18 +175,16 @@ export function renderMainList(cats, subs, savedState, container) {
             ${isChecked ? "checked" : ""}
           >
           ${iconHtml}
-          <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-1 md:py-0 min-w-0">
-            <div class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug line-clamp-2">${sub.name}</div>
+          <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-1 md:py-0 min-w-0 flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
+            <span class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug truncate">${escapeHtml(sub.name)}</span>
+            <span class="sub-cat-badge text-[10px] font-bold text-slate-400 bg-slate-100/90 px-1.5 py-0.5 rounded-md shrink-0">${escapeHtml(cat.name)}</span>
           </label>
         </div>
 
-        <!-- 右側: プランドロップダウン + ベルボタン -->
-        <div class="flex-shrink-0 flex items-center gap-1 sm:gap-1.5">
-          <div class="w-[140px] sm:w-[160px] md:w-[180px] shrink-0">
+        <!-- 右側: プランドロップダウン -->
+        <div class="flex-shrink-0 flex items-center">
+          <div class="w-[150px] sm:w-[170px] md:w-[190px] shrink-0">
             ${planUI}
-          </div>
-          <div class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center">
-            ${bellBtnHtml}
           </div>
         </div>
       </div>`;
@@ -201,8 +199,8 @@ export function renderMainList(cats, subs, savedState, container) {
     };
 
     htmlList += `
-    <section id="section-${cat.id}" class="scroll-mt-40 md:scroll-mt-8 nav-section pt-6 mt-6 md:pt-8 md:mt-8 border-t border-slate-200 first:border-none first:pt-0 first:mt-0">
-      <button class="accordion-trigger w-full flex items-center justify-between py-2 pr-4 text-left hover:bg-slate-50 transition-colors focus:outline-none rounded-xl relative group z-10">
+    <section id="section-${cat.id}" class="scroll-mt-24 md:scroll-mt-8 nav-section pt-6 mt-6 md:pt-8 md:mt-8 border-t border-slate-200 first:border-none first:pt-0 first:mt-0">
+      <button class="accordion-trigger sticky top-0 z-20 bg-slate-50/95 backdrop-blur-md w-full flex items-center justify-between py-2.5 pr-4 text-left hover:bg-slate-100/80 transition-colors focus:outline-none rounded-2xl relative group shadow-2xs">
         <div class="flex items-center gap-3 md:gap-4">
           <div class="w-1.5 h-12 md:h-14 ${theme.accentBar} rounded-r-md flex-shrink-0 transition-colors"></div>
           <div class="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 ${theme.bg} ${theme.border} border ${theme.text} ${theme.hoverBg} shadow-2xs rounded-2xl flex-shrink-0 p-2.5 md:p-3 transition-colors">
@@ -212,7 +210,7 @@ export function renderMainList(cats, subs, savedState, container) {
             <h2 class="text-base md:text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
               <span>${cat.name}</span>
             </h2>
-            <div class="text-xs md:text-sm text-slate-400 font-bold flex items-center gap-2 mt-0.5 md:mt-0">
+            <div class="subtotal-container text-xs md:text-sm text-slate-400 font-bold hidden items-center gap-2 mt-0.5 md:mt-0">
               <span class="subtotal-label">小計:</span>
               <span class="tabular-nums font-black text-slate-700">¥<span class="subtotal-val text-sm md:text-base">0</span><span class="text-[10px] md:text-xs font-normal text-slate-400 ml-0.5">/月</span></span>
             </div>

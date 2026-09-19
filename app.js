@@ -59,6 +59,10 @@ export function initApp() {
       savedState,
       customListContainer,
     );
+    if (localStorage.getItem("subsc_guide_closed") === "true") {
+      const quickGuide = document.getElementById("quick-guide");
+      if (quickGuide) quickGuide.style.display = "none";
+    }
     calculateTotal();
 
     initSearch();
@@ -83,8 +87,12 @@ export function initApp() {
       onReset: () => {
         localStorage.removeItem("subscriptionStateV4");
         localStorage.removeItem("customSubscriptions");
+        localStorage.removeItem("subsc_guide_closed");
         savedState = {};
         customSubscriptions = [];
+
+        const quickGuide = document.getElementById("quick-guide");
+        if (quickGuide) quickGuide.style.display = "";
 
         const searchInput =
           document.getElementById("main-search-input") ||
@@ -194,13 +202,23 @@ export function initApp() {
     // ナビゲーションのバッジを更新
     Render.updateNavBadges(genreItemCounts);
 
-    // ジャンルごとの小計を更新
+    // ジャンルごとの小計を更新（未選択・0円時は非表示にして視覚ノイズを削減）
     const sections = document.querySelectorAll("main > div > section");
     sections.forEach((section) => {
-      const catNameText = section.querySelector("h2").textContent.trim();
+      const catNameText = section.querySelector("h2")?.textContent?.trim() || "";
       const subtotalEl = section.querySelector(".subtotal-val");
+      const subtotalContainer = section.querySelector(".subtotal-container");
       if (subtotalEl && data.genreTotals[catNameText]) {
         const val = data.genreTotals[catNameText].monthly;
+        if (subtotalContainer) {
+          if (val > 0) {
+            subtotalContainer.classList.remove("hidden");
+            subtotalContainer.classList.add("flex");
+          } else {
+            subtotalContainer.classList.add("hidden");
+            subtotalContainer.classList.remove("flex");
+          }
+        }
         const currentSub =
           parseInt(subtotalEl.textContent.replace(/,/g, ""), 10) || 0;
         if (isFirstLoad) subtotalEl.textContent = val.toLocaleString();
@@ -212,8 +230,20 @@ export function initApp() {
     const customSubtotalEl = document.querySelector(
       "#section-custom .subtotal-val",
     );
+    const customSubtotalContainer = document.querySelector(
+      "#section-custom .subtotal-container",
+    );
     if (customSubtotalEl) {
-      const val = data.genreTotals["独自のサブスク"].monthly;
+      const val = data.genreTotals["独自のサブスク"]?.monthly || 0;
+      if (customSubtotalContainer) {
+        if (val > 0) {
+          customSubtotalContainer.classList.remove("hidden");
+          customSubtotalContainer.classList.add("flex");
+        } else {
+          customSubtotalContainer.classList.add("hidden");
+          customSubtotalContainer.classList.remove("flex");
+        }
+      }
       const currentSub =
         parseInt(customSubtotalEl.textContent.replace(/,/g, ""), 10) || 0;
       if (isFirstLoad) customSubtotalEl.textContent = val.toLocaleString();
@@ -328,6 +358,11 @@ export function initApp() {
       const chk = document.getElementById(`chk-${subId}`);
       if (chk) {
         chk.checked = !chk.checked;
+        if (!savedState[subId]) savedState[subId] = {};
+        if (chk.checked && !savedState[subId].plan) {
+          const subData = subs.find((s) => s.id === subId);
+          savedState[subId].plan = subData?.defaultPlanId || subData?.plans?.[0]?.id || "std";
+        }
         chk.dispatchEvent(new Event("change", { bubbles: true }));
       }
       return;
@@ -357,11 +392,14 @@ export function initApp() {
       return;
     }
 
-    // ガイドを閉じるボタン
+    // ガイドを閉じるボタン（閉じた状態を保存して再訪時に表示しない）
     if (e.target.closest("#btn-close-guide")) {
       const quickGuide = document.getElementById("quick-guide");
       if (quickGuide) {
         quickGuide.style.display = "none";
+        try {
+          localStorage.setItem("subsc_guide_closed", "true");
+        } catch (_) {}
       }
       return;
     }
