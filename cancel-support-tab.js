@@ -117,36 +117,44 @@ export function renderActionsTab(items = []) {
     const promoCardsHtml = matchedCards
       .map((card) => {
         return `
-          <div class="flex flex-col justify-between p-4 sm:p-5 rounded-2xl border ${card.theme.border} bg-white shadow-2xs hover:shadow-xs transition-all">
+          <div class="flex flex-col justify-between p-4 sm:p-5 rounded-2xl border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all">
             <div>
-              <!-- バッジ & PR表記 -->
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded ${card.theme.badgeBg}">
+              <!-- バッジ & PR表記（控えめかつ明瞭） -->
+              <div class="flex items-center justify-between gap-2 mb-2.5">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
                   ${escapeHtml(card.badge)}
                 </span>
-                <span class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded border border-slate-200">PR</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 bg-amber-50 text-amber-800 rounded border border-amber-200/80">
+                  スポンサー提供
+                </span>
               </div>
 
-              <!-- 文脈連動の理由メッセージ -->
+              <!-- タイトル & サブタイトル（煽りを排した事実ベース） -->
+              <h4 class="text-base font-black text-slate-900 tracking-tight">
+                ${escapeHtml(card.title)}
+              </h4>
+              <p class="text-xs font-medium text-slate-500 mt-0.5 mb-3">
+                ${escapeHtml(card.subTitle || "")}
+              </p>
+
+              <!-- ③ 関連性（契約データとの個別数字比較） -->
               ${
                 card.contextReason
                   ? `
-                <div class="text-[11px] font-bold text-slate-700 bg-slate-50 rounded-xl p-2.5 mb-3 border border-slate-200/80 leading-snug">
-                  <span class="text-blue-600 font-extrabold mr-1">提案理由:</span>${escapeHtml(card.contextReason)}
+                <div class="text-xs text-slate-700 bg-slate-50/90 rounded-xl p-3 mb-3.5 border border-slate-200/90 leading-relaxed">
+                  <div class="text-[10px] font-bold text-blue-700 mb-1 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span>契約データとの比較</span>
+                  </div>
+                  <p class="font-medium text-slate-800 break-words">${escapeHtml(card.contextReason)}</p>
                 </div>
               `
                   : ""
               }
 
-              <!-- タイトル & サブタイトル -->
-              <h4 class="text-base font-black text-slate-900 tracking-tight mb-0.5">
-                ${escapeHtml(card.title)}
-              </h4>
-              <p class="text-xs font-bold text-slate-500 mb-2.5">
-                ${escapeHtml(card.subTitle || "")}
-              </p>
-
-              <!-- 2行のチェックポイント（箇条書き） -->
+              <!-- チェックポイント（客観的事実） -->
               <ul class="space-y-1.5 mb-3 text-xs font-medium text-slate-600">
                 ${(card.points || [])
                   .map(
@@ -162,32 +170,35 @@ export function renderActionsTab(items = []) {
                   .join("")}
               </ul>
 
-              <!-- デメリット・注意点の明記（信頼装置） -->
+              <!-- ④ デメリット・注意点の明確な告知（信頼装置） -->
               ${
                 card.demerit
                   ? `
-                <div class="bg-amber-50/70 border border-amber-200/60 rounded-xl p-2.5 mb-4 text-[11px] text-amber-900 flex items-start gap-1.5 font-medium leading-relaxed">
-                  <svg class="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-amber-50/90 border border-amber-300/80 rounded-xl p-3 mb-4 text-xs text-amber-950 flex items-start gap-2 leading-relaxed">
+                  <svg class="w-4 h-4 text-amber-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                   </svg>
-                  <span>${escapeHtml(card.demerit)}</span>
+                  <div>
+                    <span class="font-bold text-amber-900 block mb-0.5 text-[11px]">検討前の注意点・デメリット</span>
+                    <span class="font-normal text-amber-800 text-[11px] leading-relaxed block">${escapeHtml(card.demerit)}</span>
+                  </div>
                 </div>
               `
                   : ""
               }
             </div>
 
-            <!-- CTAボタン & マイクロコピー -->
+            <!-- ② セールス感を抑えた誠実なCTAボタン & マイクロコピー -->
             <div>
               <a
                 href="${escapeHtml(card.url)}"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-4 text-xs sm:text-sm font-black rounded-xl shadow-xs ${card.theme.buttonBg} active:scale-95 transition-all text-center cursor-pointer group"
+                class="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-4 text-xs font-bold text-slate-800 bg-slate-100 hover:bg-blue-600 hover:text-white hover:border-blue-600 rounded-xl border border-slate-200/90 shadow-2xs transition-all text-center cursor-pointer active:scale-98 group"
               >
                 <span>${escapeHtml(card.buttonText)}</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                 </svg>
               </a>
               <p class="text-[10px] text-center text-slate-400 mt-1.5 font-medium">
@@ -200,16 +211,16 @@ export function renderActionsTab(items = []) {
       .join("");
 
     promoHtml = `
-      <div class="bg-slate-50/80 rounded-3xl p-5 md:p-6 border border-slate-200 shadow-2xs space-y-4">
-        <!-- 広告ヘッダー：ステマ規制完全準拠の明瞭表記 -->
-        <div class="flex items-center justify-between flex-wrap gap-2 border-b border-slate-200/80 pb-3">
+      <div class="bg-amber-50/40 rounded-3xl p-5 md:p-6 border border-amber-200/90 shadow-2xs space-y-4">
+        <!-- 広告ヘッダー：価格.com方式で明確にPR区画を独立表示 -->
+        <div class="flex items-center justify-between flex-wrap gap-2 border-b border-amber-200/70 pb-3">
           <div class="flex items-center gap-2">
-            <span class="text-[11px] font-black px-2 py-0.5 rounded bg-slate-200 text-slate-700">広告（PR）</span>
-            <h3 class="text-sm sm:text-base font-black text-slate-800 tracking-tight">
-              あなたの契約に合う可能性のある選択肢
+            <span class="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300/80">PR</span>
+            <h3 class="text-xs sm:text-sm font-bold text-slate-700 tracking-tight">
+              現在の契約内容に合わせた見直し・集約の選択肢
             </h3>
           </div>
-          <span class="text-[10px] text-slate-400 font-medium">※条件に合致する提案のみ表示</span>
+          <span class="text-[10px] text-slate-400 font-medium">※条件に合致する提案のみ客観的に比較表示しています</span>
         </div>
 
         <div class="grid grid-cols-1 ${matchedCards.length > 1 ? "md:grid-cols-2" : ""} gap-4 pt-1">

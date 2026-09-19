@@ -130,27 +130,75 @@ export function findCancelInfo(serviceName) {
  */
 export const PROMO_CARDS = [
   {
+    id: "amazon-prime",
+    badge: "まとめ集約",
+    isPR: true,
+    title: "Amazonプライム",
+    subTitle: "動画・音楽・配送特典を月額600円に統合",
+    points: [
+      "Prime Video見放題 ＋ お急ぎ便・日時指定便が何度でも無料",
+      "単体契約を一本化して月々の固定費をスリム化",
+    ],
+    demerit: "専門の音楽・動画アプリ（SpotifyやNetflix等）と比べると、最新曲や独自オリジナル作品の配信ラインナップに一部違いがあります。",
+    buttonText: "公式で30日間無料体験の詳細を見る",
+    microCopy: "※Webのアカウント管理画面からいつでも即時解約可能（解約金ゼロ）",
+    url: "https://www.amazon.co.jp/prime",
+    // Amazonプライムを未契約の人に表示（契約データから実額差額を算出）
+    match: (items = []) => {
+      const hasPrime = items.some((i) => /prime|プライム/i.test(i.name || ""));
+      if (hasPrime) return null;
+
+      const vodItems = items.filter((i) =>
+        (i.category || "").includes("動画") || /netflix|disney|hulu|dmm|u-next|unext|wowow|abema|dazn/i.test(i.name || "")
+      );
+      const musicItems = items.filter((i) =>
+        (i.category || "").includes("音楽") || /spotify|apple music|line music|awa|youtube music/i.test(i.name || "")
+      );
+
+      const vodSum = vodItems.reduce((s, i) => s + (Number(i.monthly) || 0), 0);
+      const musicSum = musicItems.reduce((s, i) => s + (Number(i.monthly) || 0), 0);
+
+      let reason = "";
+      if (vodItems.length > 0 && musicItems.length > 0) {
+        const names = [...vodItems, ...musicItems].map((i) => i.name).slice(0, 2).join("・");
+        const totalSum = vodSum + musicSum;
+        const diff = totalSum - 600;
+        reason = `現在契約中の動画・音楽（${names}など計¥${totalSum.toLocaleString()}/月）をプライム（¥600/月）に統合すると、月約¥${diff.toLocaleString()}の固定費見直し余地があります。`;
+      } else if (vodItems.length > 0) {
+        const name = vodItems[0].name;
+        const diff = vodSum - 600;
+        if (diff > 0) {
+          reason = `現在の動画配信：¥${vodSum.toLocaleString()}/月（${name}）→ プライムに切り替えた場合：¥600/月（月¥${diff.toLocaleString()}の差額）。ラインナップが合えば固定費見直しになります。`;
+        } else {
+          reason = `現在の動画配信（${name}）に加え、お急ぎ便無料特典などを月¥600（年払い時 月¥492）で一本化できる選択肢です。`;
+        }
+      } else if (musicItems.length > 0) {
+        const name = musicItems[0].name;
+        reason = `現在契約中の音楽配信（${name}：¥${musicSum.toLocaleString()}/月）を、プライム特典（Amazon Music Prime）と配送特典に統合できるか確認する選択肢です。`;
+      } else {
+        reason = `動画見放題・お急ぎ便無料・音楽特典などを月¥600（年払い時 月¥492）でまとめて利用できる基本パッケージです。`;
+      }
+
+      return {
+        matched: true,
+        reason,
+      };
+    },
+  },
+  {
     id: "unext-point",
     badge: "動画・マンガ集約",
     isPR: true,
     title: "U-NEXT",
-    subTitle: "見放題作品数No.1 ＋ 毎月1,200pt還元",
-    savingHighlight: "実質月額 約989円",
+    subTitle: "見放題31万本 ＋ 毎月1,200円分のポイント付与",
     points: [
-      "映画・アニメ31万本＋雑誌200誌以上が見放題",
-      "毎月1,200ptで最新映画やマンガも購入可能",
+      "映画・ドラマ・アニメ31万本＋主要雑誌200誌以上が見放題",
+      "毎月付与される1,200pt（1pt=1円）で新作映画レンタルやマンガ購入が可能",
     ],
-    demerit: "※NetflixやDisney+などの独自オリジナル作品は視聴できません",
-    buttonText: "31日間無料トライアル",
-    microCopy: "※無料期間内に解約すれば料金は一切かかりません",
+    demerit: "月額2,189円と単体VODより高めです。またNetflixやDisney+等の独自オリジナル限定作品は視聴できません。",
+    buttonText: "公式で31日間無料体験の詳細を見る",
+    microCopy: "※無料トライアル期間中に解約した場合、月額料金は発生しません",
     url: "https://video.unext.jp/",
-    theme: {
-      border: "border-slate-300 hover:border-slate-500",
-      bgGradient: "from-slate-50/90 via-sky-50/30 to-white",
-      badgeBg: "bg-slate-900 text-white",
-      highlightColor: "text-slate-900",
-      buttonBg: "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20",
-    },
     // 動画または電子書籍を契約しているユーザーにマッチ
     match: (items = []) => {
       const targets = items.filter((i) => {
@@ -166,77 +214,46 @@ export const PROMO_CARDS = [
 
       const currentTotal = targets.reduce((sum, i) => sum + (Number(i.monthly) || 0), 0);
       const targetNames = targets.map((i) => i.name).slice(0, 2).join("・");
+
       return {
         matched: true,
-        reason: `契約中の ${targetNames}${targets.length > 2 ? "など" : ""}（月額計¥${currentTotal.toLocaleString()}）を集約して節約できる選択肢`,
+        reason: `現在契約中の ${targetNames}${targets.length > 2 ? "など" : ""}（月額計¥${currentTotal.toLocaleString()}）に加えて毎月マンガや最新作を有料購入している場合、1,200pt還元により実質¥989/月で集約できる選択肢です。`,
         currentTotal,
       };
     },
   },
   {
-    id: "amazon-prime",
-    badge: "王道まとめ割",
-    isPR: true,
-    title: "Amazonプライム",
-    subTitle: "動画・音楽・配送を1本に集約",
-    savingHighlight: "月額 約492円 (年払い時)",
-    points: [
-      "Prime Video見放題 ＋ お急ぎ便・日時指定便が何度でも無料",
-      "単体契約を一本化して月々の固定費を大幅圧縮",
-    ],
-    demerit: "※専門の音楽・動画アプリと比べると一部最新曲や特定作品に制限があります",
-    buttonText: "30日間無料体験を試す",
-    microCopy: "※Webからいつでも即時解約可能・違約金ゼロ",
-    url: "https://www.amazon.co.jp/prime",
-    theme: {
-      border: "border-blue-200 hover:border-blue-400",
-      bgGradient: "from-blue-50/70 via-indigo-50/30 to-white",
-      badgeBg: "bg-blue-600 text-white",
-      highlightColor: "text-blue-700",
-      buttonBg: "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20",
-    },
-    // Amazonプライムを契約していない人にのみ表示
-    match: (items = []) => {
-      const hasPrime = items.some((i) => /prime|プライム/i.test(i.name || ""));
-      if (hasPrime) return null; // 契約済みなら表示しない
-      return {
-        matched: true,
-        reason: "動画・音楽・配送特典をまとめて固定費を一本化したい方向け",
-      };
-    },
-  },
-  {
     id: "rakuten-mobile",
-    badge: "固定費＋特典",
+    badge: "通信費＋特典",
     isPR: true,
     title: "楽天モバイル",
-    subTitle: "スマホ代大幅削減 ＆ 特典無料付帯",
-    savingHighlight: "データ無制限 月3,278円",
+    subTitle: "データ無制限 最大3,278円 ＆ YouTube特典",
     points: [
-      "大手キャリアからの乗り換えで月約4,000円のスマホ代節約",
-      "NBAやパ・リーグが見放題 ＋ YouTube Premium 3ヶ月無料",
+      "大手キャリア（月約7,000〜8,000円）からの見直しで月約4,000円前後の通信費圧縮",
+      "YouTube Premium最大3ヶ月無料 ＋ パ・リーグ／NBAの無料ライブ配信特典",
     ],
-    demerit: "※お住まいの地域や地下・屋内環境によって電波状況が異なる場合があります",
-    buttonText: "料金シミュレーションを見る",
-    microCopy: "※事務手数料0円・いつでも解約金なし",
+    demerit: "お住まいの地域や地下・屋内環境によって電波のつながりやすさに差がある場合があります。",
+    buttonText: "公式サイトでエリアと料金を確認",
+    microCopy: "※契約事務手数料0円・最低利用期間や契約解除料はありません",
     url: "https://network.mobile.rakuten.co.jp/",
-    theme: {
-      border: "border-rose-200 hover:border-rose-400",
-      bgGradient: "from-rose-50/70 via-pink-50/30 to-white",
-      badgeBg: "bg-rose-600 text-white",
-      highlightColor: "text-rose-700",
-      buttonBg: "bg-rose-600 hover:bg-rose-700 text-white shadow-rose-500/20",
-    },
     // YouTube Premium利用中、またはサブスク月額合計が高額なユーザーにのみ表示
     match: (items = []) => {
       const hasYoutube = items.some((i) => /youtube/i.test(i.name || ""));
+      const ytItem = items.find((i) => /youtube/i.test(i.name || ""));
       const totalMonthly = items.reduce((sum, i) => sum + (Number(i.monthly) || 0), 0);
       if (!hasYoutube && totalMonthly < 4000) return null;
+
+      let reason = "";
+      if (hasYoutube) {
+        const ytPrice = ytItem?.monthly ? `（月¥${Number(ytItem.monthly).toLocaleString()}）` : "";
+        reason = `現在契約中のYouTube Premium${ytPrice}が最大3ヶ月無料となる公式特典あり。スマホ通信費と合わせた固定費見直しの選択肢です。`;
+      } else {
+        reason = `月々のサブスク合計が¥${totalMonthly.toLocaleString()}/月のため、大手キャリアのスマホ通信費を月最大3,278円（無制限）へ圧縮して固定費全体を浮かせる選択肢です。`;
+      }
+
       return {
         matched: true,
-        reason: hasYoutube
-          ? "YouTube Premium特典（3ヶ月無料）＆通信費圧縮の選択肢"
-          : "スマホ代を下げてサブスク全体の固定費を浮かせる選択肢",
+        reason,
       };
     },
   },
