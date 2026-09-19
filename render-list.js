@@ -175,15 +175,15 @@ export function renderMainList(cats, subs, savedState, container) {
             ${isChecked ? "checked" : ""}
           >
           ${iconHtml}
-          <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-1 md:py-0 min-w-0 flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
-            <span class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug truncate">${escapeHtml(sub.name)}</span>
-            <span class="sub-cat-badge text-[10px] font-bold text-slate-400 bg-slate-100/90 px-1.5 py-0.5 rounded-md shrink-0">${escapeHtml(cat.name)}</span>
+          <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-1 md:py-0 min-w-0 flex items-center gap-2">
+            <span class="text-sm md:text-base font-extrabold text-slate-800 leading-snug truncate">${escapeHtml(sub.name)}</span>
+            <span class="sub-cat-badge text-[10px] md:text-xs font-bold text-slate-400 bg-slate-100/90 px-2 py-0.5 rounded-md shrink-0 whitespace-nowrap">${escapeHtml(cat.name)}</span>
           </label>
         </div>
 
         <!-- 右側: プランドロップダウン -->
         <div class="flex-shrink-0 flex items-center">
-          <div class="w-[150px] sm:w-[170px] md:w-[190px] shrink-0">
+          <div class="w-[130px] sm:w-[155px] md:w-[175px] shrink-0">
             ${planUI}
           </div>
         </div>
