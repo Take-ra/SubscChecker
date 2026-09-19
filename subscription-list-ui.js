@@ -88,7 +88,7 @@ export function renderMainList(cats, subs, savedState, container) {
       };
       const isChecked = !!state.checked;
 
-      const plans = Array.isArray(sub.plans) && sub.plans.length > 0
+      const rawPlans = Array.isArray(sub.plans) && sub.plans.length > 0
         ? sub.plans
         : [
             {
@@ -98,6 +98,13 @@ export function renderMainList(cats, subs, savedState, container) {
               yearly: sub.yearly || (sub.monthly || 0) * 12,
             },
           ];
+
+      // 価格が安い順（月額換算の昇順）に上から並び替え
+      const plans = [...rawPlans].sort((a, b) => {
+        const priceA = a.monthly ?? (a.yearly ? a.yearly / 12 : 0);
+        const priceB = b.monthly ?? (b.yearly ? b.yearly / 12 : 0);
+        return priceA - priceB;
+      });
 
       const activePlanId = state.planId || state.plan || sub.defaultPlanId || plans[0].id;
 
