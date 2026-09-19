@@ -648,10 +648,11 @@ function renderAdvisor(container, data, items = []) {
           </div>
         </div>
       </div>
-    };
+    `;
+  };
 
-    // 8. イベント委譲によるクリック制御（再描画後も確実に動作を維持）
-    container.onclick = (e) => {
+  // 8. イベント委譲によるクリック制御（再描画後も確実に動作を維持）
+  container.onclick = (e) => {
       const doneBtn = e.target.closest('[data-action-btn="toggle-done"]');
       if (doneBtn) {
         const id = doneBtn.getAttribute("data-action-id");
