@@ -1,4 +1,4 @@
-// share-card.js (固定費カルテ画像Canvas動的生成 & 高CVR・短文Xシェアモジュール)
+// share-card.js (サブスク利用タイプ診断画像Canvas動的生成 & 高拡散・自然な日本語Xシェアモジュール)
 import { escapeHtml } from "./utils.js";
 
 // カテゴリ別カラー定義（Canvas円グラフおよびUI共通）
@@ -13,6 +13,176 @@ const GENRE_COLORS = {
   lifestyle: { color: "#a855f7", label: "生活・習慣" },
   other: { color: "#64748b", label: "その他" },
 };
+
+// MBTIライクな全10タイプ診断マスターデータ
+export const SUBSCRIPTION_TYPES = {
+  oshi: {
+    id: "oshi",
+    name: "推し活全振り型",
+    tagline: "推しの供給のためなら月額など誤差",
+    traits: "全コンテンツをリアタイ追走中。推しの限定配信・ライブ・サントラのためなら固定費を惜しまない情熱派。",
+    advice: "重複した配信プランを見直せば、浮いた固定費を次のグッズや遠征費に回せます。",
+    accentColor: "#ec4899",
+  },
+  cinema: {
+    id: "cinema",
+    name: "インドア映画館型",
+    tagline: "休日はベッドから出ずに映画マラソン",
+    traits: "気づけば複数VODに加入中。見たい作品を探して配信サイトを回遊するのが週末の至福のルーティン。",
+    advice: "休眠中のVODを一時休会するか、年間プランに切り替えるだけで年間数千円浮きます。",
+    accentColor: "#f43f5e",
+  },
+  bgm: {
+    id: "bgm",
+    name: "日常BGM浸り型",
+    tagline: "イヤホンを忘れたら1日テンション半減",
+    traits: "生活のあらゆる瞬間にサントラが必要。散歩・作業・入浴まで気分に合わせたプレイリストを常備。",
+    advice: "音楽系サブスクが重複していないか確認し、ファミリープランや年払いの活用がおすすめです。",
+    accentColor: "#10b981",
+  },
+  digital_worker: {
+    id: "digital_worker",
+    name: "デジタル仕事人型",
+    tagline: "自己投資と効率化には糸目をつけない",
+    traits: "最新AI・クラウド・プロツールを駆使。時間を買って生産性を最大化するスマート実践派。",
+    advice: "個人プランから年払い一括への移行や、使わなくなったツールの解約で固定費をスリムに保てます。",
+    accentColor: "#3b82f6",
+  },
+  minimalist: {
+    id: "minimalist",
+    name: "固定費ミニマリスト型",
+    tagline: "本当に毎日使う神サービスだけを厳選",
+    traits: "無駄な固定費を嫌う鉄の意志の持ち主。契約数1〜2件で完璧に使い倒す、家計管理の超優等生。",
+    advice: "すでに極めて健全な状態です。この素晴らしいスマート習慣をキープしましょう。",
+    accentColor: "#059669",
+  },
+  smart_rationalist: {
+    id: "smart_rationalist",
+    name: "スマート合理主義型",
+    tagline: "必要十分を心得たサブスクの達人",
+    traits: "生活に必要なサブスクをバランスよく契約し、無駄がほぼない。コスパを冷静に見極めて賢く利用中。",
+    advice: "年に1度の棚卸しで契約状況をチェックするだけで、無駄ゼロをずっと維持できます。",
+    accentColor: "#0ea5e9",
+  },
+  buffet: {
+    id: "buffet",
+    name: "サブスクビュッフェ型",
+    tagline: "デジタル世界の便利さを全方位で満喫",
+    traits: "気になったサービスは即お試し。エンタメから便利ツールまで幅広く契約し、日々の生活をアップデート。",
+    advice: "「最近使っていないかも？」と感じるサービスを1つ棚卸しするだけで、大きな節約効果が生まれます。",
+    accentColor: "#8b5cf6",
+  },
+  express_delivery: {
+    id: "express_delivery",
+    name: "お急ぎ便マスター型",
+    tagline: "日用品も買い物もすべて自宅に即日完結",
+    traits: "通販・配送・生活支援サブスクをフル活用。買い物に行く時間を節約して快適な生活リズムを構築中。",
+    advice: "年間プランへの集約や、同種サービスの特典被りを整理するのが節約の近道です。",
+    accentColor: "#f97316",
+  },
+  intellectual: {
+    id: "intellectual",
+    name: "知的好奇心探求型",
+    tagline: "本と学びのインプットが止まらない読書家",
+    traits: "電子書籍や学習系サービスを愛用。気になった知識は即ライブラリに保存し、日々のインプットに余念がない。",
+    advice: "定期的に読み放題対象と購入のコストを比較すると、さらにコスパが向上します。",
+    accentColor: "#d97706",
+  },
+  lost: {
+    id: "lost",
+    name: "サブスク迷子型",
+    tagline: "昔登録したあのサービス、今月開いたっけ…？",
+    traits: "無料体験からそのまま継続していたり、似たジャンルが被っていたり。気づけば毎月引き落とされるおっとりさん。",
+    advice: "ワンタップで解約やプラン変更をすれば、年間で数万円浮くポテンシャルを秘めています。",
+    accentColor: "#e11d48",
+  },
+};
+
+/**
+ * 契約一覧と診断結果からユーザーのサブスクタイプを決定論的に判定
+ */
+export function determineSubscriptionType(items = [], data = {}) {
+  const serviceCount = items.length;
+  const totalMonthly = items.reduce((sum, i) => sum + (Number(i.monthly) || 0), 0);
+
+  // ジャンル別集計
+  const genreAmounts = {};
+  items.forEach((item) => {
+    const cat = item.category || "other";
+    const monthly = Number(item.monthly) || 0;
+    genreAmounts[cat] = (genreAmounts[cat] || 0) + monthly;
+  });
+
+  // 削減ポテンシャル
+  let potentialSaving = 0;
+  if (Array.isArray(data?.actions) && data.actions.length > 0) {
+    potentialSaving = data.actions.reduce(
+      (sum, a) => sum + (Number(a.annual_saving) || 0),
+      0
+    );
+  } else if (data?.priority_action?.annual_saving) {
+    potentialSaving = Number(data.priority_action.annual_saving) || 0;
+  }
+
+  const videoAmt = genreAmounts.video || 0;
+  const musicAmt = genreAmounts.music || 0;
+  const toolAmt = (genreAmounts.tool || 0) + (genreAmounts.storage || 0);
+  const deliveryAmt = genreAmounts.delivery || 0;
+  const ebookAmt = genreAmounts.ebook || 0;
+
+  const videoPct = totalMonthly > 0 ? Math.round((videoAmt / totalMonthly) * 100) : 0;
+  const musicPct = totalMonthly > 0 ? Math.round((musicAmt / totalMonthly) * 100) : 0;
+  const entertainmentPct = videoPct + musicPct;
+  const toolPct = totalMonthly > 0 ? Math.round((toolAmt / totalMonthly) * 100) : 0;
+
+  // 1. 契約数が極小かつ低支出 → ミニマリスト
+  if (serviceCount <= 2 && totalMonthly <= 2500) {
+    return SUBSCRIPTION_TYPES.minimalist;
+  }
+
+  // 2. 年間12,000円以上の大幅な削減余地がある → 迷子型
+  if (potentialSaving >= 12000) {
+    return SUBSCRIPTION_TYPES.lost;
+  }
+
+  // 3. 動画＋音楽のエンタメが60%以上かつ3件以上 → 推し活全振り型
+  if (entertainmentPct >= 60 && serviceCount >= 3) {
+    return SUBSCRIPTION_TYPES.oshi;
+  }
+
+  // 4. 動画が過半数 → インドア映画館型
+  if (videoPct >= 45) {
+    return SUBSCRIPTION_TYPES.cinema;
+  }
+
+  // 5. 音楽が過半数 → 日常BGM浸り型
+  if (musicPct >= 40) {
+    return SUBSCRIPTION_TYPES.bgm;
+  }
+
+  // 6. ツール・クラウドが40%以上 → デジタル仕事人型
+  if (toolPct >= 40) {
+    return SUBSCRIPTION_TYPES.digital_worker;
+  }
+
+  // 7. 配送・ECが最大支出 → お急ぎ便マスター型
+  if (deliveryAmt > 0 && deliveryAmt >= videoAmt && deliveryAmt >= musicAmt) {
+    return SUBSCRIPTION_TYPES.express_delivery;
+  }
+
+  // 8. 電子書籍が主 → 知的好奇心探求型
+  if (ebookAmt > 0 && ebookAmt >= videoAmt && ebookAmt >= musicAmt) {
+    return SUBSCRIPTION_TYPES.intellectual;
+  }
+
+  // 9. 5件以上で多様なジャンル → ビュッフェ型
+  if (serviceCount >= 5) {
+    return SUBSCRIPTION_TYPES.buffet;
+  }
+
+  // 10. その他 → スマート合理主義型
+  return SUBSCRIPTION_TYPES.smart_rationalist;
+}
 
 /**
  * 契約サブスク一覧とAI診断結果からシェア用統計データを算出
@@ -47,7 +217,7 @@ export function calculateShareStats(items = [], data = {}) {
     totalMonthly > 0 ? Math.round((topGenreAmount / totalMonthly) * 100) : 0;
   const topGenreLabel = GENRE_COLORS[topGenreKey]?.label || "サブスク";
 
-  // 削減余地額（優先ToDoまたはactionsの合計）
+  // 削減余地額（優先アクションの合計）
   let potentialSaving = 0;
   if (Array.isArray(data?.actions) && data.actions.length > 0) {
     potentialSaving = data.actions.reduce(
@@ -58,25 +228,8 @@ export function calculateShareStats(items = [], data = {}) {
     potentialSaving = Number(data.priority_action.annual_saving) || 0;
   }
 
-  // 診断タイプ名
-  let profileType = data?.profile_type || "";
-  if (!profileType) {
-    if (topGenrePercent >= 50) {
-      profileType = `${topGenreLabel}特化型`;
-    } else if (serviceCount >= 5) {
-      profileType = "サブスク多重エンジョイ型";
-    } else {
-      profileType = "スマート活用型";
-    }
-  }
-
-  // タイプ別の一言コメント
-  let typeComment = "バランス重視型";
-  if (topGenreKey === "video") typeComment = "完全にインドア派。";
-  else if (topGenreKey === "music") typeComment = "音楽漬けの毎日。";
-  else if (topGenreKey === "game") typeComment = "ゲーマー魂全開。";
-  else if (topGenreKey === "ebook") typeComment = "読書家スタイル。";
-  else if (topGenreKey === "delivery") typeComment = "通販・お急ぎ便マニア。";
+  // タイプ診断
+  const subscType = determineSubscriptionType(items, data);
 
   return {
     totalMonthly,
@@ -87,41 +240,45 @@ export function calculateShareStats(items = [], data = {}) {
     topGenrePercent,
     genreAmounts,
     potentialSaving,
-    profileType,
-    typeComment,
+    subscType,
+    profileType: subscType.name,
+    typeComment: subscType.tagline,
     items,
   };
 }
 
 /**
- * Xポスト用テキスト生成（1〜2行 ＋ ハッシュタグ1個に最適化）
+ * Xポスト用テキスト生成（思わずシェアしたくなる自然な日本語文章）
  */
-export function buildShortTweetText({ mode = "normal", stats, completedAction = null }) {
+export function buildShortTweetText({ mode = "type", stats, completedAction = null }) {
   const yearlyStr = stats.totalYearly.toLocaleString();
   const savingStr = stats.potentialSaving.toLocaleString();
 
+  // 1. タスク達成時
   if (completedAction) {
     const actSaving = completedAction.annual_saving
       ? `年間${Number(completedAction.annual_saving).toLocaleString()}円`
       : "固定費";
-    return `サブスク見直して${actSaving}浮いた！\nhttps://subsc-checker.com/ #SubscChecker`;
+    return `サブスクを見直して${actSaving}浮いた！\nhttps://subsc-checker.com/ #SubscChecker`;
   }
 
-  if (mode === "hidden") {
-    return `サブスクの${stats.topGenrePercent}%が${stats.topGenreLabel}だった。${stats.typeComment}\nhttps://subsc-checker.com/ #SubscChecker`;
+  // 2. タイプ診断モード（デフォルト：金額非表示で拡散されやすい）
+  if (mode === "type" || mode === "hidden") {
+    const type = stats.subscType || SUBSCRIPTION_TYPES.smart_rationalist;
+    return `【サブスク利用タイプ診断】\n私のタイプは「${type.name}」でした！\n「${type.tagline}」\n\nhttps://subsc-checker.com/ #SubscChecker #サブスクタイプ診断`;
   }
 
-  // 通常モード（金額表示）
+  // 3. 支出レポートモード（金額表示）
   if (stats.potentialSaving > 0) {
-    return `サブスクに年${yearlyStr}円払ってた。${savingStr}円減らせるらしい。\nhttps://subsc-checker.com/ #SubscChecker`;
+    return `サブスクに年${yearlyStr}円払ってた。年間約${savingStr}円節約できるみたい！\nhttps://subsc-checker.com/ #SubscChecker`;
   }
-  return `サブスクに年${yearlyStr}円（${stats.serviceCount}契約）払ってた。\nhttps://subsc-checker.com/ #SubscChecker`;
+  return `サブスクに年間${yearlyStr}円（全${stats.serviceCount}契約）利用中。あなたの固定費は？\nhttps://subsc-checker.com/ #SubscChecker`;
 }
 
 /**
- * Canvasに「固定費カルテ」画像をレンダリング（1200 × 675px, 16:9）
+ * Canvasに診断結果画像をレンダリング（1200 × 675px, 16:9）
  */
-export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedAction = null }) {
+export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAction = null }) {
   if (!canvas) return;
   const width = 1200;
   const height = 675;
@@ -130,7 +287,7 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  // 1. リッチなダークグラデーション背景
+  // 1. 洗練されたダークグラデーション背景
   const bgGrad = ctx.createLinearGradient(0, 0, width, height);
   bgGrad.addColorStop(0, "#090d16");
   bgGrad.addColorStop(0.5, "#0f172a");
@@ -138,15 +295,15 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, width, height);
 
-  // 装飾バックライト（青と紫の光彩）
+  // 装飾バックライト（青とパープルの光彩）
   const glow1 = ctx.createRadialGradient(200, 150, 20, 200, 150, 450);
-  glow1.addColorStop(0, "rgba(37, 99, 235, 0.25)");
+  glow1.addColorStop(0, "rgba(37, 99, 235, 0.22)");
   glow1.addColorStop(1, "rgba(37, 99, 235, 0)");
   ctx.fillStyle = glow1;
   ctx.fillRect(0, 0, width, height);
 
   const glow2 = ctx.createRadialGradient(1000, 500, 30, 1000, 500, 500);
-  glow2.addColorStop(0, "rgba(147, 51, 234, 0.2)");
+  glow2.addColorStop(0, "rgba(147, 51, 234, 0.18)");
   glow2.addColorStop(1, "rgba(147, 51, 234, 0)");
   ctx.fillStyle = glow2;
   ctx.fillRect(0, 0, width, height);
@@ -158,7 +315,7 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
   ctx.stroke();
 
   // 2. ヘッダー描画
-  // ロゴアイコン
+  // アプリアイコン
   ctx.fillStyle = "#2563eb";
   roundRect(ctx, 60, 60, 48, 48, 14);
   ctx.fill();
@@ -168,7 +325,7 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
   ctx.textBaseline = "middle";
   ctx.fillText("S", 84, 85);
 
-  // ロゴタイトル
+  // アプリタイトル
   ctx.textAlign = "left";
   ctx.font = "900 28px sans-serif";
   ctx.fillStyle = "#ffffff";
@@ -176,23 +333,30 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
 
   ctx.font = "bold 16px sans-serif";
   ctx.fillStyle = "#94a3b8";
-  ctx.fillText("サブスク固定費カルテ", 124, 100);
+  const headerSubtitle = completedAction
+    ? "節約タスク達成レポート"
+    : mode === "normal"
+    ? "サブスク支出レポート"
+    : "サブスク利用タイプ診断";
+  ctx.fillText(headerSubtitle, 124, 100);
 
-  // 右上ドメインバッジ
+  // 右上ドメイン
   ctx.textAlign = "right";
   ctx.font = "bold 18px sans-serif";
   ctx.fillStyle = "#64748b";
   ctx.fillText("subsc-checker.com", width - 60, 88);
 
-  // 3. 左カラム：診断結果テキスト
+  // 3. 左カラム：メイン診断結果テキスト
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
 
+  const type = stats.subscType || SUBSCRIPTION_TYPES.smart_rationalist;
+
   if (completedAction) {
-    // 【ToDo達成モード】
+    // 【タスク達成モード】
     ctx.fillStyle = "#10b981";
     ctx.font = "bold 22px sans-serif";
-    ctx.fillText("節約タスク達成", 60, 180);
+    ctx.fillText("節約アクション達成！", 60, 180);
 
     ctx.fillStyle = "#ffffff";
     ctx.font = "900 60px sans-serif";
@@ -203,7 +367,7 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
 
     ctx.fillStyle = "#cbd5e1";
     ctx.font = "bold 24px sans-serif";
-    ctx.fillText(`【完了】${completedAction.title || completedAction.service}`, 60, 315);
+    ctx.fillText(`【実行】${completedAction.title || completedAction.service}`, 60, 315);
 
     // 達成バッジ
     ctx.fillStyle = "rgba(16, 185, 129, 0.15)";
@@ -215,36 +379,43 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
     ctx.fillStyle = "#34d399";
     ctx.font = "bold 22px sans-serif";
     ctx.fillText("固定費の最適化を実行しました", 90, 408);
-  } else if (mode === "hidden") {
-    // 【金額隠し（タイプ・比率重視）モード】
+  } else if (mode === "type" || mode === "hidden") {
+    // 【タイプ診断モード（デフォルト・金額非表示）】
     ctx.fillStyle = "#38bdf8";
     ctx.font = "bold 20px sans-serif";
-    ctx.fillText("サブスク支出タイプ診断", 60, 180);
+    ctx.fillText("あなたのサブスク診断タイプ", 60, 175);
 
+    // タイプ名（大きく強調）
     ctx.fillStyle = "#ffffff";
-    ctx.font = "900 52px sans-serif";
-    ctx.fillText(stats.profileType, 60, 220);
+    ctx.font = "900 56px sans-serif";
+    ctx.fillText(type.name, 60, 210);
 
-    ctx.fillStyle = "#f43f5e";
-    ctx.font = "900 36px sans-serif";
-    ctx.fillText(`支出の ${stats.topGenrePercent}% が ${stats.topGenreLabel}`, 60, 305);
+    // キャッチコピー
+    ctx.fillStyle = type.accentColor || "#38bdf8";
+    ctx.font = "900 26px sans-serif";
+    ctx.fillText(`“ ${type.tagline} ”`, 60, 290);
 
+    // あるある特徴（2行折り返し描画）
     ctx.fillStyle = "#cbd5e1";
-    ctx.font = "bold 22px sans-serif";
-    ctx.fillText(`${stats.typeComment}（全${stats.serviceCount}契約）`, 60, 360);
+    ctx.font = "bold 20px sans-serif";
+    drawWrappedText(ctx, type.traits, 60, 340, 520, 30);
 
-    // バッジ
-    ctx.fillStyle = "rgba(56, 189, 248, 0.12)";
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.3)";
-    roundRect(ctx, 60, 420, 520, 75, 18);
+    // おすすめアドバイス枠
+    ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+    roundRect(ctx, 60, 430, 520, 75, 16);
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = "#7dd3fc";
-    ctx.font = "bold 20px sans-serif";
-    ctx.fillText(`ジャンル別割合：${stats.topGenreLabel}が第1位`, 85, 448);
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "bold 15px sans-serif";
+    ctx.fillText("アドバイス:", 80, 446);
+
+    ctx.fillStyle = "#f1f5f9";
+    ctx.font = "bold 16px sans-serif";
+    drawWrappedText(ctx, type.advice, 80, 468, 480, 24);
   } else {
-    // 【通常モード（金額表示）】
+    // 【支出レポートモード（金額表示）】
     ctx.fillStyle = "#94a3b8";
     ctx.font = "bold 20px sans-serif";
     ctx.fillText("毎月のサブスク固定費", 60, 175);
@@ -272,13 +443,13 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
       ctx.fillStyle = "#34d399";
       ctx.font = "bold 24px sans-serif";
       ctx.fillText(
-        `年間最大 -¥${stats.potentialSaving.toLocaleString()} の削減余地あり`,
+        `年間最大 -¥${stats.potentialSaving.toLocaleString()} の節約余地あり`,
         85,
         388
       );
       ctx.font = "16px sans-serif";
       ctx.fillStyle = "#a7f3d0";
-      ctx.fillText("※年払い化・重複契約の解消プラン試算より", 85, 418);
+      ctx.fillText("※プラン最適化・重複解消の試算より", 85, 418);
     }
   }
 
@@ -288,7 +459,6 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
   const outerR = 135;
   const innerR = 80;
 
-  // ジャンル比率でスライスを描画
   let startAngle = -Math.PI / 2;
   const genreEntries = Object.entries(stats.genreAmounts).filter(([, amt]) => amt > 0);
 
@@ -307,7 +477,6 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
       startAngle += sliceAngle;
     });
   } else {
-    // 0件時のプレースホルダー円
     ctx.beginPath();
     ctx.arc(chartCenterX, chartCenterY, outerR, 0, Math.PI * 2);
     ctx.arc(chartCenterX, chartCenterY, innerR, Math.PI * 2, 0, true);
@@ -316,7 +485,7 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
     ctx.fill();
   }
 
-  // ドーナツ中央のテキスト
+  // ドーナツ中央テキスト
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#94a3b8";
@@ -338,13 +507,11 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
     const color = GENRE_COLORS[cat]?.color || "#64748b";
     const label = GENRE_COLORS[cat]?.label || cat;
 
-    // 丸ポチ
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(chartCenterX - 90, legendY, 7, 0, Math.PI * 2);
     ctx.fill();
 
-    // ラベルとパーセント
     ctx.fillStyle = "#cbd5e1";
     ctx.font = "bold 18px sans-serif";
     ctx.fillText(`${label}`, chartCenterX - 70, legendY);
@@ -358,17 +525,38 @@ export function drawShareCardCanvas(canvas, { mode = "normal", stats, completedA
     legendY += 30;
   });
 
-  // 5. フッター帯
+  // 5. フッター
   ctx.textAlign = "left";
   ctx.textBaseline = "bottom";
   ctx.font = "bold 16px sans-serif";
   ctx.fillStyle = "#64748b";
-  ctx.fillText("完全無料・登録不要で固定費を診断 | SubscChecker", 60, height - 55);
+  ctx.fillText("完全無料・登録不要でサブスクを診断 | SubscChecker", 60, height - 55);
 
   ctx.textAlign = "right";
   ctx.font = "bold 16px sans-serif";
   ctx.fillStyle = "#38bdf8";
   ctx.fillText("#SubscChecker", width - 60, height - 55);
+}
+
+// テキスト自動折り返し描画ヘルパー
+function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight) {
+  if (!text) return;
+  const chars = text.split("");
+  let line = "";
+  let currentY = y;
+
+  for (let n = 0; n < chars.length; n++) {
+    const testLine = line + chars[n];
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && n > 0) {
+      ctx.fillText(line, x, currentY);
+      line = chars[n];
+      currentY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, currentY);
 }
 
 // 角丸矩形描画ヘルパー
@@ -387,14 +575,14 @@ function roundRect(ctx, x, y, width, height, radius) {
 }
 
 /**
- * シェアモーダルを開く（画像プレビュー・モード切替・ワンタップX投稿）
+ * シェアモーダルを開く（タイプ診断デフォルト・画像プレビュー・ワンタップX投稿）
  */
 export function openShareModal({ stats, completedAction = null }) {
-  // 既存のモーダルがあれば削除
   const existing = document.getElementById("share-modal-overlay");
   if (existing) existing.remove();
 
-  let currentMode = completedAction ? "achievement" : "normal";
+  // デフォルトは拡散されやすいタイプ診断モード
+  let currentMode = completedAction ? "achievement" : "type";
 
   const modalHtml = `
     <div id="share-modal-overlay" class="fixed inset-0 z-[200] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 md:p-6 overflow-y-auto animate-fade-in">
@@ -411,7 +599,7 @@ export function openShareModal({ stats, completedAction = null }) {
         </button>
 
         <!-- モーダルヘッダー -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm">
             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -419,17 +607,28 @@ export function openShareModal({ stats, completedAction = null }) {
           </div>
           <div>
             <h3 class="text-base md:text-lg font-black tracking-tight">
-              ${completedAction ? "節約タスクの達成をシェア" : "固定費カルテを画像でシェア"}
+              ${completedAction ? "節約アクションの達成をシェア" : "診断結果を画像でシェア"}
             </h3>
             <p class="text-xs text-slate-400">画像付きでタイムラインでの注目度が数倍アップします</p>
           </div>
         </div>
 
-        <!-- モード切り替えタブ（金額表示 / 金額を隠す）※達成モードでない場合のみ表示 -->
+        <!-- モード切り替えタブ（タイプ診断重視 / 金額表示レポート） -->
         ${
           !completedAction
             ? `
           <div class="flex bg-slate-800 p-1 rounded-xl gap-1">
+            <button
+              id="tab-mode-type"
+              type="button"
+              class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                currentMode === "type"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-slate-400 hover:text-white"
+              }"
+            >
+              タイプ診断（金額非表示・おすすめ）
+            </button>
             <button
               id="tab-mode-normal"
               type="button"
@@ -439,18 +638,7 @@ export function openShareModal({ stats, completedAction = null }) {
                   : "text-slate-400 hover:text-white"
               }"
             >
-              金額を表示
-            </button>
-            <button
-              id="tab-mode-hidden"
-              type="button"
-              class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                currentMode === "hidden"
-                  ? "bg-blue-600 text-white shadow-xs"
-                  : "text-slate-400 hover:text-white"
-              }"
-            >
-              金額を伏せる（比率・タイプ重視）
+              支出レポート（金額を表示）
             </button>
           </div>
         `
@@ -512,26 +700,25 @@ export function openShareModal({ stats, completedAction = null }) {
   const btnCopyImage = document.getElementById("btn-modal-copy-image");
   const btnCopyImageText = document.getElementById("btn-modal-copy-image-text");
   const hintEl = document.getElementById("share-modal-hint");
+  const tabType = document.getElementById("tab-mode-type");
   const tabNormal = document.getElementById("tab-mode-normal");
-  const tabHidden = document.getElementById("tab-mode-hidden");
 
-  // レンダリング更新関数
   const updateModalView = (mode) => {
     currentMode = mode;
     drawShareCardCanvas(canvas, { mode, stats, completedAction });
     const text = buildShortTweetText({ mode, stats, completedAction });
     if (tweetTextEl) tweetTextEl.textContent = text;
 
-    if (tabNormal && tabHidden) {
-      if (mode === "normal") {
-        tabNormal.className =
+    if (tabType && tabNormal) {
+      if (mode === "type") {
+        tabType.className =
           "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-xs";
-        tabHidden.className =
+        tabNormal.className =
           "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white";
       } else {
-        tabNormal.className =
+        tabType.className =
           "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white";
-        tabHidden.className =
+        tabNormal.className =
           "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-xs";
       }
     }
@@ -539,15 +726,13 @@ export function openShareModal({ stats, completedAction = null }) {
 
   updateModalView(currentMode);
 
-  // モード切り替え
+  if (tabType) {
+    tabType.addEventListener("click", () => updateModalView("type"));
+  }
   if (tabNormal) {
     tabNormal.addEventListener("click", () => updateModalView("normal"));
   }
-  if (tabHidden) {
-    tabHidden.addEventListener("click", () => updateModalView("hidden"));
-  }
 
-  // 閉じる
   const closeModal = () => {
     const overlay = document.getElementById("share-modal-overlay");
     if (overlay) overlay.remove();
@@ -560,7 +745,6 @@ export function openShareModal({ stats, completedAction = null }) {
     });
   }
 
-  // Xでポストする
   if (btnShareX) {
     btnShareX.addEventListener("click", () => {
       const text = buildShortTweetText({ mode: currentMode, stats, completedAction });
@@ -569,7 +753,6 @@ export function openShareModal({ stats, completedAction = null }) {
     });
   }
 
-  // 画像をコピー または 保存（Web Share API / Clipboard / Download）
   if (btnCopyImage) {
     btnCopyImage.addEventListener("click", async () => {
       if (!canvas) return;
@@ -577,9 +760,8 @@ export function openShareModal({ stats, completedAction = null }) {
       canvas.toBlob(async (blob) => {
         if (!blob) return;
 
-        // モバイルの Web Share API（画像添付共有）に対応している場合
         if (navigator.share && navigator.canShare) {
-          const file = new File([blob], "subsc-carte.png", { type: "image/png" });
+          const file = new File([blob], "subsc-type.png", { type: "image/png" });
           const text = buildShortTweetText({ mode: currentMode, stats, completedAction });
           if (navigator.canShare({ files: [file] })) {
             try {
@@ -596,7 +778,6 @@ export function openShareModal({ stats, completedAction = null }) {
           }
         }
 
-        // クリップボードに画像をコピー
         try {
           if (navigator.clipboard && window.ClipboardItem) {
             await navigator.clipboard.write([
@@ -616,11 +797,10 @@ export function openShareModal({ stats, completedAction = null }) {
           console.warn("Clipboard copy failed, fallback to download:", clipErr);
         }
 
-        // フォールバック：画像ダウンロード
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "subsc-checker-carte.png";
+        a.download = "subsc-type.png";
         a.click();
         URL.revokeObjectURL(url);
         if (btnCopyImageText) btnCopyImageText.textContent = "画像を保存しました！";
@@ -633,10 +813,11 @@ export function openShareModal({ stats, completedAction = null }) {
 }
 
 /**
- * 画面最下部のシェアセクションHTMLを生成（洗練されたカルテ画像プレビュー付き）
+ * 支出の内訳タブ専用: メインシェアセクションHTML
  */
 export function createShareSectionHtml({ data, items }) {
   const stats = calculateShareStats(items, data);
+  const type = stats.subscType || SUBSCRIPTION_TYPES.smart_rationalist;
 
   return `
     <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-5 md:p-8 text-white shadow-xl relative overflow-hidden border border-indigo-900/60 my-6">
@@ -648,15 +829,16 @@ export function createShareSectionHtml({ data, items }) {
           <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
           </svg>
-          <span>固定費カルテ</span>
+          <span>サブスク利用タイプ診断</span>
         </div>
 
         <h3 class="text-lg md:text-2xl font-black text-white tracking-tight">
-          診断結果を画像付きでシェア
+          あなたのタイプは「${escapeHtml(type.name)}」
         </h3>
 
         <p class="text-xs md:text-sm text-slate-400 leading-relaxed font-medium">
-          円グラフと削減余地が入った「固定費カルテ画像」を生成できます。金額を伏せたタイプ診断モードも選べます。
+          “${escapeHtml(type.tagline)}”<br>
+          金額を伏せてライフスタイルとして気軽にシェアできる画像カードを発行できます。
         </p>
 
         <!-- アクションボタン -->
@@ -669,7 +851,7 @@ export function createShareSectionHtml({ data, items }) {
             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
-            <span>カルテ画像を開いてシェアする</span>
+            <span>診断画像を開いてシェアする</span>
           </button>
         </div>
       </div>
@@ -678,7 +860,7 @@ export function createShareSectionHtml({ data, items }) {
 }
 
 /**
- * シェア機能の初期化（最下部シェアボタンのクリックイベントバインド）
+ * シェア機能の初期化
  */
 export function initShareCardActions({ data, items }) {
   const stats = calculateShareStats(items, data);

@@ -4,7 +4,7 @@ export const PROGRESS_STEPS = [
   { id: "scan", label: "契約傾向・ジャンルの整理", icon: `<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`, threshold: 10 },
   { id: "duplicate", label: "機能重複・二重課金の検出", icon: `<svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>`, threshold: 35 },
   { id: "plan", label: "年払い・プラン最適化の試算", icon: `<svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>`, threshold: 60 },
-  { id: "impact", label: "新NISA・将来資産インパクト算出", icon: `<svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`, threshold: 82 },
+  { id: "impact", label: "サブスク利用タイプ判定・提案生成", icon: `<svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`, threshold: 82 },
 ];
 
 export function createProgressTracker(container) {
@@ -138,7 +138,7 @@ export function createProgressTracker(container) {
       text = "年払い割引・プラン切り替えの節約効果を試算中...";
     } else if (elapsed < 8500) {
       target = 80 + ((elapsed - 5500) / 3000) * 12;
-      text = "新NISA積立換算・将来資産インパクトをシミュレーション中...";
+      text = "サブスク利用タイプ判定・おすすめアクションを生成中...";
     } else {
       target = Math.min(94, 92 + ((elapsed - 8500) / 4000) * 2);
       text = "AIアドバイザーの診断レポートを最終生成中...";

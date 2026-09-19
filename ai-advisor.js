@@ -413,9 +413,9 @@ function renderAdvisor(container, data, items = []) {
     let singleItemNoticeHtml = "";
     if (items && items.length === 1) {
       singleItemNoticeHtml = `
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-start gap-3">
-          <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 flex items-start gap-3 shadow-2xs">
+          <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
@@ -614,62 +614,20 @@ function renderAdvisor(container, data, items = []) {
         .join("");
     }
 
-    // 6. 新NISA・再投資インパクト試算カード（数字はactionsの合計と完全連動）
-    let investmentHtml = "";
-    if (totalPotentialSaving > 0) {
-      const principal20y = totalPotentialSaving * 20;
-      const profit20y = Math.round(totalPotentialSaving * 14.1); // 年利5%・20年の想定運用益倍率
-      const total20y = principal20y + profit20y;
-
-      investmentHtml = `
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-6 h-6 rounded-md bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-              </svg>
-            </div>
-            <h3 class="text-xs sm:text-sm font-black text-slate-800">
-              削減資金の再投資インパクト（新NISA 20年試算）
-            </h3>
-          </div>
-
-          <div class="grid grid-cols-3 gap-2 my-2.5 text-center">
-            <div class="bg-slate-50 rounded-xl p-2 border border-slate-100">
-              <span class="text-[10px] font-bold text-slate-400 block">積立元本</span>
-              <span class="text-xs sm:text-sm font-black text-slate-700">¥${principal20y.toLocaleString()}</span>
-            </div>
-            <div class="bg-emerald-50/70 rounded-xl p-2 border border-emerald-100">
-              <span class="text-[10px] font-bold text-emerald-600 block">想定運用益</span>
-              <span class="text-xs sm:text-sm font-black text-emerald-700">+¥${profit20y.toLocaleString()}</span>
-            </div>
-            <div class="bg-indigo-50/70 rounded-xl p-2 border border-indigo-100">
-              <span class="text-[10px] font-bold text-indigo-600 block">20年後総額</span>
-              <span class="text-xs sm:text-sm font-black text-indigo-700">約¥${total20y.toLocaleString()}</span>
-            </div>
-          </div>
-
-          <p class="text-[11px] text-slate-400 font-medium leading-relaxed">
-            ※浮いた固定費（年¥${totalPotentialSaving.toLocaleString()}）を新NISAのインデックス投信（年利5%想定）に20年積立運用した場合の試算です。
-          </p>
-        </div>
-      `;
-    }
-
-    // 7. 全体HTMLを結合（重複していた下部の黒い巨大CTAを削除）
+    // 6. 全体HTMLを結合（不要な投資試算を撤廃し、節約アクションに集中）
     container.innerHTML = `
       <div class="space-y-4 pt-1 animate-in fade-in duration-300">
         ${singleItemNoticeHtml}
         ${summaryCardHtml}
 
-        <!-- ToDoアクション一覧セクション -->
+        <!-- 節約アクション一覧セクション -->
         <div class="space-y-2.5">
           <div class="flex items-center justify-between px-1">
             <h3 class="text-xs font-black text-slate-800 flex items-center gap-1.5">
-              <span>優先見直しToDo</span>
+              <span>おすすめの節約アクション</span>
               <span class="text-xs font-bold text-slate-400">(${activeActions.length}件)</span>
             </h3>
-            <span class="text-[10px] text-slate-400 font-medium">削減効果順</span>
+            <span class="text-[10px] text-slate-400 font-medium">節約効果の高い順</span>
           </div>
 
           <div class="space-y-2.5">
@@ -677,20 +635,18 @@ function renderAdvisor(container, data, items = []) {
           </div>
         </div>
 
-        <!-- 完了感・健全性の肯定メッセージ（提案が少なくても整理されている安心感を提示） -->
-        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 flex items-center gap-3 text-slate-600">
-          <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- 完了感・健全性の肯定メッセージ（白背景＋グレー枠のクリーンなデザイン） -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center gap-3 text-slate-600 shadow-2xs">
+          <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
             </svg>
           </div>
           <div class="text-xs leading-relaxed">
-            <span class="font-bold text-slate-800">見つかった見直し候補は以上です。</span>
+            <span class="font-black text-slate-800">見つかった節約候補は以上です。</span>
             <span class="text-slate-500 font-medium block sm:inline sm:ml-1">不要な二重契約が少なく、現在の契約状況は良好に整理されています。</span>
           </div>
         </div>
-
-        ${investmentHtml}
       </div>
     `;
 
@@ -753,13 +709,13 @@ function renderAdvisor(container, data, items = []) {
         <svg class="w-3.5 h-3.5 fill-current text-slate-700" viewBox="0 0 24 24">
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
         </svg>
-        <span>診断結果の固定費カルテ画像をシェアできます</span>
+        <span>あなたのサブスク利用タイプ診断をシェアできます</span>
       </div>
       <button
         type="button"
         class="btn-trigger-slim-share inline-flex items-center gap-1 font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
       >
-        <span>カルテ画像をシェアする</span>
+        <span>タイプ診断結果をシェア</span>
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
         </svg>
