@@ -18,7 +18,7 @@ export function buildShareTweetText({ profileType, totalMonthly, serviceCount, p
 AI診断タイプ：【${profileType || "固定費チェック完了"}】${actionTitle}
 
 ▼ あなたの固定費もチェック
-https://subsc-checker.vercel.app/
+https://subsc-checker.com/
 #SubscChecker #固定費見直し #サブスク管理 #節約`;
 }
 
@@ -54,14 +54,14 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
             <span>診断結果をシェア</span>
           </div>
           <h3 class="text-lg md:text-2xl font-black text-white tracking-tight">
-            あなたの固定費カルテを 𝕏 でポスト
+            あなたの固定費カルテを X でポスト
           </h3>
           <p class="text-xs md:text-sm text-slate-400 mt-1.5 font-medium">
-            診断結果をXでポストできます。あなたのサブスク固定費をシェアしてみましょう！
+            診断結果をX（旧Twitter）でポストできます。あなたのサブスク固定費をシェアしてみましょう！
           </p>
         </div>
 
-        <!-- ツイート文面プレビュー（投稿吹き出し風） -->
+        <!-- 投稿文面プレビュー（投稿吹き出し風） -->
         <div class="bg-slate-950/80 rounded-2xl p-4 md:p-5 border border-white/15 shadow-inner mb-6 space-y-3">
           <div class="flex items-center gap-2.5 border-b border-white/10 pb-3">
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white font-black text-xs shadow-sm">
@@ -90,7 +90,7 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
             </div>
             <div class="min-w-0">
               <p class="text-xs font-bold text-white truncate">SubscChecker | サブスク固定費の見える化・AI診断</p>
-              <p class="text-[10px] text-slate-400 truncate">subsc-checker.vercel.app</p>
+              <p class="text-[10px] text-slate-400 truncate">subsc-checker.com</p>
             </div>
           </div>
         </div>
@@ -106,10 +106,10 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
-            <span>𝕏 でポストする</span>
+            <span>X でポストする</span>
           </button>
 
-          <!-- ② ツイート文をコピー ボタン -->
+          <!-- ② 投稿文面をコピー ボタン -->
           <button
             id="btn-copy-tweet"
             type="button"
@@ -120,7 +120,7 @@ export function createShareSectionHtml({ data, items, totalMonthly, totalYearly 
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
               </svg>
             </span>
-            <span id="copy-label">ツイート文をコピー</span>
+            <span id="copy-label">投稿文面をコピー</span>
           </button>
         </div>
 
@@ -178,10 +178,10 @@ export function initShareCardActions({ data, items, totalMonthly, totalYearly })
           copyLabel.textContent = "コピー完了！";
           setTimeout(() => {
             copyIcon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>`;
-            copyLabel.textContent = "ツイート文をコピー";
+            copyLabel.textContent = "投稿文面をコピー";
           }, 2500);
         }
-        showToast("ツイート文をコピーしました！Xに貼り付けてポストできます");
+        showToast("投稿文面をコピーしました！Xに貼り付けてポストできます");
       } catch (err) {
         console.error("Clipboard copy error:", err);
         // フォールバック: prompt
