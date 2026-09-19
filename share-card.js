@@ -1,5 +1,26 @@
 // share-card.js (サブスク利用タイプ診断画像Canvas動的生成 & 高拡散・自然な日本語Xシェアモジュール)
 import { escapeHtml } from "./utils.js";
+import { getOfficialLogoPath } from "./brand-icons.js";
+
+// ロゴ画像キャッシュ
+const logoImageCache = new Map();
+
+function getCachedOrLoadImage(src, onLoaded) {
+  if (!src) return null;
+  if (logoImageCache.has(src)) {
+    const cached = logoImageCache.get(src);
+    if (cached.complete && cached.naturalWidth > 0) return cached;
+  }
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    logoImageCache.set(src, img);
+    if (onLoaded) onLoaded(img);
+  };
+  img.src = src;
+  logoImageCache.set(src, img);
+  return null;
+}
 
 // カテゴリ別カラー定義（Canvas円グラフおよびUI共通）
 const GENRE_COLORS = {
@@ -24,127 +45,127 @@ export const SUBSCRIPTION_TYPES = {
     advice: "重複した配信プランを見直せば、浮いた固定費を次のグッズや遠征費に回せます。",
     accentColor: "#ec4899",
     rarity: "6.8%",
-    rarityLabel: "情熱のリアタイ追走派（全体上位7%）",
+    rarityLabel: "出現率 6.8% の情熱追走派",
     emblem: "flame",
     bgGradient: ["#180816", "#2d0b2e", "#090d16"],
   },
   cinema: {
     id: "cinema",
     name: "インドア映画館型",
-    tagline: "休日はベッドから出ずに映画マラソン",
+    tagline: "週末ベッドから一歩も出ないシネマ廃人",
     traits: "気づけば複数VODに加入中。見たい作品を探して配信サイトを回遊するのが週末の至福のルーティン。",
     advice: "休眠中のVODを一時休会するか、年間プランに切り替えるだけで年間数千円浮きます。",
     accentColor: "#f43f5e",
     rarity: "18.2%",
-    rarityLabel: "映像コンテンツ沼（全体平均の2.5倍）",
+    rarityLabel: "出現率 18.2% の映画沼",
     emblem: "movie",
     bgGradient: ["#1c0a0e", "#2c0e18", "#090d16"],
   },
   bgm: {
     id: "bgm",
     name: "日常BGM浸り型",
-    tagline: "イヤホンを忘れたら1日テンション半減",
+    tagline: "イヤホンを忘れたら即帰宅レベル",
     traits: "生活のあらゆる瞬間にサントラが必要。散歩・作業・入浴まで気分に合わせたプレイリストを常備。",
     advice: "音楽系サブスクが重複していないか確認し、ファミリープランや年払いの活用がおすすめです。",
     accentColor: "#10b981",
     rarity: "15.4%",
-    rarityLabel: "常時音響没入派（イヤホン着用率No.1）",
+    rarityLabel: "出現率 15.4% の音響没入派",
     emblem: "headphones",
     bgGradient: ["#061a14", "#0a2820", "#090d16"],
   },
   digital_worker: {
     id: "digital_worker",
     name: "デジタル仕事人型",
-    tagline: "自己投資と効率化には糸目をつけない",
+    tagline: "課金で時間を買う生産性モンスター",
     traits: "最新AI・クラウド・プロツールを駆使。時間を買って生産性を最大化するスマート実践派。",
     advice: "個人プランから年払い一括への移行や、使わなくなったツールの解約で固定費をスリムに保てます。",
     accentColor: "#3b82f6",
     rarity: "9.6%",
-    rarityLabel: "生産性ガチ勢（課金ツール上位10%）",
+    rarityLabel: "上位10%の生産性ガチ勢",
     emblem: "terminal",
     bgGradient: ["#07152b", "#0f274a", "#090d16"],
   },
   minimalist: {
     id: "minimalist",
     name: "固定費ミニマリスト型",
-    tagline: "本当に毎日使う神サービスだけを厳選",
+    tagline: "無駄な固定費を1円も許さない鉄人",
     traits: "無駄な固定費を嫌う鉄の意志の持ち主。契約数1〜2件で完璧に使い倒す、家計管理の超優等生。",
     advice: "すでに極めて健全な状態です。この素晴らしいスマート習慣をキープしましょう。",
     accentColor: "#059669",
     rarity: "14.5%",
-    rarityLabel: "厳選された無駄ゼロ生活（契約数下位15%）",
+    rarityLabel: "下位15%の無駄ゼロ生活",
     emblem: "shield",
     bgGradient: ["#061912", "#0b2b20", "#090d16"],
   },
   oil_king: {
     id: "oil_king",
     name: "デジタル石油王型",
-    tagline: "全方位サブスク富豪（固定費の限界突破）",
+    tagline: "使ってないサブスクに毎月お布施する石油王",
     traits: "ありとあらゆる最新サービスを契約中。デジタル空間のすべてを手中におさめる豪快なサブスク貴族。",
     advice: "1ヶ月以上開いていないサービスが数件あるはず。一度契約一覧をスクロールしてみましょう。",
     accentColor: "#eab308",
     rarity: "2.1%",
-    rarityLabel: "全体上位2%のサブスク富豪（8件以上契約）",
+    rarityLabel: "上位2%のサブスク富豪",
     emblem: "crown",
     bgGradient: ["#1f1805", "#3a2d08", "#090d16"],
   },
   smart_rationalist: {
     id: "smart_rationalist",
     name: "スマート合理主義型",
-    tagline: "必要十分を心得たサブスクの達人",
+    tagline: "コスパを極めた家計管理の優等生",
     traits: "生活に必要なサブスクをバランスよく契約し、無駄がほぼない。コスパを冷静に見極めて賢く利用中。",
     advice: "年に1度の棚卸しで契約状況をチェックするだけで、無駄ゼロをずっと維持できます。",
     accentColor: "#0ea5e9",
     rarity: "22.0%",
-    rarityLabel: "コスパ最適化マスター（優等生バランス）",
+    rarityLabel: "出現率 22.0% の優等生",
     emblem: "scales",
     bgGradient: ["#081726", "#0e2b45", "#090d16"],
   },
   buffet: {
     id: "buffet",
     name: "サブスクビュッフェ型",
-    tagline: "デジタル世界の便利さを全方位で満喫",
+    tagline: "便利そうなものはとりあえず全部契約",
     traits: "気になったサービスは即お試し。エンタメから便利ツールまで幅広く契約し、日々の生活をアップデート。",
     advice: "「最近使っていないかも？」と感じるサービスを1つ棚卸しするだけで、大きな節約効果が生まれます。",
     accentColor: "#8b5cf6",
     rarity: "11.5%",
-    rarityLabel: "デジタル好奇心旺盛派（マルチジャンル契約）",
+    rarityLabel: "出現率 11.5% の好奇心派",
     emblem: "buffet",
     bgGradient: ["#140b29", "#241347", "#090d16"],
   },
   express_delivery: {
     id: "express_delivery",
     name: "お急ぎ便マスター型",
-    tagline: "日用品も買い物もすべて自宅に即日完結",
+    tagline: "日用品を買いに出かける体力を失った人",
     traits: "通販・配送・生活支援サブスクをフル活用。買い物に行く時間を節約して快適な生活リズムを構築中。",
     advice: "年間プランへの集約や、同種サービスの特典被りを整理するのが節約の近道です。",
     accentColor: "#f97316",
     rarity: "7.4%",
-    rarityLabel: "自宅即日完結派（タイパ重視生活）",
+    rarityLabel: "出現率 7.4% のタイパ生活",
     emblem: "truck",
     bgGradient: ["#1f0e05", "#351909", "#090d16"],
   },
   intellectual: {
     id: "intellectual",
     name: "知的好奇心探求型",
-    tagline: "本と学びのインプットが止まらない読書家",
+    tagline: "積ん読サブスクで本棚を埋め尽くす人",
     traits: "電子書籍や学習系サービスを愛用。気になった知識は即ライブラリに保存し、日々のインプットに余念がない。",
     advice: "定期的に読み放題対象と購入のコストを比較すると、さらにコスパが向上します。",
     accentColor: "#d97706",
     rarity: "4.8%",
-    rarityLabel: "知識インプット探求派（読書・学習特化）",
+    rarityLabel: "出現率 4.8% の読書探求派",
     emblem: "book",
     bgGradient: ["#1c1005", "#331f08", "#090d16"],
   },
   lost: {
     id: "lost",
     name: "サブスク迷子型",
-    tagline: "昔登録したあのサービス、今月開いたっけ…？",
+    tagline: "解約ボタンの場所が一生見つからない人",
     traits: "無料体験からそのまま継続していたり、似たジャンルが被っていたり。気づけば毎月引き落とされるおっとりさん。",
     advice: "ワンタップで解約やプラン変更をすれば、年間で数万円浮くポテンシャルを秘めています。",
     accentColor: "#e11d48",
     rarity: "12.1%",
-    rarityLabel: "固定費の眠れる宝庫（大幅節約ポテンシャル）",
+    rarityLabel: "年間数万円の節約ポテンシャル",
     emblem: "compass",
     bgGradient: ["#20070e", "#3a0c18", "#090d16"],
   },
@@ -181,29 +202,33 @@ export function determineSubscriptionType(items = [], data = {}) {
     const item = items[0] || {};
     const rawName = String(item.name || "").trim();
     const lowerName = rawName.toLowerCase();
+    const officialLogo = getOfficialLogoPath(rawName);
 
     if (lowerName.includes("netflix")) {
       return {
         ...SUBSCRIPTION_TYPES.cinema,
         name: "Netflix一本足打法型",
-        tagline: "もうこれ以上減らせない、固定費の鉄人",
-        traits: "動画配信はNetflixただ1本。見たい作品だけを集中して楽しみ、無駄な寄り道を一切しない極めて潔いスタイル。",
+        tagline: "Netflixとだけ添い遂げる契約人生",
+        traits: "動画配信はNetflixただ1本。他のサブスクには一切浮気せず、一生添い遂げる覚悟を決めたストイック派。",
         rarity: "8.1%",
-        rarityLabel: "契約数下位8%の超少数派（全体平均4.2件）",
+        rarityLabel: "下位8%の超少数派",
         emblem: "movie",
+        logoPath: officialLogo || "assets/logos/netflix.png",
       };
     }
 
     if (lowerName.includes("spotify") || lowerName.includes("apple music")) {
       const sName = lowerName.includes("spotify") ? "Spotify" : "Apple Music";
+      const sLogo = lowerName.includes("spotify") ? "assets/logos/spotify.png" : "assets/logos/apple-music.png";
       return {
         ...SUBSCRIPTION_TYPES.bgm,
         name: `${sName}一本足打法型`,
-        tagline: "耳さえあれば生きていける人",
+        tagline: "イヤホンが体の一部になった人",
         traits: "動画もゲームも契約せず、音楽さえあれば人生OK。無駄な動画沼にハマらない音響ストイック派。",
         rarity: "6.4%",
-        rarityLabel: "契約数下位6%の音響ストイック派",
+        rarityLabel: "下位6%の音響ストイック派",
         emblem: "headphones",
+        logoPath: officialLogo || sLogo,
       };
     }
 
@@ -211,11 +236,12 @@ export function determineSubscriptionType(items = [], data = {}) {
       return {
         ...SUBSCRIPTION_TYPES.digital_worker,
         name: "YouTube一本足打法型",
-        tagline: "時間至上主義のタイパ潔癖派",
+        tagline: "広告を1秒も許さないタイパ至上主義",
         traits: "広告という無駄な時間を秒単位で排除。必要な情報と娯楽を最速で摂取するタイムパフォーマンスの鬼。",
         rarity: "7.2%",
-        rarityLabel: "タイパ至上主義の少数派（契約数下位7%）",
+        rarityLabel: "下位7%のタイパ潔癖派",
         emblem: "zap",
+        logoPath: officialLogo || "assets/logos/youtube-premium.png",
       };
     }
 
@@ -223,11 +249,12 @@ export function determineSubscriptionType(items = [], data = {}) {
       return {
         ...SUBSCRIPTION_TYPES.express_delivery,
         name: "Amazon一本足打法型",
-        tagline: "プライムだけで一生過ごせる人",
+        tagline: "Amazonプライムだけで一生過ごせる人",
         traits: "配送・動画・音楽・本が全部入った万能プランで完結。他のサブスクを寄せ付けない究極のコスパマスター。",
         rarity: "9.5%",
-        rarityLabel: "コスパ最強のスマート実践者",
+        rarityLabel: "下位10%のコスパ信者",
         emblem: "truck",
+        logoPath: officialLogo || "assets/logos/amazon-prime.png",
       };
     }
 
@@ -236,11 +263,12 @@ export function determineSubscriptionType(items = [], data = {}) {
     return {
       ...SUBSCRIPTION_TYPES.minimalist,
       name: `${shortName}一本足打法型`,
-      tagline: "もうこれ以上減らせない、固定費の鉄人",
+      tagline: `${shortName}とだけ添い遂げる契約人生`,
       traits: `${rawName}ただ1本に全集中。無駄な固定費を徹底的に削ぎ落とした、潔いミニマリスト。`,
       rarity: "8.1%",
-      rarityLabel: "契約数下位8%の超少数派（全体平均4.2件）",
+      rarityLabel: "下位8%の超少数派",
       emblem: "shield",
+      logoPath: officialLogo,
     };
   }
 
@@ -392,8 +420,8 @@ export function buildShortTweetText({ mode = "type", stats, completedAction = nu
   // 2. タイプ診断モード（デフォルト：金額非表示で拡散されやすい）
   if (mode === "type" || mode === "hidden") {
     const type = stats.subscType || SUBSCRIPTION_TYPES.smart_rationalist;
-    const rarityStr = type.rarity ? `（出現率 ${type.rarity}）` : "";
-    return `【サブスク利用タイプ診断】\n私のタイプは「${type.name}」でした${rarityStr}！\n“${type.tagline}”\n\nみんなは何型？\nhttps://subsc-checker.com/ #SubscChecker #サブスクタイプ診断`;
+    const labelStr = type.rarityLabel ? `（${type.rarityLabel}）` : "";
+    return `【サブスク利用タイプ診断】\n私のタイプは「${type.name}」でした${labelStr}！\n“${type.tagline}”\n\nみんなは何型？\nhttps://subsc-checker.com/ #SubscChecker #サブスクタイプ診断`;
   }
 
   // 3. 支出レポートモード（金額表示）
@@ -725,9 +753,8 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
   // 3. 中央ポスターエリア（Xサムネイル完全最適化）
   if (completedAction) {
     // 【タスク達成モード】
-    // ① 達成ピルバッジ
+    // ① 達成ピルバッジ（1つの強いメッセージに集中）
     const badgeText = "固定費の最適化を実行完了！";
-    ctx.font = "bold 18px sans-serif";
     const badgeWidth = ctx.measureText(badgeText).width + 50;
     const badgeX = (width - badgeWidth) / 2;
     const badgeY = 135;
@@ -761,13 +788,11 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     ctx.fillText(`“ ${completedAction.title || completedAction.service} を見直し ”`, width / 2, 370);
   } else if (mode === "type" || mode === "hidden") {
     // 【タイプ診断モード（ポスター形式の真骨頂）】
-    // ① 出現率・比較ピルバッジ
-    const rarityText = stats.rarity ? `出現率 ${stats.rarity}` : "タイプ診断";
-    const compLabel = stats.rarityLabel || "超少数派";
-    const fullBadgeText = `${rarityText}  │  ${compLabel}`;
+    // ① 比較ピルバッジ（一番強い数字1つだけに絞り込み）
+    const badgeText = stats.rarityLabel || (stats.rarity ? `出現率 ${stats.rarity}` : "超少数派");
 
     ctx.font = "bold 18px sans-serif";
-    const badgeWidth = ctx.measureText(fullBadgeText).width + 50;
+    const badgeWidth = ctx.measureText(badgeText).width + 50;
     const badgeX = (width - badgeWidth) / 2;
     const badgeY = 135;
 
@@ -781,10 +806,44 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#f8fafc";
-    ctx.fillText(fullBadgeText, width / 2, badgeY + 19);
+    ctx.fillText(badgeText, width / 2, badgeY + 19);
 
-    // ② 象徴ベクターエンブレム
-    drawEmblem(ctx, type.emblem || "shield", width / 2, 225, 76, accentColor);
+    // ② 公式ロゴアイコンまたは象徴ベクターエンブレム
+    const logoImg = type.logoPath
+      ? getCachedOrLoadImage(type.logoPath, () => {
+          drawShareCardCanvas(canvas, { mode, stats, completedAction });
+        })
+      : null;
+
+    if (logoImg) {
+      const iconSize = 82;
+      const iconX = (width - iconSize) / 2;
+      const iconY = 225 - iconSize / 2;
+
+      ctx.save();
+      // 背後のソフトオーラグロー
+      const glow = ctx.createRadialGradient(width / 2, 225, 10, width / 2, 225, 70);
+      glow.addColorStop(0, accentColor + "44");
+      glow.addColorStop(1, "transparent");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(width / 2, 225, 70, 0, Math.PI * 2);
+      ctx.fill();
+
+      // カード型角丸クリップ描画
+      roundRect(ctx, iconX, iconY, iconSize, iconSize, 20);
+      ctx.clip();
+      ctx.drawImage(logoImg, iconX, iconY, iconSize, iconSize);
+      ctx.restore();
+
+      // アイコン枠線
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, iconX, iconY, iconSize, iconSize, 20);
+      ctx.stroke();
+    } else {
+      drawEmblem(ctx, type.emblem || "shield", width / 2, 225, 76, accentColor);
+    }
 
     // ③ 超巨大タイプ名（主役：64px〜54pxで自動調整）
     const typeName = type.name;
@@ -800,14 +859,14 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     ctx.fillText(typeName, width / 2, 320);
     ctx.restore();
 
-    // ④ キャッチコピー
+    // ④ キャッチコピー（ユーモア・自虐・誇張）
     ctx.fillStyle = accentColor;
     ctx.font = "bold 24px sans-serif";
     ctx.fillText(`“ ${type.tagline} ”`, width / 2, 375);
   } else {
     // 【支出レポートモード（金額表示のポスター形式）】
-    // ① レポートバッジ
-    const repBadge = `契約数 ${stats.serviceCount}件  │  サブスク年間支出`;
+    // ① レポートバッジ（シンプル化）
+    const repBadge = `契約数 ${stats.serviceCount}件 │ サブスク年間支出`;
     ctx.font = "bold 18px sans-serif";
     const badgeWidth = ctx.measureText(repBadge).width + 50;
     const badgeX = (width - badgeWidth) / 2;
@@ -847,83 +906,63 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     }
   }
 
-  // 4. 下部3分割ステータスバー（比較情報・ミニマルインフォグラフィック）
-  const barWidth = 960;
-  const barHeight = 92;
+  // 4. 下部ステータス欄（3分割を廃止し、説得力ある1つのスマートバッジへ集約）
+  const barWidth = 460;
+  const barHeight = 56;
   const barX = (width - barWidth) / 2;
-  const barY = 435;
+  const barY = 445;
 
-  ctx.fillStyle = "rgba(15, 23, 42, 0.78)";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+  ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
   ctx.lineWidth = 1.5;
-  roundRect(ctx, barX, barY, barWidth, barHeight, 20);
+  roundRect(ctx, barX, barY, barWidth, barHeight, 28);
   ctx.fill();
   ctx.stroke();
-
-  // 3つの区切り線
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-  ctx.beginPath();
-  ctx.moveTo(barX + barWidth / 3, barY + 15);
-  ctx.lineTo(barX + barWidth / 3, barY + barHeight - 15);
-  ctx.moveTo(barX + (barWidth / 3) * 2, barY + 15);
-  ctx.lineTo(barX + (barWidth / 3) * 2, barY + barHeight - 15);
-  ctx.stroke();
-
-  const col1X = barX + barWidth / 6;
-  const col2X = barX + barWidth / 2;
-  const col3X = barX + (barWidth / 6) * 5;
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  // カラム1: 契約数
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "bold 14px sans-serif";
-  ctx.fillText("契約数", col1X, barY + 28);
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "900 24px sans-serif";
-  ctx.fillText(`${stats.serviceCount} 件`, col1X, barY + 54);
-  ctx.fillStyle = "#64748b";
-  ctx.font = "12px sans-serif";
-  ctx.fillText("全体平均 4.2件", col1X, barY + 74);
-
-  // カラム2: 固定費ステータス
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "bold 14px sans-serif";
-  ctx.fillText(mode === "normal" ? "月額固定費" : "固定費状態", col2X, barY + 28);
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "900 24px sans-serif";
   if (mode === "normal") {
-    ctx.fillText(`¥${stats.totalMonthly.toLocaleString()}`, col2X, barY + 54);
-  } else if (stats.serviceCount === 1) {
-    ctx.fillText("厳選1本", col2X, barY + 54);
-  } else if (stats.potentialSaving > 0) {
-    ctx.fillText(`削減余地あり`, col2X, barY + 54);
+    // 支出レポート時: 契約数と月額
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 18px sans-serif";
+    ctx.fillText(
+      `契約数 ${stats.serviceCount}件  │  月額 ¥${stats.totalMonthly.toLocaleString()}（平均4.2件）`,
+      width / 2,
+      barY + 28
+    );
   } else {
-    ctx.fillText("無駄ゼロ", col2X, barY + 54);
-  }
-  ctx.fillStyle = "#64748b";
-  ctx.font = "12px sans-serif";
-  const col2Sub = mode === "normal"
-    ? `年間 ¥${stats.totalYearly.toLocaleString()}`
-    : stats.serviceCount === 1
-    ? "無駄な重複なし"
-    : stats.potentialSaving > 0
-    ? `年間約 -¥${stats.potentialSaving.toLocaleString()}`
-    : "家計管理の優等生";
-  ctx.fillText(col2Sub, col2X, barY + 74);
+    // タイプ診断時: 契約数と全体平均の比較だけにスッキリ絞る
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "16px sans-serif";
+    const labelPart = "契約数 ";
+    const countPart = `${stats.serviceCount}件`;
+    const avgPart = "（全体平均 4.2件）";
 
-  // カラム3: 主力ジャンル／主力サービス
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "bold 14px sans-serif";
-  ctx.fillText("主力ジャンル", col3X, barY + 28);
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "900 24px sans-serif";
-  ctx.fillText(stats.topGenreLabel, col3X, barY + 54);
-  ctx.fillStyle = "#64748b";
-  ctx.font = "12px sans-serif";
-  const mainServiceName = stats.items[0]?.name ? String(stats.items[0].name).slice(0, 10) : "バランス利用";
-  ctx.fillText(mainServiceName, col3X, barY + 74);
+    const labelW = ctx.measureText(labelPart).width;
+    ctx.font = "900 20px sans-serif";
+    const countW = ctx.measureText(countPart).width;
+    ctx.font = "15px sans-serif";
+    const avgW = ctx.measureText(avgPart).width;
+
+    const totalTextW = labelW + countW + avgW + 12;
+    let startX = (width - totalTextW) / 2;
+
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "16px sans-serif";
+    ctx.fillText(labelPart, startX, barY + 28);
+    startX += labelW + 4;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 22px sans-serif";
+    ctx.fillText(countPart, startX, barY + 28);
+    startX += countW + 8;
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "15px sans-serif";
+    ctx.fillText(avgPart, startX, barY + 28);
+  }
 
   // 5. フッター描画
   ctx.textAlign = "left";
@@ -1235,7 +1274,7 @@ export function createShareSectionHtml({ data, items }) {
             <span>サブスク利用タイプ診断</span>
           </div>
           <div class="inline-flex items-center px-3 py-1 rounded-full bg-slate-800/80 text-amber-300 border border-amber-400/30 text-xs font-black">
-            <span>${escapeHtml(rarityText)} │ ${escapeHtml(compLabel)}</span>
+            <span>${escapeHtml(type.rarityLabel || "超少数派")}</span>
           </div>
         </div>
 
