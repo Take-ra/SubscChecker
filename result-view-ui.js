@@ -10,12 +10,12 @@ export function updateHighlight(card, isChecked) {
   const bellBtn = card.querySelector(".bell-btn");
 
   if (isChecked) {
-    card.classList.remove("bg-white", "border-slate-100");
-    card.classList.add("bg-blue-50", "border-blue-300", "shadow-md");
+    card.classList.remove("bg-white", "border-slate-200/80", "shadow-2xs", "border-slate-100");
+    card.classList.add("bg-blue-50/90", "border-blue-400", "shadow-sm");
     if (bellBtn) bellBtn.classList.remove("invisible", "pointer-events-none");
   } else {
-    card.classList.remove("bg-blue-50", "border-blue-300", "shadow-md");
-    card.classList.add("bg-white", "border-slate-100");
+    card.classList.remove("bg-blue-50/90", "border-blue-400", "shadow-sm", "bg-blue-50", "border-blue-300");
+    card.classList.add("bg-white", "border-slate-200/80", "shadow-2xs");
     if (bellBtn) bellBtn.classList.add("invisible", "pointer-events-none");
   }
 }

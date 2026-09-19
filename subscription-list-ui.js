@@ -149,15 +149,16 @@ export function renderMainList(cats, subs, savedState, container) {
 
       const safeName = escapeAttr(sub.name);
 
-      // ベルボタン（通知設定）
+      // ベルボタン（通知設定・枠内に収まるよう配置）
       const bellBtnHtml = `
         <button
           type="button"
-          class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-white rounded-full transition-colors bg-white/80 shadow-2xs border border-blue-200/80 cursor-pointer ${
+          class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-600 hover:text-blue-700 hover:bg-white bg-white/90 rounded-full transition-all border border-blue-200/90 shadow-2xs shrink-0 cursor-pointer ${
             isChecked ? "" : "invisible pointer-events-none"
           }"
-          onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${activePlanId}')"
+          onclick="event.stopPropagation(); const p = document.getElementById('sel-${sub.id}')?.value || '${activePlanId}'; window.openCalendarModal('${sub.id}', '${safeName}', p)"
           title="カレンダーに通知を登録"
+          aria-label="カレンダーに通知を登録"
         >
           <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
         </button>
@@ -167,8 +168,8 @@ export function renderMainList(cats, subs, savedState, container) {
       const iconHtml = renderBrandIcon(sub.name, cat.id);
 
       itemsHtml += `
-      <div class="sub-item relative flex items-center justify-between py-2.5 pl-3 pr-3 sm:py-3 sm:pl-3.5 sm:pr-4 md:py-3 md:pl-4 md:pr-4 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer ${cardBgClass}" data-search="${searchText}" data-sub-id="${sub.id}" data-category-name="${escapeAttr(cat.name)}">
-        <!-- 左側: チェックボックス + アプリアイコン + サービス名 + ジャンルバッジ -->
+      <div class="sub-item relative flex items-center justify-between py-2.5 pl-3 pr-2.5 sm:py-3 sm:pl-3.5 sm:pr-3 md:py-3 md:pl-4 md:pr-3.5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer overflow-hidden ${cardBgClass}" data-search="${searchText}" data-sub-id="${sub.id}" data-category-name="${escapeAttr(cat.name)}">
+        <!-- 左側: チェックボックス + アプリアイコン + サービス名 -->
         <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
           <input
             type="checkbox"
@@ -182,10 +183,13 @@ export function renderMainList(cats, subs, savedState, container) {
           </label>
         </div>
 
-        <!-- 右側: プランドロップダウン -->
-        <div class="flex-shrink-0 flex items-center">
-          <div class="w-[145px] sm:w-[185px] md:w-[220px] lg:w-[245px] shrink-0">
+        <!-- 右側: 金額（プランドロップダウン） + 枠内ベルマーク -->
+        <div class="flex-shrink-0 flex items-center gap-1.5 sm:gap-2">
+          <div class="w-[130px] sm:w-[165px] md:w-[195px] lg:w-[220px] shrink-0">
             ${planUI}
+          </div>
+          <div class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center">
+            ${bellBtnHtml}
           </div>
         </div>
       </div>`;
@@ -260,8 +264,22 @@ export function renderCustomList(customSubs, savedState, container) {
       ? "bg-blue-50/90 border-blue-400 shadow-sm"
       : "bg-white border-slate-200/80 shadow-2xs hover:border-slate-300";
 
+    const bellBtnHtml = `
+      <button
+        type="button"
+        class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-600 hover:text-blue-700 hover:bg-white bg-white/90 rounded-full transition-all border border-blue-200/90 shadow-2xs shrink-0 cursor-pointer ${
+          isChecked ? "" : "invisible pointer-events-none"
+        }"
+        onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType || "monthly"}', ${sub.cycle || 1})"
+        title="カレンダーに通知を登録"
+        aria-label="カレンダーに通知を登録"
+      >
+        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+      </button>
+    `;
+
     html += `
-    <div class="custom-sub-item relative flex items-center justify-between py-2.5 pl-3 pr-3 sm:py-3 sm:pl-3.5 sm:pr-4 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${cardBgClass}" data-search="${escapeAttr(sub.name.toLowerCase())} 独自 サブスク カスタム" data-sub-id="${sub.id}">
+    <div class="custom-sub-item relative flex items-center justify-between py-2.5 pl-3 pr-2.5 sm:py-3 sm:pl-3.5 sm:pr-3 md:py-3 md:pl-4 md:pr-3.5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md cursor-pointer overflow-hidden ${cardBgClass}" data-search="${escapeAttr(sub.name.toLowerCase())} 独自 サブスク カスタム" data-sub-id="${sub.id}">
       <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
         <input type="checkbox" id="chk-${sub.id}" class="sub-checkbox peer w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" ${isChecked ? "checked" : ""}>
         ${renderBrandIcon(sub.name, "lifestyle")}
@@ -271,12 +289,15 @@ export function renderCustomList(customSubs, savedState, container) {
       </div>
 
       <div class="flex-shrink-0 flex items-center gap-1 sm:gap-1.5">
-        <div class="w-[140px] sm:w-[160px] md:w-[180px] shrink-0">
-          <div class="w-full h-8 text-xs font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-start text-left tabular-nums select-none shadow-2xs pl-2.5 py-0">
+        <div class="w-[115px] sm:w-[145px] md:w-[170px] lg:w-[190px] shrink-0">
+          <div class="w-full h-8 text-xs font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-start text-left tabular-nums select-none shadow-2xs pl-2.5 py-0 truncate">
             ${label}
           </div>
         </div>
-        <button type="button" class="btn-delete-custom w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors" data-id="${sub.id}" title="削除">
+        <div class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center">
+          ${bellBtnHtml}
+        </div>
+        <button type="button" class="btn-delete-custom w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors shrink-0 cursor-pointer" data-id="${sub.id}" title="削除">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
         </button>
       </div>
