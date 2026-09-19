@@ -106,10 +106,13 @@ function calculateSingleEventDate(notifyDays) {
       } else {
         nextRenewal.setMonth(nextRenewal.getMonth() + num);
       }
-    } else if (plan === "monthly" || plan === "custom") {
-      nextRenewal.setMonth(nextRenewal.getMonth() + 1);
-    } else {
+    } else if (
+      plan === "yearly" ||
+      (typeof plan === "string" && (plan.includes("year") || plan.includes("annual")))
+    ) {
       nextRenewal.setFullYear(nextRenewal.getFullYear() + 1);
+    } else {
+      nextRenewal.setMonth(nextRenewal.getMonth() + 1);
     }
   };
 

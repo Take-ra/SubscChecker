@@ -648,18 +648,19 @@ function renderAdvisor(container, data, items = []) {
           </div>
         </div>
       </div>
-    `;
+    };
 
-    // 8. イベントリスナー（チェックボックス・非表示ボタン）のバインド
-    container.querySelectorAll('[data-action-btn="toggle-done"]').forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-action-id");
+    // 8. イベント委譲によるクリック制御（再描画後も確実に動作を維持）
+    container.onclick = (e) => {
+      const doneBtn = e.target.closest('[data-action-btn="toggle-done"]');
+      if (doneBtn) {
+        const id = doneBtn.getAttribute("data-action-id");
         if (id && actionStates[id]) {
           const wasCompleted = actionStates[id].completed;
           actionStates[id].completed = !wasCompleted;
           renderContent();
 
-          // 未完了から完了になった瞬間、ドーパミン達成シェアモーダルを起動
+          // 未完了から完了になった瞬間、達成シェアモーダルを起動
           if (!wasCompleted) {
             const completedAction = actions.find((a) => a.id === id);
             if (completedAction) {
@@ -668,19 +669,19 @@ function renderAdvisor(container, data, items = []) {
             }
           }
         }
-      });
-    });
+        return;
+      }
 
-    container.querySelectorAll('[data-action-btn="dismiss"]').forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-action-id");
+      const dismissBtn = e.target.closest('[data-action-btn="dismiss"]');
+      if (dismissBtn) {
+        const id = dismissBtn.getAttribute("data-action-id");
         if (id && actionStates[id]) {
           actionStates[id].dismissed = true;
           renderContent();
         }
-      });
-    });
-  };
+        return;
+      }
+    };
 
   renderContent();
 

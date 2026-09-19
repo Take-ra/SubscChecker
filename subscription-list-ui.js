@@ -210,7 +210,10 @@ export function renderMainList(cats, subs, savedState, container) {
           class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-600 hover:text-blue-700 hover:bg-white bg-white/90 rounded-full transition-all border border-blue-200/90 shadow-2xs shrink-0 cursor-pointer ${
             isChecked ? "" : "invisible pointer-events-none"
           }"
-          onclick="event.stopPropagation(); const p = document.getElementById('sel-${sub.id}')?.value || '${activePlanId}'; window.openCalendarModal('${sub.id}', '${safeName}', p)"
+          data-sub-id="${escapeAttr(sub.id)}"
+          data-sub-name="${escapeAttr(sub.name)}"
+          data-plan-id="${escapeAttr(activePlanId)}"
+          onclick="event.stopPropagation(); const p = document.getElementById('sel-${sub.id}')?.value || this.dataset.planId; window.openCalendarModal(this.dataset.subId, this.dataset.subName, p)"
           title="カレンダーに通知を登録"
           aria-label="カレンダーに通知を登録"
         >
@@ -324,7 +327,11 @@ export function renderCustomList(customSubs, savedState, container) {
         class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-600 hover:text-blue-700 hover:bg-white bg-white/90 rounded-full transition-all border border-blue-200/90 shadow-2xs shrink-0 cursor-pointer ${
           isChecked ? "" : "invisible pointer-events-none"
         }"
-        onclick="event.stopPropagation(); window.openCalendarModal('${sub.id}', '${safeName}', '${sub.planType || "monthly"}', ${sub.cycle || 1})"
+        data-sub-id="${escapeAttr(sub.id)}"
+        data-sub-name="${escapeAttr(sub.name)}"
+        data-plan-type="${escapeAttr(sub.planType || "monthly")}"
+        data-cycle="${escapeAttr(String(sub.cycle || 1))}"
+        onclick="event.stopPropagation(); window.openCalendarModal(this.dataset.subId, this.dataset.subName, this.dataset.planType, Number(this.dataset.cycle))"
         title="カレンダーに通知を登録"
         aria-label="カレンダーに通知を登録"
       >
@@ -338,7 +345,7 @@ export function renderCustomList(customSubs, savedState, container) {
         <input type="checkbox" id="chk-${sub.id}" class="sub-checkbox peer w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" ${isChecked ? "checked" : ""}>
         ${renderBrandIcon(sub.name, "lifestyle")}
         <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-1 min-w-0">
-          <div class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug line-clamp-2">${sub.name}</div>
+          <div class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug line-clamp-2">${escapeHtml(sub.name)}</div>
         </label>
       </div>
 

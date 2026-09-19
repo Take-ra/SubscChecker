@@ -12,18 +12,18 @@ export function initChartControls(dataCallback) {
   const btnSub = document.getElementById("btn-chart-sub");
 
   if (btnGenre) {
-    btnGenre.addEventListener("click", (e) => {
+    btnGenre.addEventListener("click", () => {
       currentChartType = "genre";
-      updateButtonStyles(e.target, btnSub);
+      updateButtonStyles(btnGenre, btnSub);
       const data = getLatestData();
       if (data) renderChart(data, currentChartType);
     });
   }
 
   if (btnSub) {
-    btnSub.addEventListener("click", (e) => {
+    btnSub.addEventListener("click", () => {
       currentChartType = "sub";
-      updateButtonStyles(e.target, btnGenre);
+      updateButtonStyles(btnSub, btnGenre);
       const data = getLatestData();
       if (data) renderChart(data, currentChartType);
     });
@@ -32,14 +32,14 @@ export function initChartControls(dataCallback) {
 
 // ボタンの見た目（白背景や影）を切り替えるお助け関数
 function updateButtonStyles(activeBtn, inactiveBtn) {
-  activeBtn.classList.replace("text-slate-500", "text-slate-800");
-  activeBtn.classList.replace("hover:text-slate-700", "shadow-sm");
-  activeBtn.classList.add("bg-white");
+  if (activeBtn) {
+    activeBtn.classList.remove("text-slate-500", "hover:text-slate-700");
+    activeBtn.classList.add("bg-white", "text-slate-800", "shadow-xs");
+  }
 
   if (inactiveBtn) {
-    inactiveBtn.classList.replace("text-slate-800", "text-slate-500");
-    inactiveBtn.classList.replace("shadow-sm", "hover:text-slate-700");
-    inactiveBtn.classList.remove("bg-white");
+    inactiveBtn.classList.remove("bg-white", "text-slate-800", "shadow-xs", "shadow-sm");
+    inactiveBtn.classList.add("text-slate-500", "hover:text-slate-700");
   }
 }
 

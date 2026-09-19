@@ -16,7 +16,9 @@ export function initCustomModal(callbacks) {
   );
   const customCycleNum = document.getElementById("custom-cycle-num");
   const customCycleUnit = document.getElementById("custom-cycle-unit");
-  const searchInput = document.getElementById("search-input");
+  const getSearchInput = () =>
+    document.getElementById("main-search-input") ||
+    document.getElementById("search-input");
 
   // モーダルを開く
   window.openModal = () => {
@@ -123,6 +125,7 @@ export function initCustomModal(callbacks) {
     app.setCustomSubs(customSubs);
     app.onUpdate();
 
+    const searchInput = getSearchInput();
     if (searchInput && searchInput.value !== "") {
       searchInput.value = "";
       searchInput.dispatchEvent(new Event("input"));
