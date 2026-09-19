@@ -20,8 +20,8 @@ export function renderOverlookedSection(subs = [], savedState = {}, container = 
         (sub.plans || []).find((p) => p.id === sub.defaultPlanId) ||
         (sub.plans || [])[0];
       const priceText = defaultPlan ? `¥${defaultPlan.monthly.toLocaleString()}/月` : "";
-      const reasonTag = sub.overlookedReason
-        ? `<span class="text-[9px] font-bold text-amber-800 bg-amber-100/90 px-1.5 py-0.5 rounded leading-none shrink-0 whitespace-nowrap">${escapeHtml(sub.overlookedReason)}</span>`
+      const reasonText = sub.overlookedReason
+        ? `<span class="text-[10px] text-slate-400 font-medium truncate max-w-[130px] sm:max-w-[160px]">・ ${escapeHtml(sub.overlookedReason)}</span>`
         : "";
 
       return `
@@ -29,23 +29,23 @@ export function renderOverlookedSection(subs = [], savedState = {}, container = 
           type="button"
           data-sub-id="${sub.id}"
           data-overlooked-id="${sub.id}"
-          class="overlooked-chip flex items-center gap-2.5 px-3 py-2 rounded-2xl border transition-all shrink-0 cursor-pointer text-left select-none active:scale-95 ${
+          class="overlooked-chip flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl border transition-all shrink-0 cursor-pointer text-left select-none active:scale-95 ${
             isChecked
-              ? "bg-blue-50 border-blue-400 shadow-xs ring-1 ring-blue-300"
-              : "bg-white border-slate-200 hover:border-slate-300 shadow-2xs"
+              ? "bg-blue-50 border-blue-400 shadow-xs ring-1 ring-blue-300 text-blue-700 font-bold"
+              : "bg-white border-slate-200/90 hover:border-slate-300 shadow-2xs text-slate-800"
           }"
         >
           ${renderBrandIcon(sub.name, sub.categoryId, "w-7 h-7", "text-xs")}
           <div class="min-w-0">
-            <div class="text-xs font-black text-slate-800 truncate leading-tight flex items-center gap-1">
+            <div class="text-xs font-black truncate leading-tight flex items-center gap-1 ${isChecked ? "text-blue-900" : "text-slate-800"}">
               <span>${escapeAttr(sub.name)}</span>
               <svg class="chip-check-icon w-3.5 h-3.5 text-blue-600 shrink-0 ${isChecked ? "" : "hidden"}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
-            <div class="flex items-center gap-1.5 mt-0.5">
-              <span class="text-[10px] text-slate-400 font-bold tabular-nums">${priceText}</span>
-              ${reasonTag}
+            <div class="flex items-center gap-1 mt-0.5">
+              <span class="text-[10px] ${isChecked ? "text-blue-600 font-bold" : "text-slate-500 font-bold"} tabular-nums">${priceText}</span>
+              ${reasonText}
             </div>
           </div>
         </button>
@@ -54,26 +54,28 @@ export function renderOverlookedSection(subs = [], savedState = {}, container = 
     .join("");
 
   container.innerHTML = `
-    <div class="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-50/70 to-orange-50/60 border border-amber-200/70">
-      <div class="flex items-center justify-between gap-2 mb-2.5">
-        <div class="flex items-center gap-1.5">
-          <div class="w-5 h-5 rounded-md bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+    <div class="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div class="flex items-start gap-3 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-600 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
             </svg>
           </div>
-          <div>
-            <h3 class="text-xs sm:text-sm font-black text-amber-950 leading-tight">
+          <div class="min-w-0">
+            <h3 class="text-base md:text-xl font-black text-slate-800 tracking-tight leading-tight">
               見落としがちな定番サブスク
             </h3>
+            <p class="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              無料体験からの自動移行や、少額の請求で放置されがちなサービスです
+            </p>
           </div>
         </div>
-        <div class="flex items-center gap-1.5">
-          <span class="hidden sm:inline-block text-[10px] font-bold text-amber-800/80 bg-amber-100/70 px-2 py-0.5 rounded-md">無料体験・少額明細の放置に注意</span>
+        <div class="flex items-center gap-1.5 shrink-0 pt-0.5">
           <button
             type="button"
             id="overlooked-scroll-prev"
-            class="w-6 h-6 rounded-full bg-white/80 hover:bg-white border border-amber-200/90 text-amber-800 flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-90"
+            class="w-7 h-7 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-90"
             aria-label="前へスクロール"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +85,7 @@ export function renderOverlookedSection(subs = [], savedState = {}, container = 
           <button
             type="button"
             id="overlooked-scroll-next"
-            class="w-6 h-6 rounded-full bg-white/80 hover:bg-white border border-amber-200/90 text-amber-800 flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-90"
+            class="w-7 h-7 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-90"
             aria-label="次へスクロール"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,10 +95,10 @@ export function renderOverlookedSection(subs = [], savedState = {}, container = 
         </div>
       </div>
       <div class="relative">
-        <div id="overlooked-scroll-container" class="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar scroll-smooth">
+        <div id="overlooked-scroll-container" class="flex items-center gap-2.5 overflow-x-auto pb-1 hide-scrollbar scroll-smooth">
           ${chipsHtml}
         </div>
-        <div class="pointer-events-none absolute right-0 top-0 bottom-1 w-12 bg-gradient-to-l from-amber-50/90 via-amber-50/40 to-transparent rounded-r-2xl z-10"></div>
+        <div class="pointer-events-none absolute right-0 top-0 bottom-1 w-12 bg-gradient-to-l from-white via-white/40 to-transparent rounded-r-2xl z-10"></div>
       </div>
     </div>
   `;
