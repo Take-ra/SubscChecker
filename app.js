@@ -357,15 +357,23 @@ export function initApp() {
     const chip = e.target.closest(".overlooked-chip");
     if (chip) {
       const subId = chip.getAttribute("data-sub-id");
-      const chk = document.getElementById(`chk-${subId}`);
-      if (chk) {
-        chk.checked = !chk.checked;
+      if (subId) {
         if (!savedState[subId]) savedState[subId] = {};
-        if (chk.checked && !savedState[subId].plan) {
+        const nextChecked = !Boolean(savedState[subId].checked);
+        savedState[subId].checked = nextChecked;
+        if (nextChecked && !savedState[subId].plan) {
           const subData = subs.find((s) => s.id === subId);
           savedState[subId].plan = subData?.defaultPlanId || subData?.plans?.[0]?.id || "std";
         }
-        chk.dispatchEvent(new Event("change", { bubbles: true }));
+        saveData();
+
+        const chk = document.getElementById(`chk-${subId}`);
+        if (chk) {
+          chk.checked = nextChecked;
+          const card = chk.closest(".sub-item, .custom-sub-item");
+          if (card) Render.updateHighlight(card, nextChecked);
+        }
+        calculateTotal();
       }
       return;
     }
@@ -374,10 +382,28 @@ export function initApp() {
     const removeBtn = e.target.closest(".pc-btn-remove-sub");
     if (removeBtn) {
       const subId = removeBtn.getAttribute("data-sub-id");
-      const chk = document.getElementById(`chk-${subId}`);
-      if (chk) {
-        chk.checked = false;
-        chk.dispatchEvent(new Event("change", { bubbles: true }));
+      if (subId) {
+        if (!savedState[subId]) savedState[subId] = {};
+        savedState[subId].checked = false;
+        saveData();
+
+        const chk = document.getElementById(`chk-${subId}`);
+        if (chk) {
+          chk.checked = false;
+          const card = chk.closest(".sub-item, .custom-sub-item");
+          if (card) Render.updateHighlight(card, false);
+        }
+        calculateTotal();
+      }
+      return;
+    }
+
+    // 独自サブスクの削除ボタン（委譲フォールバック）
+    const customDeleteBtn = e.target.closest(".btn-delete-custom");
+    if (customDeleteBtn) {
+      const subId = customDeleteBtn.getAttribute("data-id");
+      if (subId && typeof window.deleteCustomSub === "function") {
+        window.deleteCustomSub(subId);
       }
       return;
     }

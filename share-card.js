@@ -81,6 +81,9 @@ export function getGenreMeta(category = "") {
   if (c.includes("生活") || c.includes("ライフ") || c.includes("lifestyle") || c.includes("フィットネス") || c.includes("健康")) {
     return { id: "lifestyle", color: "#c084fc", label: "生活・習慣" };
   }
+  if (c.includes("独自") || c.includes("カスタム") || c.includes("custom")) {
+    return { id: "lifestyle", color: "#c084fc", label: "生活・独自" };
+  }
 
   // 3. その他未知の場合でも、文字列ハッシュで鮮やかなパレット色を割り当て（グレー化を完全防止！）
   let hash = 0;
@@ -250,7 +253,7 @@ export function determineSubscriptionType(items = [], data = {}) {
   // ジャンル別集計（英語ID・日本語カテゴリ名をgetGenreMetaで正規化）
   const genreAmounts = {};
   items.forEach((item) => {
-    const meta = getGenreMeta(item.category || item.genre);
+    const meta = getGenreMeta(item.category || item.categoryId || item.genre);
     const cat = meta.id;
     const monthly = Number(item.monthly) || 0;
     genreAmounts[cat] = (genreAmounts[cat] || 0) + monthly;
@@ -421,7 +424,7 @@ export function calculateShareStats(items = [], data = {}) {
   // ジャンル別集計（英語ID・日本語カテゴリ名をgetGenreMetaで正規化）
   const genreAmounts = {};
   items.forEach((item) => {
-    const meta = getGenreMeta(item.category || item.genre);
+    const meta = getGenreMeta(item.category || item.categoryId || item.genre);
     const cat = meta.id;
     const monthly = Number(item.monthly) || 0;
     genreAmounts[cat] = (genreAmounts[cat] || 0) + monthly;
@@ -1482,8 +1485,7 @@ export function openShareModal({ stats, completedAction = null }) {
 export function createShareSectionHtml({ data, items }) {
   const stats = calculateShareStats(items, data);
   const type = stats.subscType || SUBSCRIPTION_TYPES.smart_rationalist;
-  const rarityText = stats.rarity ? `出現率 ${stats.rarity}` : "タイプ診断";
-  const compLabel = stats.rarityLabel || "超少数派";
+  const compLabel = stats.rarityLabel || type.rarityLabel || "超少数派";
 
   return `
     <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-5 md:p-8 text-white shadow-xl relative overflow-hidden border border-indigo-900/60 my-6">
@@ -1499,7 +1501,7 @@ export function createShareSectionHtml({ data, items }) {
             <span>サブスク利用タイプ診断</span>
           </div>
           <div class="inline-flex items-center px-3 py-1 rounded-full bg-slate-800/80 text-amber-300 border border-amber-400/30 text-xs font-black">
-            <span>${escapeHtml(type.rarityLabel || "超少数派")}</span>
+            <span>${escapeHtml(compLabel)}</span>
           </div>
         </div>
 
