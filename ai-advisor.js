@@ -572,15 +572,15 @@ function renderAdvisor(container, data, items = []) {
                   <!-- 理由アコーディオン ＆ 唯一の主役ボタン（公式で設定） -->
                   <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <details class="group text-xs text-slate-500">
-                      <summary class="cursor-pointer font-bold text-slate-400 hover:text-slate-600 flex items-center gap-1 select-none transition-colors">
-                        <svg class="w-3 h-3 transition-transform group-open:rotate-90 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      <summary class="cursor-pointer font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 select-none transition-colors underline decoration-blue-300 underline-offset-2 hover:decoration-blue-500">
+                        <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
                         </svg>
-                        <span>なぜ？</span>
+                        <span>なぜ？（理由を見る）</span>
                       </summary>
-                      <p class="mt-1.5 pl-3 text-xs text-slate-600 border-l-2 border-slate-200 leading-relaxed font-medium">
+                      <div class="mt-2 pl-3 py-1.5 text-xs text-slate-600 border-l-2 border-blue-400 leading-relaxed font-medium bg-blue-50/40 rounded-r-lg">
                         ${escapeHtml(act.reason_short)}
-                      </p>
+                      </div>
                     </details>
 
                     <div class="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
@@ -677,6 +677,19 @@ function renderAdvisor(container, data, items = []) {
           </div>
         </div>
 
+        <!-- 完了感・健全性の肯定メッセージ（提案が少なくても整理されている安心感を提示） -->
+        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 flex items-center gap-3 text-slate-600">
+          <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <div class="text-xs leading-relaxed">
+            <span class="font-bold text-slate-800">見つかった見直し候補は以上です。</span>
+            <span class="text-slate-500 font-medium block sm:inline sm:ml-1">不要な二重契約が少なく、現在の契約状況は良好に整理されています。</span>
+          </div>
+        </div>
+
         ${investmentHtml}
       </div>
     `;
@@ -718,7 +731,8 @@ function renderAdvisor(container, data, items = []) {
   // 9. 解約・代替案タブの事前レンダリング
   renderActionsTab(items);
 
-  // 10. 画面最下部: 𝕏 シェアブロックのレンダリング
+  // 10. 𝕏 シェアブロックのレンダリング
+  // (1) 支出の内訳タブ: メインの巨大シェアカード
   const shareContainer = document.getElementById("res-share-container");
   if (shareContainer) {
     shareContainer.innerHTML = createShareSectionHtml({
@@ -731,6 +745,40 @@ function renderAdvisor(container, data, items = []) {
       items,
     });
   }
+
+  // (2) 見直し案タブ ＆ 解約タブ: 各タブの目的に集中できる控えめな1行スリムシェアバー
+  const slimShareHtml = `
+    <div class="mt-4 pt-4 border-t border-slate-200/80 flex items-center justify-between flex-wrap gap-2 text-xs text-slate-500">
+      <div class="flex items-center gap-1.5 font-medium">
+        <svg class="w-3.5 h-3.5 fill-current text-slate-700" viewBox="0 0 24 24">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        <span>診断結果の固定費カルテ画像をシェアできます</span>
+      </div>
+      <button
+        type="button"
+        class="btn-trigger-slim-share inline-flex items-center gap-1 font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+      >
+        <span>カルテ画像をシェアする</span>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </div>
+  `;
+
+  const advisorShareBar = document.getElementById("res-advisor-share-bar");
+  if (advisorShareBar) advisorShareBar.innerHTML = slimShareHtml;
+
+  const actionsShareBar = document.getElementById("res-actions-share-bar");
+  if (actionsShareBar) actionsShareBar.innerHTML = slimShareHtml;
+
+  document.querySelectorAll(".btn-trigger-slim-share").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const stats = calculateShareStats(items, data);
+      openShareModal({ stats });
+    });
+  });
 
   // 11. タブの通知ドット制御
   const tabAdvisorContent = document.getElementById("tab-content-advisor");

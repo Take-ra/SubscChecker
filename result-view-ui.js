@@ -135,9 +135,10 @@ export function renderResultScreen(data) {
     rankContainer.innerHTML = data.top5
       .map(
         (item, i) => `
-      <div class="flex items-center justify-between w-full bg-slate-50/80 hover:bg-slate-100/70 p-3 rounded-2xl border border-slate-200/70 transition-colors">
+      <div class="flex items-center justify-between w-full bg-slate-50/80 hover:bg-slate-100/70 p-2.5 sm:p-3 rounded-2xl border border-slate-200/70 transition-colors">
         <div class="flex items-center gap-2.5 min-w-0 mr-2">
-          <div class="w-6 shrink-0 flex justify-center items-center text-base">${rankIcons[i]}</div>
+          <div class="w-5 shrink-0 flex justify-center items-center text-xs font-black">${rankIcons[i]}</div>
+          ${renderBrandIcon(item.name, item.categoryId || item.category, "w-7 h-7 shrink-0", "text-xs")}
           <span class="font-extrabold text-slate-800 truncate text-xs md:text-sm" title="${escapeAttr(item.name)}">
             ${escapeAttr(item.name)}
           </span>

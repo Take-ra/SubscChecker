@@ -98,6 +98,49 @@ export function renderChart(data, type = currentChartType) {
   }
 
   if (resultChart) resultChart.destroy();
+
+  const totalSum = chartData.reduce((a, b) => a + b, 0);
+
+  // スライス上にパーセンテージを描画するプラグイン
+  const slicePercentagePlugin = {
+    id: "slicePercentagePlugin",
+    afterDraw(chart) {
+      if (isEmpty || totalSum <= 0) return;
+      const { ctx } = chart;
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data) return;
+
+      const dataset = chart.data.datasets[0];
+      const sum = dataset.data.reduce((a, b) => a + b, 0);
+      if (sum === 0) return;
+
+      ctx.save();
+      ctx.font = "bold 12px system-ui, -apple-system, sans-serif";
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      meta.data.forEach((element, index) => {
+        const value = dataset.data[index] || 0;
+        const pct = (value / sum) * 100;
+
+        // 6%以上の面積があるスライスにのみパーセントを描画
+        if (pct >= 6) {
+          const pos = element.getCenterPoint();
+          const text = `${Math.round(pct)}%`;
+
+          ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+          ctx.shadowBlur = 3;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 1;
+
+          ctx.fillText(text, pos.x, pos.y);
+        }
+      });
+      ctx.restore();
+    },
+  };
+
   resultChart = new Chart(ctx, {
     type: "pie",
     data: {
@@ -111,11 +154,37 @@ export function renderChart(data, type = currentChartType) {
         },
       ],
     },
+    plugins: [slicePercentagePlugin],
     options: {
       responsive: true,
       maintainAspectRatio: true,
       plugins: {
-        legend: { position: "bottom" },
+        legend: {
+          position: "bottom",
+          labels: {
+            padding: 10,
+            usePointStyle: true,
+            pointStyle: "circle",
+            generateLabels: function (chart) {
+              const originalLabels =
+                Chart.overrides?.pie?.plugins?.legend?.labels?.generateLabels?.(chart) ||
+                Chart.defaults?.plugins?.legend?.labels?.generateLabels?.(chart) ||
+                [];
+
+              if (isEmpty || totalSum <= 0) return originalLabels;
+
+              const dataset = chart.data.datasets[0];
+              return originalLabels.map((item, i) => {
+                const val = dataset.data[i] || 0;
+                const pct = Math.round((val / totalSum) * 100);
+                return {
+                  ...item,
+                  text: `${item.text} (${pct}%)`,
+                };
+              });
+            },
+          },
+        },
         tooltip: {
           enabled: !isEmpty,
           callbacks: {

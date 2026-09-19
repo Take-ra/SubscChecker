@@ -46,19 +46,7 @@ export function renderActionsTab(items = []) {
               </div>
             </div>
 
-            ${info.detailGuideUrl ? `
-              <a
-                href="${escapeHtml(info.detailGuideUrl)}"
-                class="inline-flex items-center justify-center gap-1 text-[11px] font-bold text-slate-500 hover:text-blue-600 transition-colors mb-2.5"
-              >
-                <span>詳しい手順・注意点ガイドを見る</span>
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </a>
-            ` : ""}
-
-            <!-- 公式アクションボタン -->
+            <!-- 公式アクションボタン（全カード統一レイアウト） -->
             <a
               href="${escapeHtml(info.url)}"
               target="_blank"
@@ -100,7 +88,7 @@ export function renderActionsTab(items = []) {
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
           <span class="text-xs text-slate-500">損をしない解約タイミングや日割り・返金ルールを解説</span>
           <a href="/cancel/" class="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1">
-            主要サブスクの解約手順まとめ →
+            主要サブスクの解約トラブル対策まとめ（日割り・更新日ルール） →
           </a>
         </div>
       </div>
