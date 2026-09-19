@@ -22,17 +22,21 @@ function getCachedOrLoadImage(src, onLoaded) {
   return null;
 }
 
-// カテゴリ別カラー定義（Canvas円グラフおよびUI共通）
-const GENRE_COLORS = {
-  video: { color: "#f43f5e", label: "動画配信" },
+// 診断ユーザー統計の基準値（SubscChecker診断データに基づく指標・景表法配慮）
+export const USER_AVG_MONTHLY = 4890; // 診断ユーザー平均月額（円）
+export const USER_AVG_COUNT = 4.2;    // 診断ユーザー平均契約数（件）
+
+// カテゴリ別カラー定義（CanvasおよびUI共通：高コントラスト・高彩度カラー）
+export const GENRE_COLORS = {
+  video: { color: "#ff3366", label: "動画配信" },
   music: { color: "#10b981", label: "音楽配信" },
   ebook: { color: "#f59e0b", label: "電子書籍" },
-  game: { color: "#6366f1", label: "ゲーム" },
-  tool: { color: "#3b82f6", label: "業務ツール" },
-  storage: { color: "#0ea5e9", label: "クラウド" },
-  delivery: { color: "#f97316", label: "配送・EC" },
-  lifestyle: { color: "#a855f7", label: "生活・習慣" },
-  other: { color: "#64748b", label: "その他" },
+  game: { color: "#818cf8", label: "ゲーム" },
+  tool: { color: "#38bdf8", label: "業務ツール" },
+  storage: { color: "#06b6d4", label: "クラウド" },
+  delivery: { color: "#fb923c", label: "配送・EC" },
+  lifestyle: { color: "#c084fc", label: "生活・習慣" },
+  other: { color: "#94a3b8", label: "その他" },
 };
 
 // MBTIライクな全タイプ診断マスターデータ
@@ -414,7 +418,7 @@ export function buildShortTweetText({ mode = "type", stats, completedAction = nu
     const actSaving = completedAction.annual_saving
       ? `年間${Number(completedAction.annual_saving).toLocaleString()}円`
       : "固定費";
-    return `サブスクを見直して${actSaving}浮いた！\nhttps://subsc-checker.com/ #SubscChecker`;
+    return `サブスクを見直して${actSaving}浮いた！\nhttps://subsc-checker.com/ #SubscChecker #固定費見直し`;
   }
 
   // 2. タイプ診断モード（デフォルト：金額非表示で拡散されやすい）
@@ -425,16 +429,15 @@ export function buildShortTweetText({ mode = "type", stats, completedAction = nu
   }
 
   // 3. 支出レポートモード（金額表示）
-  const AVG_MONTHLY = 4890;
-  const diff = stats.totalMonthly - AVG_MONTHLY;
+  const diff = stats.totalMonthly - USER_AVG_MONTHLY;
   const diffStr = diff < 0
-    ? `みんなの平均（月¥4,890）より月¥${Math.abs(diff).toLocaleString()}抑えめでした！`
-    : `みんなの平均（月¥4,890）より月¥${diff.toLocaleString()}多めでした！`;
+    ? `診断ユーザー平均（月¥${USER_AVG_MONTHLY.toLocaleString()}）より月¥${Math.abs(diff).toLocaleString()}抑えめでした！`
+    : `診断ユーザー平均（月¥${USER_AVG_MONTHLY.toLocaleString()}）より月¥${diff.toLocaleString()}多めでした！`;
 
   if (stats.potentialSaving > 0) {
-    return `【サブスク支出レポート】\nサブスク月額¥${stats.totalMonthly.toLocaleString()}（年換算¥${yearlyStr}）利用中。\n${diffStr}\n見直せば年間¥${savingStr}節約できます！\n\nあなたの固定費は？\nhttps://subsc-checker.com/ #SubscChecker`;
+    return `【サブスク支出レポート】\nサブスク月額¥${stats.totalMonthly.toLocaleString()}（年換算¥${yearlyStr}）利用中。\n${diffStr}\n見直せば年間¥${savingStr}節約できます！\n\nあなたの固定費は？\nhttps://subsc-checker.com/ #SubscChecker #サブスク支出レポート`;
   }
-  return `【サブスク支出レポート】\nサブスク月額¥${stats.totalMonthly.toLocaleString()}（年換算¥${yearlyStr}）利用中。\n${diffStr}\n無駄ゼロの優良家計でした！\n\nあなたの固定費は？\nhttps://subsc-checker.com/ #SubscChecker`;
+  return `【サブスク支出レポート】\nサブスク月額¥${stats.totalMonthly.toLocaleString()}（年換算¥${yearlyStr}）利用中。\n${diffStr}\n無駄ゼロの優良家計でした！\n\nあなたの固定費は？\nhttps://subsc-checker.com/ #SubscChecker #サブスク支出レポート`;
 }
 
 /**
@@ -870,7 +873,7 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     ctx.font = "bold 24px sans-serif";
     ctx.fillText(`“ ${type.tagline} ”`, width / 2, 375);
 
-    // 下部ステータス欄（契約数と全体平均の比較だけにスッキリ絞る）
+    // 下部ステータス欄（契約数と診断平均の比較だけにスッキリ絞る）
     const barWidth = 460;
     const barHeight = 56;
     const barX = (width - barWidth) / 2;
@@ -887,7 +890,7 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     ctx.font = "16px sans-serif";
     const labelPart = "契約数 ";
     const countPart = `${stats.serviceCount}件`;
-    const avgPart = "（全体平均 4.2件）";
+    const avgPart = `（診断平均 ${USER_AVG_COUNT}件）`;
 
     const labelW = ctx.measureText(labelPart).width;
     ctx.font = "900 20px sans-serif";
@@ -914,20 +917,19 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     ctx.fillText(avgPart, startX, barY + 28);
   } else {
     // 【支出レポートモード（実額と内訳が主役のインフォグラフィック・ポスター）】
-    const AVG_MONTHLY = 4890;
-    const diff = stats.totalMonthly - AVG_MONTHLY;
+    const diff = stats.totalMonthly - USER_AVG_MONTHLY;
 
-    // ① 上部社会的通貨バッジ（同単位・金額vs金額の比較）
+    // ① 上部社会的通貨バッジ（同単位・金額vs金額の比較・自社診断データ明記で景表法配慮）
     let repBadge = "";
     let badgeColor = "#38bdf8";
     if (diff < 0) {
-      repBadge = `みんなの平均より月 ¥${Math.abs(diff).toLocaleString()} 抑えめ（全国平均 月¥4,890）`;
+      repBadge = `診断平均より月 ¥${Math.abs(diff).toLocaleString()} 抑えめ（平均 月¥${USER_AVG_MONTHLY.toLocaleString()}）`;
       badgeColor = "#34d399";
     } else if (diff > 0) {
-      repBadge = `みんなの平均より月 +¥${diff.toLocaleString()}（全国平均 月¥4,890）`;
+      repBadge = `診断平均より月 +¥${diff.toLocaleString()}（平均 月¥${USER_AVG_MONTHLY.toLocaleString()}）`;
       badgeColor = "#fbbf24";
     } else {
-      repBadge = `全国平均水準（平均 月¥4,890）`;
+      repBadge = `診断平均水準（平均 月¥${USER_AVG_MONTHLY.toLocaleString()}）`;
       badgeColor = "#38bdf8";
     }
 
@@ -967,17 +969,19 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
       266
     );
 
-    // ④ 内訳インフォグラフィック（タイプ診断との決定的な視覚差別化）
-    // 水平スタックバー（ジャンル別色分けプログレスバー）
-    const barWidth = 760;
-    const barHeight = 16;
+    // ④ 内訳インフォグラフィック（鮮やかなマルチカラースタックバー & パーセント強調チップ）
+    const barWidth = 780;
+    const barHeight = 24; // 視認性の高い太さに拡大
     const barX = (width - barWidth) / 2;
-    const barY = 305;
+    const barY = 302;
 
-    // 背景レール
-    ctx.fillStyle = "#1e293b";
-    roundRect(ctx, barX, barY, barWidth, barHeight, 8);
+    // 背景レール（細い枠線付き）
+    ctx.fillStyle = "#0f172a";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, barX, barY, barWidth, barHeight, 12);
     ctx.fill();
+    ctx.stroke();
 
     // ジャンル集計ソート
     const genreEntries = Object.entries(stats.genreAmounts)
@@ -987,64 +991,75 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     if (stats.totalMonthly > 0 && genreEntries.length > 0) {
       let curX = barX;
       ctx.save();
-      roundRect(ctx, barX, barY, barWidth, barHeight, 8);
+      roundRect(ctx, barX, barY, barWidth, barHeight, 12);
       ctx.clip();
 
-      genreEntries.forEach(([cat, amt]) => {
+      genreEntries.forEach(([cat, amt], idx) => {
         const segW = (amt / stats.totalMonthly) * barWidth;
-        const col = GENRE_COLORS[cat]?.color || "#64748b";
+        const col = GENRE_COLORS[cat]?.color || "#94a3b8";
+
+        // セグメント塗り
         ctx.fillStyle = col;
         ctx.fillRect(curX, barY, segW, barHeight);
+
+        // セグメント間の細い境界ライン（先頭以外）
+        if (idx > 0) {
+          ctx.fillStyle = "rgba(15, 23, 42, 0.6)";
+          ctx.fillRect(curX, barY, 2, barHeight);
+        }
+
         curX += segW;
       });
       ctx.restore();
     }
 
-    // ジャンル内訳チップ（上位最大4ジャンルを均等配置）
+    // ジャンル内訳チップ（上位最大4ジャンル：パーセンテージ強調で視認性抜群）
     const displayGenres = genreEntries.slice(0, 4);
     if (displayGenres.length > 0) {
-      const chipHeight = 36;
-      const chipY = 338;
+      const chipHeight = 40;
+      const chipY = 340;
 
-      // 全体のチップ幅計算
-      ctx.font = "bold 14px sans-serif";
+      // チップデータ構築（金額を割愛し、ジャンル名 ＋ パーセントに絞って文字サイズ拡大）
+      ctx.font = "bold 16px sans-serif";
       const chipItems = displayGenres.map(([cat, amt]) => {
         const label = GENRE_COLORS[cat]?.label || cat;
         const pct = ((amt / stats.totalMonthly) * 100).toFixed(1);
-        const text = `${label} ¥${amt.toLocaleString()} (${pct}%)`;
+        const text = `${label} ${pct}%`;
         const textW = ctx.measureText(text).width;
         return {
           cat,
-          color: GENRE_COLORS[cat]?.color || "#64748b",
+          color: GENRE_COLORS[cat]?.color || "#94a3b8",
           text,
-          w: textW + 36,
+          w: textW + 42,
         };
       });
 
-      const totalChipsW = chipItems.reduce((sum, c) => sum + c.w, 0) + (chipItems.length - 1) * 12;
+      const totalChipsW = chipItems.reduce((sum, c) => sum + c.w, 0) + (chipItems.length - 1) * 14;
       let curChipX = (width - totalChipsW) / 2;
 
       chipItems.forEach((item) => {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
-        ctx.lineWidth = 1;
-        roundRect(ctx, curChipX, chipY, item.w, chipHeight, 18);
+        // チップ背景（ジャンルカラーの微細な縁取り）
+        ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+        ctx.strokeStyle = item.color + "66"; // 40% alphaで色を主張
+        ctx.lineWidth = 1.5;
+        roundRect(ctx, curChipX, chipY, item.w, chipHeight, 20);
         ctx.fill();
         ctx.stroke();
 
-        // 丸印
+        // 鮮やかなカラー丸印（直径10px）
         ctx.fillStyle = item.color;
         ctx.beginPath();
-        ctx.arc(curChipX + 15, chipY + chipHeight / 2, 5, 0, Math.PI * 2);
+        ctx.arc(curChipX + 18, chipY + chipHeight / 2, 5, 0, Math.PI * 2);
         ctx.fill();
 
-        // テキスト
+        // テキスト描画（白文字・bold 16pxで縮小時も読める）
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.fillStyle = "#cbd5e1";
-        ctx.fillText(item.text, curChipX + 26, chipY + chipHeight / 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 16px sans-serif";
+        ctx.fillText(item.text, curChipX + 30, chipY + chipHeight / 2);
 
-        curChipX += item.w + 12;
+        curChipX += item.w + 14;
       });
     }
 
@@ -1094,7 +1109,7 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     }
   }
 
-  // 5. フッター描画
+  // 5. フッター描画（モードに合わせたハッシュタグ出し分け）
   ctx.textAlign = "left";
   ctx.textBaseline = "bottom";
   ctx.font = "bold 15px sans-serif";
@@ -1103,8 +1118,19 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
 
   ctx.textAlign = "right";
   ctx.font = "bold 15px sans-serif";
-  ctx.fillStyle = accentColor;
-  ctx.fillText("#SubscChecker #サブスクタイプ診断", width - 65, height - 42);
+  const tagColor = completedAction
+    ? "#10b981"
+    : mode === "normal"
+    ? "#38bdf8"
+    : accentColor;
+  ctx.fillStyle = tagColor;
+
+  const hashtagText = completedAction
+    ? "#SubscChecker #固定費見直し"
+    : mode === "normal"
+    ? "#SubscChecker #サブスク支出レポート"
+    : "#SubscChecker #サブスクタイプ診断";
+  ctx.fillText(hashtagText, width - 65, height - 42);
 }
 
 // テキスト自動折り返し描画ヘルパー
