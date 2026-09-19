@@ -11,6 +11,7 @@ export const CANCEL_URLS = [
     name: "Netflix",
     url: "https://www.netflix.com/youraccount",
     guide: "ログイン後、「アカウント」＞「メンバーシップのキャンセル」",
+    detailGuideUrl: "/cancel/netflix.html",
     category: "動画",
   },
   {
@@ -18,6 +19,7 @@ export const CANCEL_URLS = [
     name: "Amazonプライム",
     url: "https://www.amazon.co.jp/mc/manage",
     guide: "「アカウントサービス」＞「プライム会員情報」＞「会員資格を終了する」",
+    detailGuideUrl: "/cancel/amazon-prime.html",
     category: "EC・動画",
   },
   {
@@ -32,6 +34,7 @@ export const CANCEL_URLS = [
     name: "YouTube Premium",
     url: "https://www.youtube.com/paid_memberships",
     guide: "「購入内容とメンバーシップ」＞「メンバーシップの管理」＞「無効にする」",
+    detailGuideUrl: "/cancel/youtube-premium.html",
     category: "動画・音楽",
   },
   {

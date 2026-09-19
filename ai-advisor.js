@@ -167,6 +167,18 @@ export function renderActionsTab(items = []) {
               </div>
             </div>
 
+            ${info.detailGuideUrl ? `
+              <a
+                href="${escapeHtml(info.detailGuideUrl)}"
+                class="inline-flex items-center justify-center gap-1 text-[11px] font-bold text-slate-500 hover:text-blue-600 transition-colors mb-2.5"
+              >
+                <span>詳しい手順・注意点ガイドを見る</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            ` : ""}
+
             <!-- 公式アクションボタン -->
             <a
               href="${escapeHtml(info.url)}"
@@ -205,6 +217,12 @@ export function renderActionsTab(items = []) {
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           ${cancelCards}
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
+          <span class="text-xs text-slate-500">損をしない解約タイミングや日割り・返金ルールを解説</span>
+          <a href="/cancel/" class="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1">
+            主要サブスクの解約手順まとめ →
+          </a>
         </div>
       </div>
     `;
