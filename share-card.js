@@ -1205,27 +1205,6 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
   ctx.fillText(hashtagText, width - 65, height - 42);
 }
 
-// テキスト自動折り返し描画ヘルパー
-function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight) {
-  if (!text) return;
-  const chars = text.split("");
-  let line = "";
-  let currentY = y;
-
-  for (let n = 0; n < chars.length; n++) {
-    const testLine = line + chars[n];
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && n > 0) {
-      ctx.fillText(line, x, currentY);
-      line = chars[n];
-      currentY += lineHeight;
-    } else {
-      line = testLine;
-    }
-  }
-  ctx.fillText(line, x, currentY);
-}
-
 // 角丸矩形描画ヘルパー
 function roundRect(ctx, x, y, width, height, radius) {
   ctx.beginPath();

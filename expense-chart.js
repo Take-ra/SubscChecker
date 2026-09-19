@@ -117,18 +117,21 @@ export function renderChart(data, type = currentChartType) {
       // 現在ホバー（吹き出し表示中）のスライスのインデックスを取得
       const activeElements = chart.getActiveElements ? chart.getActiveElements() : [];
       const activeIndices = new Set(activeElements.map((el) => el.index));
-      if (chart.tooltip && chart.tooltip.dataPoints && Array.isArray(chart.tooltip.dataPoints)) {
-        chart.tooltip.dataPoints.forEach((dp) => {
-          if (dp.dataIndex !== undefined) activeIndices.add(dp.dataIndex);
-        });
+      const tt = chart.tooltip;
+      if (tt?.dataPoints && Array.isArray(tt.dataPoints)) {
+        for (let i = 0; i < tt.dataPoints.length; i++) {
+          const idx = tt.dataPoints[i].dataIndex;
+          if (idx !== undefined) activeIndices.add(idx);
+        }
       }
-      if (chart.tooltip && chart.tooltip._active && Array.isArray(chart.tooltip._active)) {
-        chart.tooltip._active.forEach((el) => {
+      if (tt?._active && Array.isArray(tt._active)) {
+        for (let i = 0; i < tt._active.length; i++) {
+          const el = tt._active[i];
           if (el.index !== undefined) activeIndices.add(el.index);
-          if (el.element && el.element.$context && el.element.$context.index !== undefined) {
+          else if (el.element?.$context?.index !== undefined) {
             activeIndices.add(el.element.$context.index);
           }
-        });
+        }
       }
 
       ctx.save();

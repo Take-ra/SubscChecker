@@ -1,9 +1,6 @@
 // subscription-list-ui.js（サブスクリプションカード & 見落としがち枠の描画）
 import { escapeAttr, escapeHtml } from "./utils.js";
-import { renderBrandIcon, getBrandBadge, getBrandDomain } from "./brand-icons.js";
-
-// 後方互換性のための再エクスポート
-export { getBrandBadge, getBrandDomain, renderBrandIcon };
+import { renderBrandIcon } from "./brand-icons.js";
 
 /**
  * 見落としがちなサブスク（無料体験自動移行・スマホ特典・クラウド等）のクイック枠を描画

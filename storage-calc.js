@@ -19,6 +19,40 @@ export function saveDataToStorage(state, custom) {
   localStorage.setItem("customSubscriptions", JSON.stringify(custom));
 }
 
+// サブスクID検索用およびカテゴリ検索用キャッシュマップ（O(1) 高速化）
+let subMapCache = null;
+let lastSubsRef = null;
+
+let catMapCache = null;
+let lastCatsRef = null;
+
+function getSubLookupMap(subscriptions) {
+  if (subMapCache && lastSubsRef === subscriptions) {
+    return subMapCache;
+  }
+  const map = new Map();
+  subscriptions.forEach((s) => {
+    map.set(s.id, s);
+    if (Array.isArray(s.legacyIds)) {
+      s.legacyIds.forEach((lid) => map.set(lid, s));
+    }
+  });
+  subMapCache = map;
+  lastSubsRef = subscriptions;
+  return map;
+}
+
+function getCatLookupMap(categories) {
+  if (catMapCache && lastCatsRef === categories) {
+    return catMapCache;
+  }
+  const map = new Map();
+  categories.forEach((c) => map.set(c.id, c));
+  catMapCache = map;
+  lastCatsRef = categories;
+  return map;
+}
+
 export function calculateAggregation(
   savedState,
   customSubscriptions,
@@ -36,6 +70,9 @@ export function calculateAggregation(
       top5: [],
     };
   }
+
+  const subMap = getSubLookupMap(subscriptions);
+  const catMap = getCatLookupMap(categories);
 
   let totalMonthly = 0;
   let totalYearly = 0;
@@ -58,10 +95,8 @@ export function calculateAggregation(
     const state = savedState[subId];
     if (!state || !state.checked) return;
 
-    // 新IDまたは旧IDでサブスクデータを検索
-    const subData = subscriptions.find(
-      (s) => s.id === subId || (s.legacyIds && s.legacyIds.includes(subId))
-    );
+    // 新IDまたは旧IDでサブスクデータを高速Map検索
+    const subData = subMap.get(subId);
     if (!subData || processedSubIds.has(subData.id)) return;
     processedSubIds.add(subData.id);
 
@@ -96,7 +131,7 @@ export function calculateAggregation(
     totalMonthly += mCost;
     totalYearly += yCost;
 
-    const catInfo = categories.find((c) => c.id === subData.categoryId);
+    const catInfo = catMap.get(subData.categoryId);
     const catName = catInfo ? catInfo.name : "その他";
     if (genreTotals[catName]) {
       genreTotals[catName].monthly += mCost;

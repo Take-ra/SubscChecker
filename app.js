@@ -1,4 +1,3 @@
-// app.js
 import * as Logic from "./storage-calc.js";
 import * as Render from "./result-view-ui.js";
 import * as RenderList from "./subscription-list-ui.js";
@@ -10,6 +9,7 @@ import { initSearch, buildSearchIndex } from "./search.js";
 import { initUIEvents } from "./ui-events.js";
 import * as AIAdvisor from "./ai-advisor.js";
 import * as SelectedSheet from "./selected-sheet.js";
+import { animateValue } from "./utils.js";
 
 export function initApp() {
   // --- グローバル関数の登録 ---
@@ -47,6 +47,17 @@ export function initApp() {
 
   let isFirstLoad = true;
   let analyzedData = null;
+
+  // DOM要素キャッシュ（calculateTotalのDOM走査コストを削減）
+  let cachedSubtotalSections = null;
+  let cachedCustomSubtotal = null;
+  let cachedOverlookedChips = null;
+
+  function invalidateDomCaches() {
+    cachedSubtotalSections = null;
+    cachedCustomSubtotal = null;
+    cachedOverlookedChips = null;
+  }
 
   // --- 初期化処理 ---
   function init() {
@@ -102,6 +113,7 @@ export function initApp() {
           searchInput.dispatchEvent(new Event("input"));
         }
 
+        invalidateDomCaches();
         RenderList.renderOverlookedSection(subs, savedState, overlookedContainer);
         RenderList.renderMainList(cats, subs, savedState, listContainer);
         RenderList.renderCustomList(
@@ -128,6 +140,7 @@ export function initApp() {
     getSavedState: () => savedState,
     onUpdate: () => {
       saveData();
+      cachedCustomSubtotal = null;
       RenderList.renderCustomList(
         customSubscriptions,
         savedState,
@@ -204,52 +217,63 @@ export function initApp() {
     // ナビゲーションのバッジを更新
     Render.updateNavBadges(genreItemCounts);
 
-    // ジャンルごとの小計を更新（未選択・0円時は非表示にして視覚ノイズを削減）
-    const sections = document.querySelectorAll("#subscription-list > section");
-    sections.forEach((section) => {
-      const catNameText = section.querySelector("h2")?.textContent?.trim() || "";
-      const subtotalEl = section.querySelector(".subtotal-val");
-      const subtotalContainer = section.querySelector(".subtotal-container");
-      if (subtotalEl && data.genreTotals[catNameText]) {
-        const val = data.genreTotals[catNameText].monthly;
-        if (subtotalContainer) {
-          if (val > 0) {
-            subtotalContainer.classList.remove("hidden");
-            subtotalContainer.classList.add("flex");
-          } else {
-            subtotalContainer.classList.add("hidden");
-            subtotalContainer.classList.remove("flex");
-          }
-        }
-        const currentSub =
-          parseInt(subtotalEl.textContent.replace(/,/g, ""), 10) || 0;
-        if (isFirstLoad) subtotalEl.textContent = val.toLocaleString();
-        else Render.animateValue(subtotalEl, currentSub, val, 500);
+    // ジャンルごとの小計を更新（DOM要素をキャッシュして走査負荷をゼロ化）
+    if (!cachedSubtotalSections) {
+      const sections = document.querySelectorAll("#subscription-list > section");
+      if (sections.length > 0) {
+        cachedSubtotalSections = Array.from(sections)
+          .map((section) => ({
+            catName: section.querySelector("h2")?.textContent?.trim() || "",
+            subtotalEl: section.querySelector(".subtotal-val"),
+            subtotalContainer: section.querySelector(".subtotal-container"),
+          }))
+          .filter((s) => s.catName && s.subtotalEl);
       }
-    });
+    }
+
+    if (cachedSubtotalSections) {
+      cachedSubtotalSections.forEach(({ catName, subtotalEl, subtotalContainer }) => {
+        if (data.genreTotals[catName]) {
+          const val = data.genreTotals[catName].monthly;
+          if (subtotalContainer) {
+            if (val > 0) {
+              subtotalContainer.classList.remove("hidden");
+              subtotalContainer.classList.add("flex");
+            } else {
+              subtotalContainer.classList.add("hidden");
+              subtotalContainer.classList.remove("flex");
+            }
+          }
+          const currentSub =
+            parseInt(subtotalEl.textContent.replace(/,/g, ""), 10) || 0;
+          if (isFirstLoad) subtotalEl.textContent = val.toLocaleString();
+          else animateValue(subtotalEl, currentSub, val, 500);
+        }
+      });
+    }
 
     // 独自サブスクの小計を更新
-    const customSubtotalEl = document.querySelector(
-      "#section-custom .subtotal-val",
-    );
-    const customSubtotalContainer = document.querySelector(
-      "#section-custom .subtotal-container",
-    );
-    if (customSubtotalEl) {
+    if (!cachedCustomSubtotal) {
+      const el = document.querySelector("#section-custom .subtotal-val");
+      const container = document.querySelector("#section-custom .subtotal-container");
+      if (el) cachedCustomSubtotal = { el, container };
+    }
+    if (cachedCustomSubtotal) {
+      const { el, container } = cachedCustomSubtotal;
       const val = data.genreTotals["独自のサブスク"]?.monthly || 0;
-      if (customSubtotalContainer) {
+      if (container) {
         if (val > 0) {
-          customSubtotalContainer.classList.remove("hidden");
-          customSubtotalContainer.classList.add("flex");
+          container.classList.remove("hidden");
+          container.classList.add("flex");
         } else {
-          customSubtotalContainer.classList.add("hidden");
-          customSubtotalContainer.classList.remove("flex");
+          container.classList.add("hidden");
+          container.classList.remove("flex");
         }
       }
       const currentSub =
-        parseInt(customSubtotalEl.textContent.replace(/,/g, ""), 10) || 0;
-      if (isFirstLoad) customSubtotalEl.textContent = val.toLocaleString();
-      else Render.animateValue(customSubtotalEl, currentSub, val, 500);
+        parseInt(el.textContent.replace(/,/g, ""), 10) || 0;
+      if (isFirstLoad) el.textContent = val.toLocaleString();
+      else animateValue(el, currentSub, val, 500);
     }
 
     // 全体の合計を更新（モバイルフッター）
@@ -262,34 +286,39 @@ export function initApp() {
         parseInt(monthlyTotalEl.textContent.replace(/,/g, ""), 10) || 0;
       const currentYearly =
         parseInt(yearlyTotalEl.textContent.replace(/,/g, ""), 10) || 0;
-      Render.animateValue(
+      animateValue(
         monthlyTotalEl,
         currentMonthly,
         data.totalMonthly,
         500,
       );
-      Render.animateValue(yearlyTotalEl, currentYearly, data.totalYearly, 500);
+      animateValue(yearlyTotalEl, currentYearly, data.totalYearly, 500);
     }
 
     // PC専用右サイドバーの選択中パネルをリアルタイム更新
     Render.renderPcSelectedPanel(data.selectedItems, data.totalMonthly, data.totalYearly);
 
     // 見落としがちチップの選択状態（チェック状態）を同期
-    document.querySelectorAll(".overlooked-chip").forEach((chip) => {
-      const subId = chip.getAttribute("data-sub-id");
-      const isChecked = Boolean(savedState[subId]?.checked);
-      if (isChecked) {
-        chip.classList.add("bg-blue-50", "border-blue-500", "text-blue-700", "font-bold");
-        chip.classList.remove("bg-white", "border-slate-200/90", "text-slate-700");
+    if (!cachedOverlookedChips) {
+      const chips = document.querySelectorAll(".overlooked-chip");
+      if (chips.length > 0) cachedOverlookedChips = chips;
+    }
+    if (cachedOverlookedChips) {
+      cachedOverlookedChips.forEach((chip) => {
+        const subId = chip.getAttribute("data-sub-id");
+        const isChecked = Boolean(savedState[subId]?.checked);
         const icon = chip.querySelector(".chip-check-icon");
-        if (icon) icon.classList.remove("hidden");
-      } else {
-        chip.classList.remove("bg-blue-50", "border-blue-500", "text-blue-700", "font-bold");
-        chip.classList.add("bg-white", "border-slate-200/90", "text-slate-700");
-        const icon = chip.querySelector(".chip-check-icon");
-        if (icon) icon.classList.add("hidden");
-      }
-    });
+        if (isChecked) {
+          chip.classList.add("bg-blue-50", "border-blue-500", "text-blue-700", "font-bold");
+          chip.classList.remove("bg-white", "border-slate-200/90", "text-slate-700");
+          if (icon) icon.classList.remove("hidden");
+        } else {
+          chip.classList.remove("bg-blue-50", "border-blue-500", "text-blue-700", "font-bold");
+          chip.classList.add("bg-white", "border-slate-200/90", "text-slate-700");
+          if (icon) icon.classList.add("hidden");
+        }
+      });
+    }
 
     // フッターの「〇件 選択中」ボタンの更新
     const footerCountEl = document.getElementById("footer-selected-count");

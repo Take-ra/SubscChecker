@@ -1,7 +1,5 @@
-// result-view-ui.js（ナビゲーション、結果画面内訳、PC選択中パネルの描画）
-import { escapeAttr, animateValue, escapeHtml, formatCurrency } from "./utils.js";
+import { escapeAttr, escapeHtml } from "./utils.js";
 import { renderBrandIcon } from "./brand-icons.js";
-export { escapeAttr, animateValue, escapeHtml, formatCurrency };
 
 export function updateHighlight(card, isChecked) {
   if (!card) return;
@@ -20,7 +18,10 @@ export function updateHighlight(card, isChecked) {
   }
 }
 
+let cachedNavBadges = null;
+
 export function renderNav(cats, container) {
+  cachedNavBadges = null;
   if (!container) return;
   let htmlNav = "";
   cats.forEach((cat) => {
@@ -245,13 +246,20 @@ export function renderPcSelectedPanel(selectedItems = [], totalMonthly = 0, tota
     .join("");
 }
 
-// ナビゲーションのジャンル別選択バッジ更新
+// ナビゲーションのジャンル別選択バッジ更新（DOM走査をキャッシュして負荷軽減）
 export function updateNavBadges(genreCounts = {}) {
-  document.querySelectorAll(".nav-link").forEach((link) => {
-    const catName = link.getAttribute("data-cat-name");
-    const badge = link.querySelector(".nav-badge");
-    if (!badge || !catName) return;
+  if (!cachedNavBadges || cachedNavBadges.length === 0) {
+    const links = document.querySelectorAll(".nav-link");
+    if (links.length === 0) return;
+    cachedNavBadges = Array.from(links)
+      .map((link) => ({
+        catName: link.getAttribute("data-cat-name"),
+        badge: link.querySelector(".nav-badge"),
+      }))
+      .filter((item) => item.catName && item.badge);
+  }
 
+  cachedNavBadges.forEach(({ catName, badge }) => {
     const count = genreCounts[catName] || 0;
     if (count > 0) {
       badge.textContent = count;

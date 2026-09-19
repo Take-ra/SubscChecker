@@ -154,15 +154,6 @@ export function initCustomModal(callbacks) {
   }
 
 
-  window.toggleEditMenu = function (id) {
-    const menu = document.getElementById(`edit-menu-${id}`);
-    const allMenus = document.querySelectorAll('[id^="edit-menu-"]');
-    allMenus.forEach(
-      (m) => m.id !== `edit-menu-${id}` && m.classList.add("hidden"),
-    );
-    if (menu) menu.classList.toggle("hidden");
-  };
-
   window.editCustomSub = function (id) {
     let customSubs = app.getCustomSubs();
     const sub = customSubs.find((s) => s.id === id);
@@ -203,9 +194,6 @@ export function initCustomModal(callbacks) {
     customModal.classList.remove("hidden");
     customModal.classList.add("flex");
     document.body.style.overflow = "hidden";
-
-    const editMenu = document.getElementById(`edit-menu-${id}`);
-    if (editMenu) editMenu.classList.add("hidden");
   };
 
   window.deleteCustomSub = function (id) {
