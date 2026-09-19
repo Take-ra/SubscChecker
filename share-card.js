@@ -39,6 +39,71 @@ export const GENRE_COLORS = {
   other: { color: "#94a3b8", label: "その他" },
 };
 
+// 予備の鮮やかなカラーパレット（未知カテゴリ用フォールバック）
+const FALLBACK_PALETTE = [
+  "#ff3366", "#10b981", "#f59e0b", "#38bdf8",
+  "#818cf8", "#fb923c", "#c084fc", "#06b6d4",
+];
+
+/**
+ * 英語ID・日本語カテゴリ名問わず、100%確実に鮮やかなカラーと正規化ラベルを導出
+ */
+export function getGenreMeta(category = "") {
+  const c = String(category || "").toLowerCase().trim();
+
+  // 1. 英語ID完全一致
+  if (GENRE_COLORS[c]) {
+    return { id: c, ...GENRE_COLORS[c] };
+  }
+
+  // 2. 日本語・類義語マッピング
+  if (c.includes("動画") || c.includes("video") || c.includes("vod") || c.includes("映画") || c.includes("アニメ")) {
+    return { id: "video", color: "#ff3366", label: "動画配信" };
+  }
+  if (c.includes("音楽") || c.includes("music") || c.includes("音響") || c.includes("bgm")) {
+    return { id: "music", color: "#10b981", label: "音楽配信" };
+  }
+  if (c.includes("電子書籍") || c.includes("書籍") || c.includes("本") || c.includes("ebook") || c.includes("book") || c.includes("マンガ") || c.includes("漫画")) {
+    return { id: "ebook", color: "#f59e0b", label: "電子書籍" };
+  }
+  if (c.includes("ゲーム") || c.includes("game")) {
+    return { id: "game", color: "#818cf8", label: "ゲーム" };
+  }
+  if (c.includes("仕事") || c.includes("ツール") || c.includes("tool") || c.includes("学習") || c.includes("ai") || c.includes("業務") || c.includes("ビジネス")) {
+    return { id: "tool", color: "#38bdf8", label: "業務ツール" };
+  }
+  if (c.includes("クラウド") || c.includes("ストレージ") || c.includes("storage") || c.includes("cloud")) {
+    return { id: "storage", color: "#06b6d4", label: "クラウド" };
+  }
+  if (c.includes("配送") || c.includes("配達") || c.includes("フード") || c.includes("delivery") || c.includes("ec") || c.includes("通販")) {
+    return { id: "delivery", color: "#fb923c", label: "配送・EC" };
+  }
+  if (c.includes("生活") || c.includes("ライフ") || c.includes("lifestyle") || c.includes("フィットネス") || c.includes("健康")) {
+    return { id: "lifestyle", color: "#c084fc", label: "生活・習慣" };
+  }
+
+  // 3. その他未知の場合でも、文字列ハッシュで鮮やかなパレット色を割り当て（グレー化を完全防止！）
+  let hash = 0;
+  for (let i = 0; i < c.length; i++) hash = (hash << 5) - hash + c.charCodeAt(i);
+  const colorIndex = Math.abs(hash) % FALLBACK_PALETTE.length;
+  return { id: c || "other", color: FALLBACK_PALETTE[colorIndex], label: category || "その他" };
+}
+
+/**
+ * HEXカラーをRGBA文字列に安全に変換するヘルパー
+ */
+function hexToRgba(hex, alpha = 1) {
+  if (!hex || typeof hex !== "string") return `rgba(255, 255, 255, ${alpha})`;
+  const cleanHex = hex.replace("#", "");
+  if (cleanHex.length === 6) {
+    const r = parseInt(cleanHex.substring(0, 2), 16);
+    const g = parseInt(cleanHex.substring(2, 4), 16);
+    const b = parseInt(cleanHex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return hex;
+}
+
 // MBTIライクな全タイプ診断マスターデータ
 export const SUBSCRIPTION_TYPES = {
   oshi: {
@@ -182,10 +247,11 @@ export function determineSubscriptionType(items = [], data = {}) {
   const serviceCount = items.length;
   const totalMonthly = items.reduce((sum, i) => sum + (Number(i.monthly) || 0), 0);
 
-  // ジャンル別集計
+  // ジャンル別集計（英語ID・日本語カテゴリ名をgetGenreMetaで正規化）
   const genreAmounts = {};
   items.forEach((item) => {
-    const cat = item.category || "other";
+    const meta = getGenreMeta(item.category || item.genre);
+    const cat = meta.id;
     const monthly = Number(item.monthly) || 0;
     genreAmounts[cat] = (genreAmounts[cat] || 0) + monthly;
   });
@@ -352,10 +418,11 @@ export function calculateShareStats(items = [], data = {}) {
   );
   const serviceCount = items.length;
 
-  // ジャンル別集計
+  // ジャンル別集計（英語ID・日本語カテゴリ名をgetGenreMetaで正規化）
   const genreAmounts = {};
   items.forEach((item) => {
-    const cat = item.category || "other";
+    const meta = getGenreMeta(item.category || item.genre);
+    const cat = meta.id;
     const monthly = Number(item.monthly) || 0;
     genreAmounts[cat] = (genreAmounts[cat] || 0) + monthly;
   });
@@ -372,7 +439,7 @@ export function calculateShareStats(items = [], data = {}) {
 
   const topGenrePercent =
     totalMonthly > 0 ? Math.round((topGenreAmount / totalMonthly) * 100) : 0;
-  const topGenreLabel = GENRE_COLORS[topGenreKey]?.label || "サブスク";
+  const topGenreLabel = getGenreMeta(topGenreKey).label || "サブスク";
 
   // 削減余地額（優先アクションの合計）
   let potentialSaving = 0;
@@ -996,7 +1063,8 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
 
       genreEntries.forEach(([cat, amt], idx) => {
         const segW = (amt / stats.totalMonthly) * barWidth;
-        const col = GENRE_COLORS[cat]?.color || "#94a3b8";
+        const meta = getGenreMeta(cat);
+        const col = meta.color;
 
         // セグメント塗り
         ctx.fillStyle = col;
@@ -1022,13 +1090,14 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
       // チップデータ構築（金額を割愛し、ジャンル名 ＋ パーセントに絞って文字サイズ拡大）
       ctx.font = "bold 16px sans-serif";
       const chipItems = displayGenres.map(([cat, amt]) => {
-        const label = GENRE_COLORS[cat]?.label || cat;
+        const meta = getGenreMeta(cat);
+        const label = meta.label;
         const pct = ((amt / stats.totalMonthly) * 100).toFixed(1);
         const text = `${label} ${pct}%`;
         const textW = ctx.measureText(text).width;
         return {
           cat,
-          color: GENRE_COLORS[cat]?.color || "#94a3b8",
+          color: meta.color,
           text,
           w: textW + 42,
         };
@@ -1040,7 +1109,7 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
       chipItems.forEach((item) => {
         // チップ背景（ジャンルカラーの微細な縁取り）
         ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
-        ctx.strokeStyle = item.color + "66"; // 40% alphaで色を主張
+        ctx.strokeStyle = hexToRgba(item.color, 0.45);
         ctx.lineWidth = 1.5;
         roundRect(ctx, curChipX, chipY, item.w, chipHeight, 20);
         ctx.fill();
