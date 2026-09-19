@@ -101,7 +101,7 @@ export function renderChart(data, type = currentChartType) {
 
   const totalSum = chartData.reduce((a, b) => a + b, 0);
 
-  // スライス上にパーセンテージを描画するプラグイン（データセット直後に描画することで、吹き出しが上に重なり自然に隠れる）
+  // スライス上にパーセンテージを描画するプラグイン（カーソルをかざしているスライスのみ数値を非表示にし、吹き出しを前面表示）
   const slicePercentagePlugin = {
     id: "slicePercentagePlugin",
     afterDatasetDraw(chart) {
@@ -114,6 +114,23 @@ export function renderChart(data, type = currentChartType) {
       const sum = dataset.data.reduce((a, b) => a + b, 0);
       if (sum === 0) return;
 
+      // 現在ホバー（吹き出し表示中）のスライスのインデックスを取得
+      const activeElements = chart.getActiveElements ? chart.getActiveElements() : [];
+      const activeIndices = new Set(activeElements.map((el) => el.index));
+      if (chart.tooltip && chart.tooltip.dataPoints && Array.isArray(chart.tooltip.dataPoints)) {
+        chart.tooltip.dataPoints.forEach((dp) => {
+          if (dp.dataIndex !== undefined) activeIndices.add(dp.dataIndex);
+        });
+      }
+      if (chart.tooltip && chart.tooltip._active && Array.isArray(chart.tooltip._active)) {
+        chart.tooltip._active.forEach((el) => {
+          if (el.index !== undefined) activeIndices.add(el.index);
+          if (el.element && el.element.$context && el.element.$context.index !== undefined) {
+            activeIndices.add(el.element.$context.index);
+          }
+        });
+      }
+
       ctx.save();
       ctx.font = "bold 11px system-ui, -apple-system, sans-serif";
       ctx.fillStyle = "#ffffff";
@@ -121,6 +138,9 @@ export function renderChart(data, type = currentChartType) {
       ctx.textBaseline = "middle";
 
       meta.data.forEach((element, index) => {
+        // カーソルをかざしている（吹き出しが出ている）スライスの数値は非表示
+        if (activeIndices.has(index)) return;
+
         const value = dataset.data[index] || 0;
         const pct = (value / sum) * 100;
 
