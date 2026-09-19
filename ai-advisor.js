@@ -8,6 +8,8 @@ import {
 import {
   createShareSectionHtml,
   initShareCardActions,
+  openShareModal,
+  calculateShareStats,
 } from "./share-card.js";
 import { escapeHtml } from "./utils.js";
 import { renderBrandIcon } from "./brand-icons.js";
@@ -74,6 +76,16 @@ export function initAIAdvisor(getSelectedItems) {
       mockWrapper.appendChild(mockBtn);
       updateMockToggleUI();
     }
+  }
+
+  // 結果画面上部のクイックシェアボタン初期化
+  const btnQuickShare = document.getElementById("btn-quick-share");
+  if (btnQuickShare) {
+    btnQuickShare.addEventListener("click", () => {
+      const currentItems = currentSelectedItemsGetter ? currentSelectedItemsGetter() : [];
+      const stats = calculateShareStats(currentItems, cachedResult || {});
+      openShareModal({ stats });
+    });
   }
 
   // 結果画面のタブ切り替え初期化
@@ -250,7 +262,7 @@ export function renderActionsTab(items = []) {
                 card.contextReason
                   ? `
                 <div class="text-[11px] font-bold text-slate-700 bg-slate-50 rounded-xl p-2.5 mb-3 border border-slate-200/80 leading-snug">
-                  💡 ${escapeHtml(card.contextReason)}
+                  <span class="text-blue-600 font-extrabold mr-1">提案理由:</span>${escapeHtml(card.contextReason)}
                 </div>
               `
                   : ""
@@ -863,7 +875,7 @@ function renderAdvisor(container, data, items = []) {
             >
               <!-- カード上部: チェックボックス ＋ サービスロゴ ＋ 見出し ＋ 右上スキップ -->
               <div class="flex items-start gap-3">
-                <!-- ① チェックボックス（事後行動は控えめな☐に降格） -->
+                <!-- ① チェックボックス（事後行動は控えめな枠に降格） -->
                 <button
                   type="button"
                   data-action-btn="toggle-done"
@@ -922,7 +934,7 @@ function renderAdvisor(container, data, items = []) {
                       ? `
                     <div class="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1.5 flex-wrap">
                       <span class="text-slate-400">${escapeHtml(act.current_state)}</span>
-                      <span class="text-slate-300">➔</span>
+                      <span class="text-slate-300">→</span>
                       <span class="font-bold text-slate-700">${escapeHtml(act.proposed_state)}</span>
                     </div>
                   `
@@ -1046,8 +1058,18 @@ function renderAdvisor(container, data, items = []) {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-action-id");
         if (id && actionStates[id]) {
-          actionStates[id].completed = !actionStates[id].completed;
+          const wasCompleted = actionStates[id].completed;
+          actionStates[id].completed = !wasCompleted;
           renderContent();
+
+          // 未完了から完了になった瞬間、ドーパミン達成シェアモーダルを起動
+          if (!wasCompleted) {
+            const completedAction = actions.find((a) => a.id === id);
+            if (completedAction) {
+              const stats = calculateShareStats(items, data);
+              openShareModal({ stats, completedAction });
+            }
+          }
         }
       });
     });
@@ -1069,25 +1091,16 @@ function renderAdvisor(container, data, items = []) {
   renderActionsTab(items);
 
   // 10. 画面最下部: 𝕏 シェアブロックのレンダリング
-  const totalMonthly = items.reduce((sum, i) => sum + (Number(i.monthly) || 0), 0);
-  const totalYearly = items.reduce(
-    (sum, i) => sum + (Number(i.yearly) || (Number(i.monthly) || 0) * 12),
-    0
-  );
   const shareContainer = document.getElementById("res-share-container");
   if (shareContainer) {
     shareContainer.innerHTML = createShareSectionHtml({
       data,
       items,
-      totalMonthly,
-      totalYearly,
     });
 
     initShareCardActions({
       data,
       items,
-      totalMonthly,
-      totalYearly,
     });
   }
 

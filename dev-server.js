@@ -91,7 +91,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   // --- 静的ファイル配信 ---
-  let filePath = path.join(__dirname, pathname === "/" ? "index.html" : pathname);
+  let relativePath = pathname === "/" ? "index.html" : pathname.replace(/^\//, "");
+  let filePath = path.join(__dirname, relativePath);
 
   // ディレクトリトラバーサル防止
   if (!filePath.startsWith(__dirname)) {
@@ -99,6 +100,18 @@ const server = http.createServer(async (req, res) => {
     res.end("Forbidden");
     return;
   }
+
+  // ディレクトリの場合は index.html を探す
+  try {
+    if (fs.existsSync(filePath)) {
+      const stat = fs.statSync(filePath);
+      if (stat.isDirectory()) {
+        filePath = path.join(filePath, "index.html");
+      }
+    } else if (fs.existsSync(filePath + ".html")) {
+      filePath = filePath + ".html";
+    }
+  } catch (e) {}
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
