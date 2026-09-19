@@ -5,55 +5,72 @@ const RESPONSE_SCHEMA = {
   properties: {
     profile_type: { type: "STRING" },
     summary: { type: "STRING" },
-    priority_action: {
+    actions: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          id: { type: "STRING" },
+          service: { type: "STRING" },
+          action_type: { type: "STRING" },
+          title: { type: "STRING" },
+          annual_saving: { type: "INTEGER" },
+          effort: { type: "STRING" },
+          time_required_min: { type: "INTEGER" },
+          current_state: { type: "STRING" },
+          proposed_state: { type: "STRING" },
+          reason_short: { type: "STRING" },
+        },
+        required: [
+          "id",
+          "service",
+          "action_type",
+          "title",
+          "annual_saving",
+          "effort",
+          "time_required_min",
+          "current_state",
+          "proposed_state",
+          "reason_short",
+        ],
+      },
+    },
+    investment_impact: {
       type: "OBJECT",
       properties: {
-        title: { type: "STRING" },
-        annual_saving: { type: "INTEGER" },
-        reason: { type: "STRING" },
+        yearly_amount: { type: "INTEGER" },
+        monthly_amount: { type: "INTEGER" },
+        principal_20y: { type: "INTEGER" },
+        profit_20y: { type: "INTEGER" },
+        total_20y: { type: "INTEGER" },
+        note: { type: "STRING" },
       },
-      required: ["title", "annual_saving", "reason"],
+      required: [
+        "yearly_amount",
+        "monthly_amount",
+        "principal_20y",
+        "profit_20y",
+        "total_20y",
+        "note",
+      ],
     },
-    duplicate_warnings: {
-      type: "ARRAY",
-      items: { type: "STRING" },
-    },
-    plan_optimizations: {
-      type: "ARRAY",
-      items: { type: "STRING" },
-    },
-    investment_impact: { type: "STRING" },
   },
-  required: [
-    "profile_type",
-    "summary",
-    "priority_action",
-    "duplicate_warnings",
-    "plan_optimizations",
-    "investment_impact",
-  ],
+  required: ["profile_type", "summary", "actions", "investment_impact"],
 };
 
-const SYSTEM_INSTRUCTION = `あなたはプロの固定費削減・家計診断アドバイザーです。
-ユーザーが契約しているサブスクリプション一覧をもとに、高度で実践的な最適化診断を行ってください。
-単なる支出の集計ではなく、以下の4つの実用的な切り口で分析・提案を必ず行ってください。
+const SYSTEM_INSTRUCTION = `あなたは固定費削減の専門アドバイザーです。
+ユーザーの契約サブスク一覧を分析し、ユーザーがすぐ実行できる「具体的なToDoアクション（作業リスト）」を生成してください。
 
-1. 【重複・機能かぶりの特定】
-- 単一ジャンル内だけでなく、「Amazonプライム（動画・音楽・配送特典）と他社サービス（単体動画や単体音楽）の重複」や「複数のクラウドストレージ（iCloud+とGoogle Oneなど）」の二重課金を具体的に指摘してください。
-
-2. 【プラン・契約形態の最適化提案】
-- 継続利用している場合の月払いから年払いへの切り替えメリット（例: 2ヶ月分お得等）。
-- 動画配信サービスなどの「ローテーション契約（見たい作品がある時期だけ交互に単月契約して休会する）」の提案。
-- 該当する可能性がある場合の学割・ファミリープランへの切り替え余地。
-
-3. 【削減インパクト・再投資換算】
-- 提案通りに見直した場合の「年間節約額」の根拠。
-- 「浮いた年間〇〇円を新NISA等の積立投資（年利5%運用等）や自己投資・スキルアップに回した場合の将来価値」を具体的に提示し、行動のモチベーションを高めてください。
-
-4. 【ワンタップ意思決定アクション（最優先タスク）】
-- ユーザーを迷わせないよう、直近で真っ先に見直すべき最も効果の高いアクションを1つ具体的に提示してください。
-
-必ず指定されたJSONスキーマに従って日本語で出力してください。`;
+【出力要件】
+1. 冗長な解説文は避け、ユーザーがサクサク片付けられるタスク形式に徹してください。
+2. アクションの title は必ず動詞の命令形（例：「年払いに切り替える」「隔月ローテーション運用にする」「片方を休止する」）にしてください。
+3. action_type は "plan_change"（プラン変更・年払いなど）、"duplicate"（重複解消）、"cancel"（不要なものの見直し）、"review" のいずれかにしてください。
+4. effort は "low"（Webで数クリック・所要1〜3分）、"medium"（解約・切替手続き・所要3〜5分）、"high"（データ移行や家族調整・所要5分以上）の3段階。
+5. 契約が1件のみの場合は、重複（duplicate）のアクションは絶対に出さず、年払い等への変更余地（または無理な削減を強要しないアドバイス）に留めてください。
+6. actions は効果の高い順に最大3〜4件までに厳選してください。
+7. actions 各項目の annual_saving の合計値と、investment_impact の yearly_amount を必ず一致させてください。
+8. investment_impact は、上記 yearly_amount を年利5%・20年間積立投資した場合の複利試算（概算元本・運用益・総額）を整数で算出してください。
+9. 必ず指定されたJSONスキーマに従い、日本語で出力してください。`;
 
 export default async function handler(req, res) {
   // CORS & プリフライト対応
@@ -172,7 +189,16 @@ export default async function handler(req, res) {
       });
     }
 
-    const analysisResult = JSON.parse(rawJsonText);
+    let analysisResult;
+    try {
+      const cleanJson = rawJsonText.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+      analysisResult = JSON.parse(cleanJson);
+    } catch (parseErr) {
+      console.error("JSON parse error:", parseErr, "Raw output:", rawJsonText);
+      return res.status(502).json({
+        error: "AIの応答形式が正しくありませんでした。再度お試しください。",
+      });
+    }
     return res.status(200).json(analysisResult);
   } catch (error) {
     console.error("Handler error:", error);

@@ -11,6 +11,9 @@
       name="description"
       content="SubscCheckerの運営者情報、サイト理念、お問い合わせ先について記載しています。"
     />
+    <link rel="canonical" href="https://subsc-checker.com/about.html" />
+    <link rel="icon" href="icon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="icon.png" />
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <script
       async
@@ -30,9 +33,14 @@
       </a>
 
       <h1
-        class="text-2xl md:text-3xl font-black text-slate-900 mb-6 flex items-center gap-2"
+        class="text-2xl md:text-3xl font-black text-slate-900 mb-6 flex items-center gap-2.5"
       >
-        <span>👤</span> 運営者情報
+        <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        </div>
+        <span>運営者情報</span>
       </h1>
 
       <section
@@ -45,7 +53,7 @@
             運営者について
           </h2>
           <p>
-            SubscCheckerは、個人開発者によって企画・開発・運営されているWebサービスです。日々の生活の中で感じる「ちょっとした不便」をテクノロジーで解決することを目指し、プライバシー重視で誰もが直感的に使えるツールづくりを行っています。
+            SubscCheckerは、個人開発者が運営するWebサービスです。プライバシー保護を第一に考え、会員登録なしで誰もが直感的に使えるツールを目指して開発しています。
           </p>
         </div>
 
@@ -61,8 +69,12 @@
             </li>
             <li><strong>サイトURL：</strong> https://subsc-checker.com/</li>
             <li>
-              <strong>事業内容：</strong>
+              <strong>内容：</strong>
               サブスクリプション支出管理ツールの企画・運営
+            </li>
+            <li>
+              <strong>商標について：</strong>
+              当サイトに掲載されている会社名・サービス名・ロゴマーク等は各権利者に帰属します。当サイトは独立したサービスであり、各社公式との提携関係等はありません。詳細は<a href="/policy.html" class="text-blue-600 hover:underline">利用規約・ポリシー</a>をご覧ください。
             </li>
           </ul>
         </div>
@@ -74,7 +86,7 @@
             お問い合わせ
           </h2>
           <p>
-            サービスに関するご要望、不具合報告、その他お問い合わせは、以下のGoogleフォームよりお気軽にご連絡ください。
+            サービスへのご要望、サブスク追加リクエスト、不具合報告などは、以下のフォームよりお気軽にご連絡ください。
           </p>
           <div class="mt-3">
             <a
@@ -94,9 +106,21 @@
           href="/"
           class="inline-block px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
         >
-          トップページへ戻る
+          アプリに戻る
         </a>
       </div>
+
+      <footer class="mt-8 pt-6 border-t border-slate-100 text-center text-xs text-slate-400 space-y-3">
+        <div class="flex flex-wrap justify-center gap-4 text-slate-500 font-medium">
+          <a href="/" class="hover:text-blue-600 transition-colors">アプリトップ</a>
+          <a href="/guide.html" class="hover:text-blue-600 transition-colors">ご利用ガイド・FAQ</a>
+          <a href="/cancel/" class="hover:text-rose-600 transition-colors">解約手順ガイド</a>
+          <a href="/story.html" class="hover:text-amber-600 transition-colors">開発背景・コンセプト</a>
+          <a href="/roadmap.html" class="hover:text-emerald-600 transition-colors">開発ロードマップ</a>
+          <a href="/policy.html" class="hover:text-blue-600 transition-colors">利用規約・ポリシー</a>
+        </div>
+        <p>© 2026 SubscChecker</p>
+      </footer>
     </div>
   </body>
 </html>

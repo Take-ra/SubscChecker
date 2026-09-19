@@ -1,161 +1,286 @@
-// search.js
+// search.js (ゼロリフロー・メモリインデックス高速サブスク検索モジュール)
 
-// 全角/半角、大文字/小文字、ひらがな/カタカナの表記揺れを強力に吸収する関数
-function normalizeSearchText(text) {
+/**
+ * 全角/半角、大文字/小文字、ひらがな/カタカナの表記揺れを強力に吸収する関数
+ */
+export function normalizeSearchText(text) {
   if (!text) return "";
   let normalized = text.normalize("NFKC").toLowerCase();
-  normalized = normalized.replace(/[\u3041-\u3096]/g, function (match) {
+  // ひらがなをカタカナに変換して照合統一
+  normalized = normalized.replace(/[\u3041-\u3096]/g, (match) => {
     return String.fromCharCode(match.charCodeAt(0) + 0x60);
   });
   return normalized;
 }
 
+// メモリ上にキャッシュする検索インデックス
+let searchIndex = null;
+
+/**
+ * サブスク一覧DOMから検索用インデックスを1回だけ構築（ゼロリフロー・高速判定用）
+ */
+export function buildSearchIndex() {
+  const sections = document.querySelectorAll(
+    "#subscription-list > section, #section-custom",
+  );
+  const sectionEntries = [];
+
+  sections.forEach((section) => {
+    const trigger = section.querySelector(".accordion-trigger");
+    const wrapper = section.querySelector(".accordion-wrapper, .accordion-content");
+    const titleEl = section.querySelector("h2");
+    const catName = titleEl?.textContent?.trim() || "";
+
+    // 検索前の初期開閉状態を記録（検索クリア時に完全復元するため）
+    const isInitiallyOpen = wrapper
+      ? wrapper.classList.contains("grid-rows-[1fr]") ||
+        !wrapper.classList.contains("hidden")
+      : true;
+
+    // ヘッダー内のヒット件数表示用バッジを準備（なければ生成）
+    let badgeEl = trigger?.querySelector(".search-hit-badge");
+    if (!badgeEl && trigger) {
+      const headingContainer = trigger.querySelector("h2")?.parentElement;
+      if (headingContainer) {
+        badgeEl = document.createElement("span");
+        badgeEl.className =
+          "search-hit-badge hidden text-xs font-black text-blue-600 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full shrink-0 ml-1.5";
+        headingContainer.appendChild(badgeEl);
+      }
+    }
+
+    const itemElements = Array.from(
+      section.querySelectorAll(".sub-item, .custom-sub-item"),
+    );
+
+    const items = itemElements.map((el) => {
+      const rawName =
+        el.querySelector("label span, label div")?.textContent || "";
+      const rawSearch = el.getAttribute("data-search") || "";
+
+      return {
+        el,
+        name: normalizeSearchText(rawName),
+        search: normalizeSearchText(`${rawName} ${catName} ${rawSearch}`),
+      };
+    });
+
+    sectionEntries.push({
+      sectionEl: section,
+      triggerEl: trigger,
+      wrapperEl: wrapper,
+      badgeEl,
+      catName,
+      isInitiallyOpen,
+      items,
+    });
+  });
+
+  searchIndex = sectionEntries;
+  return searchIndex;
+}
+
 export function initSearch() {
-  const searchInput = document.getElementById("search-input");
-  const searchClearBtn = document.getElementById("search-clear-btn");
+  const searchInput =
+    document.getElementById("main-search-input") ||
+    document.getElementById("search-input");
+  const searchClearBtn =
+    document.getElementById("main-search-clear-btn") ||
+    document.getElementById("search-clear-btn");
+  const searchKbd = document.getElementById("main-search-kbd");
+  const searchCountBadge = document.getElementById("main-search-count-badge");
   const emptyState = document.getElementById("empty-state");
+  const overlookedContainer = document.getElementById("overlooked-subs-container");
+  const quickGuide = document.getElementById("quick-guide");
+  const btnEmptyAddCustom = document.getElementById("btn-empty-add-custom");
 
   if (!searchInput) return;
 
-  searchInput.addEventListener("input", (e) => {
-    const queryStr = normalizeSearchText(e.target.value).trim();
+  // 初回インデックス構築
+  buildSearchIndex();
+
+  let rafId = null;
+
+  function performSearch(rawQuery) {
+    if (!searchIndex) buildSearchIndex();
+
+    const queryStr = normalizeSearchText(rawQuery.trim());
     const keywords = queryStr.split(/\s+/).filter((k) => k.length > 0);
+    const isSearching = keywords.length > 0;
 
-    const sections = document.querySelectorAll(
-      "#subscription-list > section, #section-custom",
-    );
-    let totalVisibleItems = 0;
-
+    // 検索バー内UIの更新
     if (searchClearBtn) {
-      if (keywords.length > 0) {
-        searchClearBtn.classList.remove("hidden");
-      } else {
-        searchClearBtn.classList.add("hidden");
-      }
+      searchClearBtn.classList.toggle("hidden", !isSearching);
+    }
+    if (searchKbd) {
+      searchKbd.classList.toggle("hidden", isSearching);
     }
 
-    sections.forEach((section) => {
-      let visibleCount = 0;
-      let scoredItems = [];
+    // 検索中は定番枠・ガイドを非表示にして検索結果に集中
+    if (overlookedContainer) {
+      overlookedContainer.classList.toggle("hidden", isSearching);
+    }
+    if (quickGuide) {
+      quickGuide.classList.toggle("hidden", isSearching);
+    }
 
-      const items = Array.from(
-        section.querySelectorAll(".sub-item, .custom-sub-item"),
-      );
-      const trigger = section.querySelector(".accordion-trigger");
-      const wrapper = section.querySelector(".accordion-wrapper");
-      const content = section.querySelector(".accordion-content");
+    let totalMatchedItems = 0;
 
-      const targetContainer =
-        section.querySelector("#custom-list-container") || content;
+    // メモリインデックスを走査（DOMの再構築や物理的移動はゼロ）
+    searchIndex.forEach((sec) => {
+      if (!isSearching) {
+        // --- 検索クリア時: 検索前の開閉状態を完全復元 ---
+        sec.sectionEl.style.display = "";
+        sec.sectionEl.style.removeProperty("margin-top");
+        sec.sectionEl.style.removeProperty("padding-top");
+        sec.sectionEl.style.removeProperty("border-top");
 
-      items.forEach((item, index) => {
-        if (!item.hasAttribute("data-original-index")) {
-          item.setAttribute("data-original-index", index);
+        if (sec.badgeEl) {
+          sec.badgeEl.classList.add("hidden");
+          sec.badgeEl.textContent = "";
         }
-        const origIndex = parseInt(
-          item.getAttribute("data-original-index"),
-          10,
-        );
 
-        const rawName = item.querySelector("label div")?.textContent || "";
-        const name = normalizeSearchText(rawName);
-        const searchAttr = normalizeSearchText(
-          item.getAttribute("data-search") || "",
-        );
-        const searchWords = searchAttr.split(" ");
+        // 各カードを表示
+        sec.items.forEach((item) => {
+          item.el.classList.remove("hidden");
+          item.el.style.display = "";
+        });
 
-        if (keywords.length === 0) {
-          item.style.setProperty("display", "", "important");
-          item.classList.remove("hidden");
-          item.classList.add("flex");
-          scoredItems.push({ el: item, score: 0, index: origIndex });
-          visibleCount++;
-        } else {
-          let isMatch = true;
-          let bestScore = 99;
-
-          for (const k of keywords) {
-            if (!searchAttr.includes(k)) {
-              isMatch = false;
-              break;
-            }
-            if (name.startsWith(k)) {
-              bestScore = Math.min(bestScore, 1);
-            } else if (searchWords.some((w) => w.startsWith(k))) {
-              bestScore = Math.min(bestScore, 2);
-            } else {
-              bestScore = Math.min(bestScore, 3);
-            }
+        // アコーディオンを開閉状態に合わせて戻す
+        if (sec.wrapperEl) {
+          if (sec.wrapperEl.classList.contains("accordion-wrapper")) {
+            sec.wrapperEl.classList.toggle("grid-rows-[1fr]", sec.isInitiallyOpen);
+            sec.wrapperEl.classList.toggle("grid-rows-[0fr]", !sec.isInitiallyOpen);
+            sec.wrapperEl.classList.toggle("opacity-100", sec.isInitiallyOpen);
+            sec.wrapperEl.classList.toggle("opacity-0", !sec.isInitiallyOpen);
+          } else if (sec.wrapperEl.classList.contains("accordion-content")) {
+            sec.wrapperEl.classList.toggle("hidden", !sec.isInitiallyOpen);
           }
+        }
+        const icon = sec.triggerEl?.querySelector(".accordion-icon");
+        if (icon) {
+          icon.classList.toggle("rotate-180", sec.isInitiallyOpen);
+        }
+      } else {
+        // --- 検索中: あいまい判定 ＆ 一括表示切り替え ---
+        let secMatchCount = 0;
+
+        sec.items.forEach((item) => {
+          // すべてのキーワードがマッチするか判定（AND検索）
+          const isMatch = keywords.every(
+            (k) => item.search.includes(k) || item.name.includes(k),
+          );
 
           if (isMatch) {
-            item.style.setProperty("display", "", "important");
-            item.classList.remove("hidden");
-            item.classList.add("flex");
-            scoredItems.push({ el: item, score: bestScore, index: origIndex });
-            visibleCount++;
+            item.el.classList.remove("hidden");
+            item.el.style.display = "";
+            secMatchCount++;
           } else {
-            item.style.setProperty("display", "none", "important");
-            item.classList.remove("flex");
-            item.classList.add("hidden");
+            item.el.classList.add("hidden");
+            item.el.style.display = "none";
           }
-        }
-      });
-
-      if (targetContainer) {
-        scoredItems.sort((a, b) => {
-          if (a.score !== b.score) return a.score - b.score;
-          return a.index - b.index;
         });
-        scoredItems.forEach((itemObj) =>
-          targetContainer.appendChild(itemObj.el),
-        );
-      }
 
-      if (keywords.length > 0) {
-        if (visibleCount === 0 && items.length > 0) {
-          section.style.setProperty("display", "none", "important");
+        if (secMatchCount === 0) {
+          sec.sectionEl.style.display = "none";
+          if (sec.badgeEl) sec.badgeEl.classList.add("hidden");
         } else {
-          section.style.setProperty("display", "", "important");
-          section.style.setProperty("margin-top", "0.5rem", "important");
-          section.style.setProperty("padding-top", "0", "important");
-          section.style.setProperty("border-top", "none", "important");
-          if (content)
-            content.style.setProperty("padding-top", "0", "important");
-          if (trigger)
-            trigger.style.setProperty("display", "none", "important");
-          if (wrapper) {
-            wrapper.classList.remove("grid-rows-[0fr]", "opacity-0");
-            wrapper.classList.add("grid-rows-[1fr]", "opacity-100");
+          sec.sectionEl.style.display = "";
+          // ヒット件数バッジをヘッダーに明示（例: 3件）
+          if (sec.badgeEl) {
+            sec.badgeEl.textContent = `${secMatchCount}件`;
+            sec.badgeEl.classList.remove("hidden");
           }
-        }
-      } else {
-        if (items.length > 0)
-          section.style.setProperty("display", "", "important");
-        section.style.removeProperty("margin-top");
-        section.style.removeProperty("padding-top");
-        section.style.removeProperty("border-top");
-        if (content) content.style.removeProperty("padding-top");
-        if (trigger) trigger.style.removeProperty("display");
-      }
 
-      totalVisibleItems += visibleCount;
+          // 検索結果が見えるようにアコーディオンを開く
+          if (sec.wrapperEl) {
+            if (sec.wrapperEl.classList.contains("accordion-wrapper")) {
+              sec.wrapperEl.classList.remove("grid-rows-[0fr]", "opacity-0");
+              sec.wrapperEl.classList.add("grid-rows-[1fr]", "opacity-100");
+            } else if (sec.wrapperEl.classList.contains("accordion-content")) {
+              sec.wrapperEl.classList.remove("hidden");
+            }
+          }
+          const icon = sec.triggerEl?.querySelector(".accordion-icon");
+          if (icon) icon.classList.add("rotate-180");
+        }
+
+        totalMatchedItems += secMatchCount;
+      }
     });
 
-    if (emptyState) {
-      if (keywords.length > 0 && totalVisibleItems === 0) {
-        emptyState.classList.remove("hidden");
+    // 検索バー右側のヒット件数バッジの更新
+    if (searchCountBadge) {
+      if (isSearching) {
+        searchCountBadge.textContent = `${totalMatchedItems}件`;
+        searchCountBadge.classList.remove("hidden");
+        if (totalMatchedItems === 0) {
+          searchCountBadge.className =
+            "text-xs font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 border border-slate-200 select-none transition-all";
+        } else {
+          searchCountBadge.className =
+            "text-xs font-black px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/80 select-none transition-all";
+        }
       } else {
-        emptyState.classList.add("hidden");
+        searchCountBadge.classList.add("hidden");
       }
     }
+
+    // 0件空状態UIの制御
+    if (emptyState) {
+      emptyState.classList.toggle("hidden", !isSearching || totalMatchedItems > 0);
+    }
+  }
+
+  // 入力イベントハンドラー（requestAnimationFrame で描画最適化）
+  searchInput.addEventListener("input", (e) => {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => {
+      performSearch(e.target.value);
+    });
   });
 
+  // クリアボタンのクリック
   if (searchClearBtn) {
     searchClearBtn.addEventListener("click", () => {
       searchInput.value = "";
-      searchInput.dispatchEvent(new Event("input"));
+      performSearch("");
       searchInput.focus();
+    });
+  }
+
+  // キーボードショートカット（/ でフォーカス、Escape でクリア＆フォーカス解除）
+  window.addEventListener("keydown", (e) => {
+    if (
+      e.key === "/" &&
+      !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)
+    ) {
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+    } else if (e.key === "Escape" && document.activeElement === searchInput) {
+      searchInput.value = "";
+      performSearch("");
+      searchInput.blur();
+    }
+  });
+
+  // 0件ヒット時の「独自のサブスクとして追加」ボタン連動
+  if (btnEmptyAddCustom) {
+    btnEmptyAddCustom.addEventListener("click", () => {
+      const currentQuery = searchInput.value.trim();
+      const openModalBtn = document.getElementById("btn-open-custom-modal");
+      if (openModalBtn) openModalBtn.click();
+
+      if (currentQuery) {
+        setTimeout(() => {
+          const nameInput = document.getElementById("custom-name");
+          if (nameInput) {
+            nameInput.value = currentQuery;
+            nameInput.dispatchEvent(new Event("input"));
+          }
+        }, 50);
+      }
     });
   }
 }

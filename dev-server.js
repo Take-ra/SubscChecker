@@ -17,7 +17,7 @@ try {
     const match = envContent.match(/GEMINI_API_KEY=([^\r\n]+)/);
     if (match) {
       process.env.GEMINI_API_KEY = match[1].trim();
-      console.log("🔑 Loaded GEMINI_API_KEY from .env.local");
+      console.log("[Config] Loaded GEMINI_API_KEY from .env.local");
     }
   }
 } catch (e) {
@@ -91,7 +91,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   // --- 静的ファイル配信 ---
-  let filePath = path.join(__dirname, pathname === "/" ? "index.html" : pathname);
+  let relativePath = pathname === "/" ? "index.html" : pathname.replace(/^\//, "");
+  let filePath = path.join(__dirname, relativePath);
 
   // ディレクトリトラバーサル防止
   if (!filePath.startsWith(__dirname)) {
@@ -99,6 +100,18 @@ const server = http.createServer(async (req, res) => {
     res.end("Forbidden");
     return;
   }
+
+  // ディレクトリの場合は index.html を探す
+  try {
+    if (fs.existsSync(filePath)) {
+      const stat = fs.statSync(filePath);
+      if (stat.isDirectory()) {
+        filePath = path.join(filePath, "index.html");
+      }
+    } else if (fs.existsSync(filePath + ".html")) {
+      filePath = filePath + ".html";
+    }
+  } catch (e) {}
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
@@ -119,8 +132,8 @@ const server = http.createServer(async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`\n🚀 Local Dev Server running at: http://localhost:${PORT}`);
-  console.log(`✨ AI Advisor endpoint (/api/analyze) is ready!`);
+  console.log(`\nLocal Dev Server running at: http://localhost:${PORT}`);
+  console.log(`AI Advisor endpoint (/api/analyze) is ready!`);
   console.log(`Press Ctrl+C to stop.\n`);
 });
 

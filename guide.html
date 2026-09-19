@@ -6,11 +6,14 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <title>ご利用ガイド・よくある質問 | SubscChecker</title>
+    <title>ご利用ガイド・FAQ（よくある質問） | SubscChecker</title>
     <meta
       name="description"
-      content="サブスクチェッカーの使い方、固定費計算の仕組み、AI分析機能の活用法およびFAQを詳しく解説します。"
+      content="SubscChecker（サブスクチェッカー）の使い方、固定費管理の仕組み、AI診断機能の活用法およびFAQを詳しく解説します。"
     />
+    <link rel="canonical" href="https://subsc-checker.com/guide.html" />
+    <link rel="icon" href="icon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="icon.png" />
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <script
       async
@@ -29,8 +32,13 @@
         ← アプリに戻る
       </a>
 
-      <h1 class="text-2xl md:text-3xl font-black text-slate-900 mb-6">
-        📖 ご利用ガイド・FAQ
+      <h1 class="text-2xl md:text-3xl font-black text-slate-900 mb-6 flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+        </div>
+        <span>ご利用ガイド・FAQ</span>
       </h1>
 
       <section
@@ -42,7 +50,7 @@
           SubscCheckerとは？
         </h2>
         <p>
-          SubscChecker（サブスクチェッカー）は、登録不要・完全無料で利用できるサブスクリプション支出管理・最適化ツールです。動画配信、音楽、クラウドサービス、学習ツールなど、多岐にわたる定額制サービスの支出状況をワンタップで集計し、月額・年額の固定費を可視化します。
+          SubscChecker（サブスクチェッカー）は、登録不要・完全無料のサブスク支出管理ツールです。動画配信、音楽、クラウドなど、利用中のサービスをリストから選ぶだけで、月額・年額の固定費をすぐに確認できます。
         </p>
 
         <h2
@@ -52,16 +60,16 @@
         </h2>
         <ol class="list-decimal list-inside space-y-2">
           <li>
-            <strong>利用中サービスの選択：</strong>
-            一覧から契約中のサブスクにチェックを入れます。月額・年額の切り替えも可能です。
+            <strong>サービスを選択：</strong>
+            一覧から利用中のサブスクをタップして選択します。月額・年額の切り替えも可能です。
           </li>
           <li>
             <strong>独自サブスクの追加：</strong>
-            データベースにないサービスは「独自のサブスク」から自由に追加できます。
+            一覧にないサービスは「独自のサブスク」から自由に追加できます。
           </li>
           <li>
-            <strong>結果の分析とAI相談：</strong>
-            「結果を分析」を押すと支出ランキングや割合グラフが表示され、AIによる見直し助言を受けられます。
+            <strong>結果の分析：</strong>
+            「結果を分析」を押すと、支出ランキングや割合グラフに加え、AIによる見直し提案を受けられます。
           </li>
         </ol>
 
@@ -73,29 +81,29 @@
         <div class="space-y-4">
           <div>
             <h3 class="font-bold text-slate-900">
-              Q. 利用料金や登録料はかかりますか？
+              Q. 利用料金はかかりますか？
             </h3>
             <p class="text-slate-600 text-sm mt-1">
               A.
-              すべての機能を完全無料でご利用いただけます。アカウント作成やクレジットカード情報の入力も一切不要です。
+              すべての機能を完全無料でご利用いただけます。会員登録やカード情報の入力も不要です。
             </p>
           </div>
           <div>
             <h3 class="font-bold text-slate-900">
-              Q. 入力したデータが第三者に漏れる心配はありませんか？
+              Q. 入力したデータが外部に漏れませんか？
             </h3>
             <p class="text-slate-600 text-sm mt-1">
               A.
-              入力されたデータはお使いのブラウザ内部（LocalStorage）にのみ保存され、開発者や外部サーバーに個人を特定できる形で送信・蓄積されることはありません。
+              データはお使いのブラウザ内（LocalStorage）にのみ保存されます。外部サーバーへの送信や第三者への提供は一切ありません。
             </p>
           </div>
           <div>
             <h3 class="font-bold text-slate-900">
-              Q. カレンダー通知はどのように機能しますか？
+              Q. カレンダー通知はどう使いますか？
             </h3>
             <p class="text-slate-600 text-sm mt-1">
               A.
-              ベルマークをタップすると、次回更新日や無料体験終了日をGoogleカレンダーまたはAppleカレンダーに予定として直接登録できます。
+              ベルマークをタップすると、次回更新日や無料体験の終了日をGoogleカレンダーやAppleカレンダーに登録できます。
             </p>
           </div>
         </div>
@@ -106,9 +114,21 @@
           href="/"
           class="inline-block px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
         >
-          計算・分析を始める
+          アプリに戻る
         </a>
       </div>
+
+      <footer class="mt-8 pt-6 border-t border-slate-100 text-center text-xs text-slate-400 space-y-3">
+        <div class="flex flex-wrap justify-center gap-4 text-slate-500 font-medium">
+          <a href="/" class="hover:text-blue-600 transition-colors">アプリトップ</a>
+          <a href="/cancel/" class="hover:text-rose-600 transition-colors">解約手順ガイド</a>
+          <a href="/story.html" class="hover:text-amber-600 transition-colors">開発背景・コンセプト</a>
+          <a href="/roadmap.html" class="hover:text-emerald-600 transition-colors">開発ロードマップ</a>
+          <a href="/about.html" class="hover:text-purple-600 transition-colors">運営者情報</a>
+          <a href="/policy.html" class="hover:text-blue-600 transition-colors">利用規約・ポリシー</a>
+        </div>
+        <p>© 2026 SubscChecker</p>
+      </footer>
     </div>
   </body>
 </html>

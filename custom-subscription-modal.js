@@ -1,4 +1,4 @@
-// custom-modal.js
+// custom-subscription-modal.js (独自サブスク追加・編集モーダルの制御)
 
 let editingSubId = null; // 編集中のID
 let app = {}; // app.js から渡される「データ操作用リモコン」を入れる箱
@@ -16,7 +16,9 @@ export function initCustomModal(callbacks) {
   );
   const customCycleNum = document.getElementById("custom-cycle-num");
   const customCycleUnit = document.getElementById("custom-cycle-unit");
-  const searchInput = document.getElementById("search-input");
+  const getSearchInput = () =>
+    document.getElementById("main-search-input") ||
+    document.getElementById("search-input");
 
   // モーダルを開く
   window.openModal = () => {
@@ -55,9 +57,10 @@ export function initCustomModal(callbacks) {
   if (btnEmptyAddCustom)
     btnEmptyAddCustom.addEventListener("click", window.openModal);
   // 保存（追加・更新）ボタンを押した時
-  btnSaveCustom.addEventListener("click", () => {
-    const name = document.getElementById("custom-name").value.trim();
-    const price = document.getElementById("custom-price").value;
+  if (btnSaveCustom) {
+    btnSaveCustom.addEventListener("click", () => {
+      const name = document.getElementById("custom-name")?.value.trim() || "";
+      const price = document.getElementById("custom-price")?.value || "";
     const planType = customPlanType.value;
     const errorMsg = document.getElementById("custom-error-msg");
 
@@ -100,7 +103,7 @@ export function initCustomModal(callbacks) {
         customSubs[index] = {
           ...customSubs[index],
           name,
-          price,
+          price: numPrice,
           planType,
           cycle,
           cycleNum,
@@ -114,7 +117,7 @@ export function initCustomModal(callbacks) {
       editingSubId = null;
     } else {
       const newId = "c_" + Date.now();
-      customSubs.push({ id: newId, name, price, planType, cycle, cycleNum, cycleUnit });
+      customSubs.push({ id: newId, name, price: numPrice, planType, cycle, cycleNum, cycleUnit });
       savedState[newId] = { checked: true, plan: planType };
     }
 
@@ -122,15 +125,18 @@ export function initCustomModal(callbacks) {
     app.setCustomSubs(customSubs);
     app.onUpdate();
 
+    const searchInput = getSearchInput();
     if (searchInput && searchInput.value !== "") {
       searchInput.value = "";
       searchInput.dispatchEvent(new Event("input"));
     }
     closeModal();
-  });
+    });
+  }
 
   // 数字の選択肢を生成する関数
   function updateCycleNumOptions() {
+    if (!customCycleUnit || !customCycleNum) return;
     const unit = customCycleUnit.value;
     let max = 24;
     if (unit === "weeks") max = 12;
@@ -143,17 +149,10 @@ export function initCustomModal(callbacks) {
   }
 
   updateCycleNumOptions();
-  customCycleUnit.addEventListener("change", updateCycleNumOptions);
+  if (customCycleUnit) {
+    customCycleUnit.addEventListener("change", updateCycleNumOptions);
+  }
 
-
-  window.toggleEditMenu = function (id) {
-    const menu = document.getElementById(`edit-menu-${id}`);
-    const allMenus = document.querySelectorAll('[id^="edit-menu-"]');
-    allMenus.forEach(
-      (m) => m.id !== `edit-menu-${id}` && m.classList.add("hidden"),
-    );
-    if (menu) menu.classList.toggle("hidden");
-  };
 
   window.editCustomSub = function (id) {
     let customSubs = app.getCustomSubs();
@@ -195,9 +194,6 @@ export function initCustomModal(callbacks) {
     customModal.classList.remove("hidden");
     customModal.classList.add("flex");
     document.body.style.overflow = "hidden";
-
-    const editMenu = document.getElementById(`edit-menu-${id}`);
-    if (editMenu) editMenu.classList.add("hidden");
   };
 
   window.deleteCustomSub = function (id) {

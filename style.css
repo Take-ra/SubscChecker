@@ -64,50 +64,10 @@ div[class*="absolute bottom-full"] {
   z-index: 100 !important;
   position: relative;
 }
-/* --- スマホでのガタつき解消と整列 --- */
+/* --- サブスクカード共通スタイル --- */
 
-.sub-item {
-  display: flex !important;
-  align-items: center !important;
-  /* 左右の両端に振り分ける */
-  justify-content: space-between !important;
-  min-height: 72px; /* 少し高さを出すと操作性が上がります */
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
-}
-
-/* サービス名エリア：長い名前でも金額を押し出さない */
-.sub-item > div:first-child {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-}
-
-/* サービス名テキストの折り返し制御 */
-.sub-item label {
-  flex: 1;
-  min-width: 0;
-  margin-right: 8px;
-}
-
-.sub-item > div:last-child {
-  /* 固定幅を少し小さくして、右側に余白(margin-right)を作る */
-  width: 130px;
-  flex-shrink: 0;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  /* 右端にピッタリくっつけず、少し隙間を開ける */
-  margin-right: 8px;
-  margin-left: 8px;
-}
-
-/* セレクトボックス自体の横幅を親(130px)に強制的に合わせる */
-.plan-selector {
-  width: 100% !important;
-  max-width: 130px !important;
-  box-sizing: border-box !important;
+.sub-item, .custom-sub-item {
+  min-height: 64px;
 }
 
 /* チェックボックスの固定 */

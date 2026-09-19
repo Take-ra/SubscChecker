@@ -1,9 +1,52 @@
 // ai-advisor.js (Gemini API 固定費最適化AIアドバイザー)
+import {
+  findCancelInfo,
+  PROMO_CARDS,
+  getMatchedPromoCards,
+  MOCK_DIAGNOSIS_DATA,
+} from "./cancel-promo-data.js";
+import {
+  createShareSectionHtml,
+  initShareCardActions,
+  openShareModal,
+  calculateShareStats,
+} from "./share-card.js";
+import { escapeHtml } from "./utils.js";
+import { renderBrandIcon } from "./brand-icons.js";
+import { renderActionsTab } from "./cancel-support-tab.js";
+import { createProgressTracker } from "./ai-progress.js";
+
+// 後方互換性のための再エクスポート
+export { renderActionsTab, createProgressTracker };
 
 let currentSelectedItemsGetter = null;
 let isAnalyzing = false;
 let cachedResult = null;
 let lastAnalyzedHash = null;
+
+export function isMockMode() {
+  const urlParam = new URLSearchParams(window.location.search).get("mock");
+  if (urlParam === "true" || urlParam === "1") return true;
+  return localStorage.getItem("subsc_mock_mode") === "true";
+}
+
+export function setMockMode(enabled) {
+  localStorage.setItem("subsc_mock_mode", enabled ? "true" : "false");
+  updateMockToggleUI();
+}
+
+function updateMockToggleUI() {
+  const toggleBtn = document.getElementById("btn-toggle-mock");
+  if (!toggleBtn) return;
+  const active = isMockMode();
+  toggleBtn.innerHTML = `<svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><span>開発モック:</span> <span class="font-black ${active ? "text-emerald-700 underline" : "text-slate-400"}">${active ? "ON" : "OFF"}</span>`;
+  toggleBtn.className = `text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all flex items-center gap-1 cursor-pointer ${
+    active
+      ? "bg-emerald-50 border-emerald-300 text-emerald-800 shadow-sm"
+      : "bg-slate-100/90 border-slate-200 text-slate-500 hover:bg-slate-200"
+  }`;
+  toggleBtn.title = "Gemini APIのクォータを消費せずダミーデータで高速UI検証するモードを切り替えます";
+}
 
 export function initAIAdvisor(getSelectedItems) {
   currentSelectedItemsGetter = getSelectedItems;
@@ -14,7 +57,91 @@ export function initAIAdvisor(getSelectedItems) {
       triggerAnalysis(true);
     });
   }
+
+  // 開発用モックモード切り替えボタンの初期化（URLに ?mock=1 または ?mock=true が指定されている場合のみ表示）
+  const urlParam = new URLSearchParams(window.location.search).get("mock");
+  const showDevMock = urlParam === "true" || urlParam === "1" || localStorage.getItem("subsc_dev_ui") === "true";
+
+  const container = document.getElementById("ai-advisor-container");
+  if (showDevMock && container && !document.getElementById("btn-toggle-mock")) {
+    const subText = container.querySelector("p");
+    if (subText && subText.parentNode) {
+      const mockWrapper = document.createElement("div");
+      mockWrapper.className = "flex items-center gap-2 mt-1.5 flex-wrap";
+      subText.parentNode.insertBefore(mockWrapper, subText.nextSibling);
+
+      const mockBtn = document.createElement("button");
+      mockBtn.id = "btn-toggle-mock";
+      mockBtn.type = "button";
+      mockBtn.addEventListener("click", () => {
+        const next = !isMockMode();
+        setMockMode(next);
+        triggerAnalysis(true);
+      });
+      mockWrapper.appendChild(mockBtn);
+      updateMockToggleUI();
+    }
+  }
+
+  // 結果画面上部のクイックシェアボタン初期化
+  const btnQuickShare = document.getElementById("btn-quick-share");
+  if (btnQuickShare) {
+    btnQuickShare.addEventListener("click", () => {
+      const currentItems = currentSelectedItemsGetter ? currentSelectedItemsGetter() : [];
+      const stats = calculateShareStats(currentItems, cachedResult || {});
+      openShareModal({ stats });
+    });
+  }
+
+  // 結果画面のタブ切り替え初期化
+  initResultTabs();
 }
+
+/**
+ * 分析結果画面の3タブ（内訳 / AI診断 / 解約・乗り換え）の切り替え制御
+ */
+export function initResultTabs() {
+  const tabs = [
+    { id: "breakdown", btn: document.getElementById("tab-btn-breakdown"), content: document.getElementById("tab-content-breakdown") },
+    { id: "advisor", btn: document.getElementById("tab-btn-advisor"), content: document.getElementById("tab-content-advisor") },
+    { id: "actions", btn: document.getElementById("tab-btn-actions"), content: document.getElementById("tab-content-actions") },
+  ];
+
+  window.switchResultTab = function (activeId) {
+    tabs.forEach(({ id, btn, content }) => {
+      if (!btn || !content) return;
+      const isActive = id === activeId;
+      if (isActive) {
+        content.classList.remove("hidden");
+        btn.classList.add("bg-white", "text-blue-600", "shadow-xs");
+        btn.classList.remove("text-slate-600", "hover:text-slate-900");
+      } else {
+        content.classList.add("hidden");
+        btn.classList.remove("bg-white", "text-blue-600", "shadow-xs");
+        btn.classList.add("text-slate-600", "hover:text-slate-900");
+      }
+    });
+
+    if (activeId === "advisor") {
+      const dot = document.getElementById("tab-advisor-dot");
+      if (dot) dot.classList.add("hidden");
+    }
+  };
+
+  tabs.forEach(({ id, btn }) => {
+    if (btn) {
+      btn.onclick = () => window.switchResultTab(id);
+    }
+  });
+}
+
+export function resetResultTabs() {
+  if (typeof window.switchResultTab === "function") {
+    window.switchResultTab("breakdown");
+  }
+}
+
+
 
 // サブスクリストの内容が変わったかを判定するための簡易ハッシュ
 function getItemsHash(items) {
@@ -31,10 +158,15 @@ export async function triggerAnalysis(force = false) {
 
   const items = currentSelectedItemsGetter ? currentSelectedItemsGetter() : [];
 
+  // 解約・代替案タブを事前描画（AI診断を待たずに閲覧可能にする）
+  renderActionsTab(items);
+
   if (!items || items.length === 0) {
     contentContainer.innerHTML = `
-      <div class="text-center py-6 px-4 bg-white/90 rounded-2xl border border-slate-200">
-        <span class="text-3xl mb-2 block">📝</span>
+      <div class="text-center py-8 px-4 bg-white/90 rounded-2xl border border-slate-200">
+        <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 mx-auto mb-3 flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        </div>
         <p class="text-sm font-bold text-slate-700">サブスクが1つも選択されていません</p>
         <p class="text-xs text-slate-500 mt-1">前の画面に戻り、現在利用しているサブスクにチェックを入れてからAI診断をお試しください。</p>
       </div>
@@ -42,17 +174,19 @@ export async function triggerAnalysis(force = false) {
     return;
   }
 
+
   const currentHash = getItemsHash(items);
   if (!force && cachedResult && lastAnalyzedHash === currentHash) {
-    renderAdvisor(contentContainer, cachedResult);
+    renderAdvisor(contentContainer, cachedResult, items);
     return;
   }
 
   isAnalyzing = true;
+  resetActionStates();
   if (btnTrigger) {
     btnTrigger.disabled = true;
     btnTrigger.classList.add("opacity-50", "cursor-not-allowed");
-    btnTrigger.innerHTML = `<span>⏳</span><span>分析中...</span>`;
+    btnTrigger.innerHTML = `<svg class="w-4 h-4 animate-spin text-white shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg><span>分析中...</span>`;
   }
 
   const tracker = createProgressTracker(contentContainer);
@@ -62,36 +196,78 @@ export async function triggerAnalysis(force = false) {
   }, 30000);
 
   try {
-    const payload = items.map((item) => ({
-      name: item.name,
-      category: item.category,
-      monthly: item.monthly,
-      yearly: item.yearly,
-    }));
+    let data;
 
-    const res = await fetch("/api/analyze", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal: abortController.signal,
-      body: JSON.stringify({ subscriptions: payload }),
-    });
+    // 開発用モックモード（APIクォータ消費ゼロ）
+    if (isMockMode()) {
+      console.log("[SubscChecker] 開発モックモードで実行中（Gemini API消費ゼロ）");
+      // アニメーション確認用に0.6秒待機
+      await new Promise((resolve) => setTimeout(resolve, 650));
 
-    clearTimeout(timeoutId);
+      if (items.length === 1) {
+        const item = items[0];
+        data = {
+          profile_type: "スマート単体契約型",
+          summary: `現在「${item.name}」のみをご利用中です。機能の重複はありません。年払い割引があるか確認するだけで固定費を最小限に保てます。`,
+          actions: [
+            {
+              id: `act_${item.name}_annual`,
+              service: item.name,
+              action_type: "plan_change",
+              title: "年払いや長期プランの有無を確認する",
+              annual_saving: Math.round((Number(item.monthly) || 1000) * 1.5),
+              effort: "low",
+              time_required_min: 2,
+              current_state: `月払い ¥${Number(item.monthly || 0).toLocaleString()}/月`,
+              proposed_state: "年払いへの切り替え検討",
+              reason_short:
+                "多くのサブスクは年払いで約1〜2ヶ月分割引されます。継続利用予定であれば年払い化が最も確実な節約策です。",
+            },
+          ],
+          investment_impact: {
+            yearly_amount: Math.round((Number(item.monthly) || 1000) * 1.5),
+            monthly_amount: Math.round(((Number(item.monthly) || 1000) * 1.5) / 12),
+            principal_20y: Math.round((Number(item.monthly) || 1000) * 1.5 * 20),
+            profit_20y: Math.round((Number(item.monthly) || 1000) * 1.5 * 14),
+            total_20y: Math.round((Number(item.monthly) || 1000) * 1.5 * 34),
+            note: "浮いた固定費をインデックス投信で20年間運用した場合の試算です。",
+          },
+        };
+      } else {
+        data = MOCK_DIAGNOSIS_DATA;
+      }
+    } else {
+      const payload = items.map((item) => ({
+        name: item.name,
+        category: item.category,
+        monthly: item.monthly,
+        yearly: item.yearly,
+      }));
 
-    if (!res.ok) {
-      const errJson = await res.json().catch(() => ({}));
-      throw new Error(errJson.error || `診断エラー (${res.status})`);
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: abortController.signal,
+        body: JSON.stringify({ subscriptions: payload }),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `診断エラー (${res.status})`);
+      }
+
+      data = await res.json();
     }
 
-    const data = await res.json();
+    clearTimeout(timeoutId);
     cachedResult = data;
     lastAnalyzedHash = currentHash;
 
     // 100%のアニメーションを完了させてから結果をレンダリング
     await tracker.finish();
-    renderAdvisor(contentContainer, data);
+    renderAdvisor(contentContainer, data, items);
   } catch (error) {
     clearTimeout(timeoutId);
     tracker.abort();
@@ -106,291 +282,478 @@ export async function triggerAnalysis(force = false) {
     if (btnTrigger) {
       btnTrigger.disabled = false;
       btnTrigger.classList.remove("opacity-50", "cursor-not-allowed");
-      btnTrigger.innerHTML = `<span>🔄</span><span>再診断する</span>`;
+      btnTrigger.innerHTML = `<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg><span>再診断する</span>`;
     }
   }
 }
 
-const PROGRESS_STEPS = [
-  { id: "scan", label: "契約傾向・ジャンルの整理", icon: "📊", threshold: 10 },
-  { id: "duplicate", label: "機能重複・二重課金の検出", icon: "🔍", threshold: 35 },
-  { id: "plan", label: "年払い・プラン最適化の試算", icon: "💡", threshold: 60 },
-  { id: "impact", label: "新NISA・将来資産インパクト算出", icon: "📈", threshold: 82 },
-];
 
-function createProgressTracker(container) {
-  container.innerHTML = `
-    <div class="bg-white/90 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-5 md:p-6 shadow-sm space-y-5 transition-all">
-      <!-- ヘッダー & パーセンテージ表示 -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
-            <span class="text-lg animate-pulse">✨</span>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h4 class="text-sm font-black text-slate-800 tracking-tight">AIアドバイザー診断中</h4>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 animate-pulse">リアルタイム解析</span>
-            </div>
-            <p id="ai-progress-status" class="text-xs text-slate-500 font-medium mt-0.5">契約サブスクの支出傾向を分析しています...</p>
-          </div>
-        </div>
-        <div class="text-right">
-          <span id="ai-progress-percent" class="text-2xl md:text-3xl font-black bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent tabular-nums">0%</span>
-        </div>
-      </div>
 
-      <!-- プログレスバー -->
-      <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden p-0.5 border border-slate-200/80 shadow-inner">
-        <div id="ai-progress-bar" class="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-full transition-all duration-200 ease-out relative overflow-hidden" style="width: 5%;">
-          <div class="absolute inset-0 bg-white/30 animate-pulse"></div>
-        </div>
-      </div>
+// アクションのToDo状態（完了・非表示）を保持するストア
+let actionStates = {};
 
-      <!-- 4ステップインジケーター -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-        ${PROGRESS_STEPS.map(
-          (step) => `
-          <div data-step-id="${step.id}" class="step-card flex items-center justify-between p-3 rounded-xl border bg-slate-50/60 border-slate-200/80 transition-all duration-300">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <span class="text-base shrink-0">${step.icon}</span>
-              <span class="text-xs font-semibold text-slate-600 truncate">${step.label}</span>
-            </div>
-            <span class="step-badge w-5 h-5 shrink-0 flex items-center justify-center rounded-full bg-slate-200 text-slate-400 text-[10px] font-bold">○</span>
-          </div>
-        `
-        ).join("")}
-      </div>
+export function getActionStates() {
+  return actionStates;
+}
 
-      <!-- プレースホルダープレビュー -->
-      <div class="animate-pulse pt-2 space-y-2.5 opacity-40">
-        <div class="h-16 bg-slate-200/70 rounded-xl w-full"></div>
-        <div class="h-12 bg-slate-100 rounded-xl w-full"></div>
-      </div>
-    </div>
-  `;
+export function resetActionStates() {
+  actionStates = {};
+}
 
-  const percentEl = container.querySelector("#ai-progress-percent");
-  const barEl = container.querySelector("#ai-progress-bar");
-  const statusEl = container.querySelector("#ai-progress-status");
+function renderAdvisor(container, data, items = []) {
+  if (!data) return;
 
-  // ステップ要素を初期化時に一度だけ取得・キャッシュしてアニメーション中のDOM探索負荷をゼロにする
-  const cachedStepElements = PROGRESS_STEPS.map((step) => {
-    const el = container.querySelector(`[data-step-id="${step.id}"]`);
-    return {
-      step,
-      el,
-      badgeEl: el ? el.querySelector(".step-badge") : null,
-      titleEl: el ? el.querySelector(".truncate") : null,
-    };
+  // 下位互換用フォールバック（旧スキーマが万一返ってきた場合）
+  let rawActions = [];
+  if (Array.isArray(data.actions) && data.actions.length > 0) {
+    rawActions = data.actions;
+  } else if (data.priority_action) {
+    rawActions.push({
+      id: "priority_action_fallback",
+      service: items[0]?.name || "契約サブスク",
+      action_type: "plan_change",
+      title: data.priority_action.title || "プランの最適化",
+      annual_saving: Number(data.priority_action.annual_saving) || 0,
+      effort: "low",
+      time_required_min: 3,
+      current_state: "月払い契約",
+      proposed_state: "年払いに切り替え",
+      reason_short: data.priority_action.reason || "",
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 実データ整合性ガードレール（信頼性・景表法リスクの根絶）
+  // ═══════════════════════════════════════════════════════════
+  const userItemNames = (items || []).map((i) => (i.name || "").toLowerCase().trim());
+
+  // ガードレール①: ユーザーが実際に契約していないサービスの提案を100%除外
+  let actions = rawActions.filter((act) => {
+    if (!act || !act.service) return false;
+    const actTarget = act.service.toLowerCase().trim();
+    const isMatched = userItemNames.some(
+      (uName) => uName.includes(actTarget) || actTarget.includes(uName)
+    );
+    if (!isMatched) {
+      console.warn(`[Guardrail] 契約外サービスの提案を除外しました: ${act.service} (${act.title})`);
+      return false;
+    }
+    return true;
   });
 
-  let currentPercent = 5;
-  const startTime = Date.now();
-
-  const updateUI = (percent, statusText, isCompleted = false) => {
-    if (percentEl) percentEl.textContent = `${Math.round(percent)}%`;
-    if (barEl) barEl.style.width = `${Math.min(100, Math.max(5, percent))}%`;
-    if (statusEl && statusText) statusEl.textContent = statusText;
-
-    cachedStepElements.forEach(({ step, el, badgeEl, titleEl }, idx) => {
-      if (!el) return;
-
-      const nextThreshold = PROGRESS_STEPS[idx + 1]?.threshold ?? 92;
-      const isDone = isCompleted || percent >= nextThreshold;
-      const isActive = !isDone && percent >= step.threshold;
-
-      if (isDone) {
-        el.className =
-          "step-card flex items-center justify-between p-3 rounded-xl border bg-emerald-50/80 border-emerald-200 transition-all duration-300";
-        if (titleEl) titleEl.className = "text-xs font-bold text-emerald-900 truncate";
-        if (badgeEl) {
-          badgeEl.className =
-            "step-badge w-5 h-5 shrink-0 flex items-center justify-center rounded-full bg-emerald-500 text-white text-[11px] font-black";
-          badgeEl.innerHTML = "✓";
-        }
-      } else if (isActive) {
-        el.className =
-          "step-card flex items-center justify-between p-3 rounded-xl border bg-blue-50/90 border-blue-300 shadow-sm transition-all duration-300";
-        if (titleEl) titleEl.className = "text-xs font-bold text-blue-900 truncate";
-        if (badgeEl) {
-          badgeEl.className =
-            "step-badge w-5 h-5 shrink-0 flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold";
-          badgeEl.innerHTML = "▶";
-        }
-      } else {
-        el.className =
-          "step-card flex items-center justify-between p-3 rounded-xl border bg-slate-50/60 border-slate-200/80 opacity-60 transition-all duration-300";
-        if (titleEl) titleEl.className = "text-xs font-semibold text-slate-500 truncate";
-        if (badgeEl) {
-          badgeEl.className =
-            "step-badge w-5 h-5 shrink-0 flex items-center justify-center rounded-full bg-slate-200 text-slate-400 text-[10px] font-bold";
-          badgeEl.innerHTML = "○";
-        }
-      }
+  // ガードレール②: ユーザーの登録実価格（月額）に基づく金額の決定論的バリデーション＆補正
+  actions.forEach((act) => {
+    const actTarget = (act.service || "").toLowerCase().trim();
+    const matchedUserItem = (items || []).find((i) => {
+      const uName = (i.name || "").toLowerCase().trim();
+      return uName.includes(actTarget) || actTarget.includes(uName);
     });
-  };
 
-  const timer = setInterval(() => {
-    const elapsed = Date.now() - startTime;
-    let target = 5;
-    let text = "契約サブスクの支出傾向を分析しています...";
+    if (matchedUserItem) {
+      const monthly = Number(matchedUserItem.monthly) || 0;
+      const yearly = Number(matchedUserItem.yearly) || monthly * 12;
 
-    if (elapsed < 1200) {
-      target = 5 + (elapsed / 1200) * 25;
-      text = "契約サブスクのジャンル・支出傾向を解析中...";
-    } else if (elapsed < 3000) {
-      target = 30 + ((elapsed - 1200) / 1800) * 28;
-      text = "動画・音楽・配送特典などの機能重複を特定中...";
-    } else if (elapsed < 5500) {
-      target = 58 + ((elapsed - 3000) / 2500) * 22;
-      text = "年払い割引・プラン切り替えの節約効果を試算中...";
-    } else if (elapsed < 8500) {
-      target = 80 + ((elapsed - 5500) / 3000) * 12;
-      text = "新NISA積立換算・将来資産インパクトをシミュレーション中...";
-    } else {
-      target = Math.min(94, 92 + ((elapsed - 8500) / 4000) * 2);
-      text = "AIアドバイザーの診断レポートを最終生成中...";
+      if (act.action_type === "plan_change") {
+        // 年払い削減額は上限（月額×2.5）を超えないようにし、実登録月額ベースで整合
+        const maxSaving = Math.round(monthly * 2.5);
+        if (act.annual_saving > maxSaving || act.annual_saving <= 0) {
+          act.annual_saving = Math.round(monthly * 2); // 2ヶ月分を標準値として適用
+        }
+      } else if (act.action_type === "review" || act.title.includes("隔月")) {
+        // 隔月契約は年間の半額（月額 × 6）
+        const rotationSaving = Math.round(monthly * 6);
+        act.annual_saving = rotationSaving;
+        act.current_state = `通年契約 (年¥${(monthly * 12).toLocaleString()})`;
+        act.proposed_state = `見たい月のみ年6回契約 (年¥${rotationSaving.toLocaleString()})`;
+      }
+    }
+  });
+
+  // アクションを削減見込み額（降順）でソート
+  actions.sort((a, b) => (Number(b.annual_saving) || 0) - (Number(a.annual_saving) || 0));
+
+  // アクション状態の初期化
+  actions.forEach((act) => {
+    if (!actionStates[act.id]) {
+      actionStates[act.id] = { completed: false, dismissed: false };
+    }
+  });
+
+  const renderContent = () => {
+    // 1. 合計金額および達成額の決定論的計算（1つの数字で完全一致）
+    const activeActions = actions.filter((act) => !actionStates[act.id]?.dismissed);
+    const totalPotentialSaving = activeActions.reduce(
+      (sum, act) => sum + (Number(act.annual_saving) || 0),
+      0
+    );
+    const completedActions = activeActions.filter((act) => actionStates[act.id]?.completed);
+    const completedSaving = completedActions.reduce(
+      (sum, act) => sum + (Number(act.annual_saving) || 0),
+      0
+    );
+    const completedCount = completedActions.length;
+    const progressPercent =
+      activeActions.length > 0
+        ? Math.min(100, Math.round((completedCount / activeActions.length) * 100))
+        : 0;
+
+    // 2. 画面上部「節約ポテンシャル」バナーを完全一致で更新
+    const savingBanner = document.getElementById("res-saving-banner");
+    const savingText = document.getElementById("res-saving-text");
+    if (savingBanner && savingText) {
+      if (totalPotentialSaving > 0) {
+        savingText.innerHTML = `削減できる余地: <strong class="text-emerald-700 font-black text-base md:text-lg">年¥${totalPotentialSaving.toLocaleString()}</strong>`;
+        savingBanner.classList.remove("hidden");
+      } else {
+        savingBanner.classList.add("hidden");
+      }
     }
 
-    currentPercent = target;
-    updateUI(currentPercent, text, false);
-  }, 100);
-
-  return {
-    finish: async () => {
-      clearInterval(timer);
-      updateUI(100, "✨ 分析完了！診断レポートを生成しました", true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    },
-    abort: () => {
-      clearInterval(timer);
-    },
-  };
-}
-
-function renderAdvisor(container, data) {
-  const {
-    profile_type,
-    summary,
-    priority_action,
-    duplicate_warnings = [],
-    plan_optimizations = [],
-    investment_impact,
-  } = data;
-
-  const savingAmount = priority_action?.annual_saving
-    ? Number(priority_action.annual_saving).toLocaleString()
-    : null;
-
-  let duplicateHtml = "";
-  if (duplicate_warnings.length > 0) {
-    duplicateHtml = `
-      <div class="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-4 md:p-5">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-base">⚠️</span>
-          <h3 class="text-sm md:text-base font-black text-amber-900">重複・二重課金の懸念</h3>
-        </div>
-        <ul class="space-y-2 text-xs md:text-sm text-amber-800 leading-relaxed list-disc list-inside">
-          ${duplicate_warnings.map((w) => `<li>${escapeHtml(w)}</li>`).join("")}
-        </ul>
-      </div>
-    `;
-  }
-
-  let planHtml = "";
-  if (plan_optimizations.length > 0) {
-    planHtml = `
-      <div class="bg-blue-50/80 border border-blue-200/80 rounded-2xl p-4 md:p-5">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-base">💡</span>
-          <h3 class="text-sm md:text-base font-black text-blue-900">プラン・契約形態の最適化</h3>
-        </div>
-        <ul class="space-y-2 text-xs md:text-sm text-blue-800 leading-relaxed list-disc list-inside">
-          ${plan_optimizations.map((p) => `<li>${escapeHtml(p)}</li>`).join("")}
-        </ul>
-      </div>
-    `;
-  }
-
-  container.innerHTML = `
-    <div class="space-y-4 pt-1 animate-in fade-in duration-300">
-      <!-- 診断タイプ & 総評 -->
-      <div class="bg-white/90 rounded-2xl p-4 md:p-6 border border-slate-200 shadow-sm">
-        <div class="flex flex-wrap items-center gap-2 mb-2.5">
-          <span class="text-xs font-bold text-slate-400">あなたの支出傾向:</span>
-          <span class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs md:text-sm rounded-full shadow-sm">
-            ${escapeHtml(profile_type || "固定費分析完了")}
-          </span>
-        </div>
-        <p class="text-xs md:text-sm text-slate-700 font-medium leading-relaxed">
-          ${escapeHtml(summary || "")}
-        </p>
-      </div>
-
-      <!-- ★ 最優先アクション（ワンタップ意思決定） -->
-      ${
-        priority_action
-          ? `
-      <div class="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 border-2 border-emerald-400/80 rounded-2xl p-4 md:p-6 shadow-sm relative overflow-hidden">
-        <div class="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] md:text-xs font-black px-3 py-1 rounded-bl-xl tracking-wider">
-          ★ 最優先タスク
-        </div>
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-lg">🎯</span>
-          <h3 class="text-base md:text-lg font-black text-slate-900">
-            ${escapeHtml(priority_action.title || "")}
-          </h3>
-        </div>
-        ${
-          savingAmount
-            ? `
-          <div class="inline-flex items-baseline gap-1 my-1 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-xs md:text-sm font-black">
-            <span>年間で約</span>
-            <span class="text-base md:text-lg font-extrabold text-emerald-700">${savingAmount}円</span>
-            <span>節約可能</span>
+    // 3. 1契約のみの場合の親切な空状態ハンドリング
+    let singleItemNoticeHtml = "";
+    if (items && items.length === 1) {
+      singleItemNoticeHtml = `
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 flex items-start gap-3 shadow-2xs">
+          <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
           </div>
-        `
-            : ""
-        }
-        <p class="text-xs md:text-sm text-slate-600 font-medium mt-2 leading-relaxed">
-          ${escapeHtml(priority_action.reason || "")}
-        </p>
-      </div>
-      `
-          : ""
-      }
-
-      <!-- 重複警告 & プラン最適化の2カラム (PC時) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        ${duplicateHtml}
-        ${planHtml}
-      </div>
-
-      <!-- 資産形成・再投資インパクト -->
-      ${
-        investment_impact
-          ? `
-      <div class="bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 border border-purple-200/70 rounded-2xl p-4 md:p-5">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-base">📈</span>
-          <h3 class="text-sm md:text-base font-black text-indigo-950">削減資金の再投資インパクト</h3>
+          <div>
+            <h4 class="text-xs sm:text-sm font-black text-slate-800">契約数1件のため、重複・二重課金の心配はありません</h4>
+            <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">
+              契約中のサブスクが1件のため、サービス間の重複はありません。年払い化でお得になるかの確認や、他のサブスクを追加登録すると二重課金チェックも行えます。
+            </p>
+          </div>
         </div>
-        <p class="text-xs md:text-sm text-indigo-900 leading-relaxed font-medium">
-          ${escapeHtml(investment_impact)}
-        </p>
+      `;
+    }
+
+    // 4. サマリー ＆ 削減達成プログレスバー（重複した長文解説を廃止しシンプル化）
+    const summaryCardHtml = `
+      <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-800">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span class="text-[11px] font-bold text-slate-400 block mb-1">削減ポテンシャル</span>
+            <div class="flex items-baseline gap-2">
+              <span class="text-xs sm:text-sm font-extrabold text-emerald-400">年間</span>
+              <span class="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">
+                ¥${totalPotentialSaving.toLocaleString()}
+              </span>
+              <span class="text-xs sm:text-sm font-bold text-slate-300">節約可能</span>
+            </div>
+          </div>
+
+          <!-- 削減達成度メーター -->
+          <div class="sm:text-right bg-slate-800/80 p-3 rounded-xl border border-slate-700/60 shrink-0 min-w-[200px]">
+            <div class="flex items-center justify-between sm:justify-end gap-2 text-xs font-bold text-slate-300 mb-1.5">
+              <span>達成:</span>
+              <span class="font-black text-emerald-400 text-sm">¥${completedSaving.toLocaleString()}</span>
+              <span class="text-slate-400 text-[11px]">(${completedCount}/${activeActions.length}完了)</span>
+            </div>
+            <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden p-0.5 border border-slate-700">
+              <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-300" style="width: ${progressPercent}%;"></div>
+            </div>
+          </div>
+        </div>
       </div>
-      `
-          : ""
+    `;
+
+    // 5. ToDoアクションカードリスト（1画面1主役：チェックボックス ＋ 公式で設定塗りボタン）
+    let actionsListHtml = "";
+    if (activeActions.length === 0) {
+      actionsListHtml = `
+        <div class="bg-slate-50 rounded-2xl p-8 text-center border border-slate-200">
+          <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 mx-auto mb-2 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          </div>
+          <p class="text-sm font-bold text-slate-800">すべての見直しアクションを完了・整理しました！</p>
+          <p class="text-xs text-slate-500 mt-1">固定費の最適化が完了しました。月々の支出管理をこのまま継続しましょう。</p>
+        </div>
+      `;
+    } else {
+      actionsListHtml = activeActions
+        .map((act) => {
+          const isDone = actionStates[act.id]?.completed;
+          const cancelInfo = findCancelInfo(act.service);
+          const deepLinkUrl = act.deeplink || cancelInfo?.url;
+
+          let effortLabel = "手間: 低";
+          if (act.effort === "medium") effortLabel = "手間: 中";
+          if (act.effort === "high") effortLabel = "手間: 高";
+
+          const timeLabel = act.time_required_min ? `約${act.time_required_min}分` : "数分";
+          const savingBadge =
+            act.annual_saving > 0
+              ? `<span class="inline-flex items-center text-xs font-black px-2 py-0.5 rounded-md ${
+                  isDone
+                    ? "bg-slate-100 text-slate-500"
+                    : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                }">-¥${Number(act.annual_saving).toLocaleString()}/年</span>`
+              : "";
+
+          return `
+            <div
+              data-action-id="${escapeHtml(act.id)}"
+              class="todo-card bg-white rounded-2xl p-4 sm:p-5 border transition-all duration-200 relative ${
+                isDone
+                  ? "border-slate-200 bg-slate-50/60 opacity-60"
+                  : "border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-xs"
+              }"
+            >
+              <!-- カード上部: チェックボックス ＋ サービスロゴ ＋ 見出し ＋ 右上スキップ -->
+              <div class="flex items-start gap-3">
+                <!-- ① チェックボックス（事後行動は控えめな枠に降格） -->
+                <button
+                  type="button"
+                  data-action-btn="toggle-done"
+                  data-action-id="${escapeHtml(act.id)}"
+                  class="w-6 h-6 mt-1 rounded-full border-2 transition-all flex items-center justify-center shrink-0 cursor-pointer ${
+                    isDone
+                      ? "bg-emerald-500 border-emerald-500 text-white"
+                      : "border-slate-300 hover:border-emerald-500 bg-white"
+                  }"
+                  title="${isDone ? "未完了に戻す" : "完了にする"}"
+                >
+                  ${
+                    isDone
+                      ? `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>`
+                      : ""
+                  }
+                </button>
+
+                <!-- アイコン -->
+                ${renderBrandIcon(act.service, "", "w-10 h-10 sm:w-11 sm:h-11 shrink-0", "text-sm")}
+
+                <!-- コンテンツ本体 -->
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 flex-wrap min-w-0">
+                      <span class="text-xs font-bold text-slate-500 truncate">${escapeHtml(act.service)}</span>
+                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
+                        ${effortLabel} · ${timeLabel}
+                      </span>
+                    </div>
+
+                    <!-- 右上: スキップ（興味ない）ボタン -->
+                    <button
+                      type="button"
+                      data-action-btn="dismiss"
+                      data-action-id="${escapeHtml(act.id)}"
+                      class="text-slate-300 hover:text-slate-500 p-1 -mr-1 transition-colors cursor-pointer"
+                      title="この提案を非表示"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- タイトル（動詞の命令形） -->
+                  <h4 class="text-sm sm:text-base font-black text-slate-900 mt-0.5 leading-snug ${
+                    isDone ? "line-through text-slate-400" : ""
+                  }">
+                    ${escapeHtml(act.title)}
+                  </h4>
+
+                  <!-- Before / After（箱をなくしスッキリ1行表示） -->
+                  ${
+                    act.current_state && act.proposed_state
+                      ? `
+                    <div class="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1.5 flex-wrap">
+                      <span class="text-slate-400">${escapeHtml(act.current_state)}</span>
+                      <span class="text-slate-300">→</span>
+                      <span class="font-bold text-slate-700">${escapeHtml(act.proposed_state)}</span>
+                    </div>
+                  `
+                      : ""
+                  }
+
+                  <!-- 理由アコーディオン ＆ 唯一の主役ボタン（公式で設定） -->
+                  <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <details class="group text-xs text-slate-500">
+                      <summary class="cursor-pointer font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 select-none transition-colors underline decoration-blue-300 underline-offset-2 hover:decoration-blue-500">
+                        <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                        <span>なぜ？（理由を見る）</span>
+                      </summary>
+                      <div class="mt-2 pl-3 py-1.5 text-xs text-slate-600 border-l-2 border-blue-400 leading-relaxed font-medium bg-blue-50/40 rounded-r-lg">
+                        ${escapeHtml(act.reason_short)}
+                      </div>
+                    </details>
+
+                    <div class="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
+                      ${savingBadge}
+
+                      <!-- ② 公式で設定（画面内の唯一の塗りボタン） -->
+                      ${
+                        deepLinkUrl
+                          ? `
+                        <a
+                          href="${escapeHtml(deepLinkUrl)}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="px-3.5 py-1.5 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>公式で設定</span>
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                          </svg>
+                        </a>
+                      `
+                          : ""
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    // 6. 全体HTMLを結合（不要な投資試算を撤廃し、節約アクションに集中）
+    container.innerHTML = `
+      <div class="space-y-4 pt-1 animate-in fade-in duration-300">
+        ${singleItemNoticeHtml}
+        ${summaryCardHtml}
+
+        <!-- 節約アクション一覧セクション -->
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between px-1">
+            <h3 class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+              <span>おすすめの節約アクション</span>
+              <span class="text-xs font-bold text-slate-400">(${activeActions.length}件)</span>
+            </h3>
+            <span class="text-[10px] text-slate-400 font-medium">節約効果の高い順</span>
+          </div>
+
+          <div class="space-y-2.5">
+            ${actionsListHtml}
+          </div>
+        </div>
+
+        <!-- 完了感・健全性の肯定メッセージ（白背景＋グレー枠のクリーンなデザイン） -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center gap-3 text-slate-600 shadow-2xs">
+          <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <div class="text-xs leading-relaxed">
+            <span class="font-black text-slate-800">見つかった節約候補は以上です。</span>
+            <span class="text-slate-500 font-medium block sm:inline sm:ml-1">不要な二重契約が少なく、現在の契約状況は良好に整理されています。</span>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  // 8. イベント委譲によるクリック制御（再描画後も確実に動作を維持）
+  container.onclick = (e) => {
+      const doneBtn = e.target.closest('[data-action-btn="toggle-done"]');
+      if (doneBtn) {
+        const id = doneBtn.getAttribute("data-action-id");
+        if (id && actionStates[id]) {
+          const wasCompleted = actionStates[id].completed;
+          actionStates[id].completed = !wasCompleted;
+          renderContent();
+
+          // 未完了から完了になった瞬間、達成シェアモーダルを起動
+          if (!wasCompleted) {
+            const completedAction = actions.find((a) => a.id === id);
+            if (completedAction) {
+              const stats = calculateShareStats(items, data);
+              openShareModal({ stats, completedAction });
+            }
+          }
+        }
+        return;
       }
+
+      const dismissBtn = e.target.closest('[data-action-btn="dismiss"]');
+      if (dismissBtn) {
+        const id = dismissBtn.getAttribute("data-action-id");
+        if (id && actionStates[id]) {
+          actionStates[id].dismissed = true;
+          renderContent();
+        }
+        return;
+      }
+    };
+
+  renderContent();
+
+  // 9. 解約・代替案タブの事前レンダリング
+  renderActionsTab(items);
+
+  // 10. 𝕏 シェアブロックのレンダリング
+  // (1) 支出の内訳タブ: メインの巨大シェアカード
+  const shareContainer = document.getElementById("res-share-container");
+  if (shareContainer) {
+    shareContainer.innerHTML = createShareSectionHtml({
+      data,
+      items,
+    });
+
+    initShareCardActions({
+      data,
+      items,
+    });
+  }
+
+  // (2) 見直し案タブ ＆ 解約タブ: 各タブの目的に集中できる控えめな1行スリムシェアバー
+  const slimShareHtml = `
+    <div class="mt-4 pt-4 border-t border-slate-200/80 flex items-center justify-between flex-wrap gap-2 text-xs text-slate-500">
+      <div class="flex items-center gap-1.5 font-medium">
+        <svg class="w-3.5 h-3.5 fill-current text-slate-700" viewBox="0 0 24 24">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        <span>あなたのサブスク利用タイプ診断をシェアできます</span>
+      </div>
+      <button
+        type="button"
+        class="btn-trigger-slim-share inline-flex items-center gap-1 font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+      >
+        <span>タイプ診断結果をシェア</span>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
     </div>
   `;
+
+  const advisorShareBar = document.getElementById("res-advisor-share-bar");
+  if (advisorShareBar) advisorShareBar.innerHTML = slimShareHtml;
+
+  const actionsShareBar = document.getElementById("res-actions-share-bar");
+  if (actionsShareBar) actionsShareBar.innerHTML = slimShareHtml;
+
+  document.querySelectorAll(".btn-trigger-slim-share").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const stats = calculateShareStats(items, data);
+      openShareModal({ stats });
+    });
+  });
+
+  // 11. タブの通知ドット制御
+  const tabAdvisorContent = document.getElementById("tab-content-advisor");
+  const dot = document.getElementById("tab-advisor-dot");
+  if (dot && tabAdvisorContent && tabAdvisorContent.classList.contains("hidden")) {
+    dot.classList.remove("hidden");
+  }
 }
 
 function renderError(container, message) {
   container.innerHTML = `
     <div class="bg-red-50 border border-red-200 rounded-2xl p-5 text-center">
-      <span class="text-2xl mb-1 block">⚠️</span>
+      <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-red-100 text-red-600 flex items-center justify-center">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
       <p class="text-sm font-bold text-red-800 mb-1">AI診断を取得できませんでした</p>
       <p class="text-xs text-red-600 mb-4">${escapeHtml(message || "通信エラーが発生しました")}</p>
       <button
@@ -405,14 +768,4 @@ function renderError(container, message) {
   window.retryAIAdvisor = () => {
     triggerAnalysis(true);
   };
-}
-
-function escapeHtml(str) {
-  if (!str) return "";
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }

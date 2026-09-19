@@ -31,7 +31,13 @@
     "lineclamp",
     "linecap",
     "linejoin",
-    "chartjs"
+    "chartjs",
+    "dazn",
+    "DAZN",
+    "unext",
+    "animestore",
+    "openai",
+    "html2canvas"
   ],
   "cSpell.ignorePaths": [
     "**/.git/**",

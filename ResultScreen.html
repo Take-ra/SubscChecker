@@ -1,13 +1,15 @@
 <div id="result-screen" class="hidden bg-slate-50 min-h-screen pb-safe">
+  <!-- ヘッダー -->
   <header
-    class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm"
+    class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs"
   >
     <div
       class="max-w-md md:max-w-4xl lg:max-w-5xl mx-auto px-4 py-3 flex items-center justify-between"
     >
       <button
         id="btn-back"
-        class="text-slate-600 hover:bg-slate-100 p-2 rounded-lg flex items-center transition-colors"
+        class="text-slate-600 hover:bg-slate-100 p-2 rounded-xl flex items-center transition-colors cursor-pointer"
+        title="入力画面に戻る"
       >
         <svg
           class="w-6 h-6"
@@ -24,117 +26,271 @@
         </svg>
       </button>
 
-      <h1
-        class="text-xl md:text-2xl font-black tracking-tight text-slate-800 absolute left-1/2 -translate-x-1/2"
-      >
-        分析結果
-      </h1>
+      <div class="flex items-center gap-2">
+        <h1
+          class="text-lg md:text-xl font-black tracking-tight text-slate-800"
+        >
+          分析結果
+        </h1>
+        <span
+          id="res-count-badge"
+          class="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-100 text-blue-700 border border-blue-200"
+        >
+          0件契約中
+        </span>
+      </div>
 
       <div class="w-10"></div>
     </div>
   </header>
 
   <main
-    class="max-w-md md:max-w-4xl lg:max-w-5xl mx-auto px-4 pt-6 pb-20 space-y-6 md:space-y-8"
+    class="max-w-md md:max-w-4xl lg:max-w-5xl mx-auto px-4 pt-5 pb-24 space-y-6"
   >
+    <!-- ① サブスク総額カード（常時上部に表示） -->
     <div
-      class="bg-white rounded-3xl shadow-sm p-6 md:p-5 border border-slate-200 text-center relative overflow-hidden"
+      class="bg-white rounded-3xl shadow-sm p-5 md:p-7 border border-slate-200 border-l-[6px] border-l-blue-600 relative overflow-hidden"
     >
-      <h2
-        class="text-slate-500 font-bold mb-2 md:mb-1 md:text-lg relative z-10"
-      >
-        あなたのサブスク総額
-      </h2>
+      <!-- 控えめなアクセント装飾 -->
       <div
-        class="text-4xl md:text-4xl font-extrabold text-blue-600 tracking-tight mb-2 md:mb-1 relative z-10"
-      >
-        <span id="res-monthly-total">0</span
-        ><span
-          class="text-xl md:text-xl font-bold text-slate-500 ml-1 md:ml-2 tracking-normal"
-          >円<span class="text-sm md:text-lg">/月</span></span
-        >
-      </div>
-      <div class="text-lg md:text-xl font-bold text-slate-400 relative z-10">
-        年額換算: <span id="res-yearly-total">0</span>円
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:grid-cols-3">
-      <div
-        class="bg-white rounded-3xl shadow-sm p-5 md:p-5 border border-slate-200 lg:col-span-1 h-fit text-left"
-      >
-        <h2
-          class="text-xl md:text-xl font-black text-slate-900 mb-3 flex items-center justify-start gap-2"
-        >
-          <span>👑</span> 出費ランキング
-        </h2>
-        <div id="res-top3-list" class="space-y-2 md:space-y-2"></div>
-      </div>
+        class="absolute -right-12 -top-12 w-36 h-36 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"
+      ></div>
 
       <div
-        class="bg-white rounded-3xl shadow-sm p-5 md:p-6 border border-slate-200 lg:col-span-2"
+        class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10"
       >
-        <div class="flex items-center justify-between mb-4">
-          <h2
-            class="text-xl md:text-2xl font-black text-slate-900 flex items-center gap-2"
+        <!-- 金額表示（単色ブルーの薄い背景で主役の重みを強調） -->
+        <div class="space-y-1 bg-blue-50/50 rounded-2xl p-3.5 md:p-4 border border-blue-100/80 w-full md:w-auto">
+          <div class="flex items-center gap-2">
+            <span class="text-xs md:text-sm font-bold text-slate-600">あなたのサブスク総額</span>
+            <span id="res-genre-summary-badge" class="text-[11px] font-bold text-blue-700 bg-blue-100/60 px-2 py-0.5 rounded-full"></span>
+          </div>
+          <div class="flex items-baseline gap-1.5">
+            <span class="text-xs md:text-sm font-extrabold text-blue-700">月額</span>
+            <span
+              id="res-monthly-total"
+              class="text-3xl md:text-5xl font-black text-blue-700 tracking-tight leading-none"
+            >0</span
+            >
+            <span class="text-base md:text-xl font-black text-slate-700">円</span>
+          </div>
+          <div class="flex items-center gap-2 pt-0.5 text-xs md:text-sm font-bold text-slate-500">
+            <span>年間換算:</span>
+            <span class="text-slate-800 font-black">約 <span id="res-yearly-total">0</span> 円</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          <!-- AI算出の削減余地ハイライト（AI診断後に動的表示） -->
+          <div
+            id="res-saving-banner"
+            class="hidden bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-300/80 rounded-2xl p-3 md:p-4 text-emerald-900 md:max-w-xs"
           >
-            <span>📊</span> 割合
-          </h2>
-          <div class="flex bg-slate-100 rounded-lg p-1">
-            <button
-              id="btn-chart-genre"
-              class="px-3 py-1 text-sm font-bold rounded-md text-slate-500 hover:text-slate-700 transition-all"
-            >
-              ジャンル別
-            </button>
-            <button
-              id="btn-chart-sub"
-              class="px-3 py-1 text-sm font-bold rounded-md bg-white shadow-sm text-slate-800 transition-all"
-            >
-              サブスク別
-            </button>
+            <div class="flex items-center gap-1.5 text-xs font-black text-emerald-700 mb-0.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              <span>節約ポテンシャル</span>
+            </div>
+            <p id="res-saving-text" class="text-xs md:text-sm font-bold leading-snug text-emerald-800">
+              年間最大 <strong class="text-emerald-700 font-black text-base md:text-lg">約0円</strong> 削減できる可能性があります
+            </p>
           </div>
-        </div>
-        <div class="relative w-full max-w-[400px] mx-auto mb-[-20px]">
-          <canvas id="resultChart"></canvas>
+
+          <!-- クイックシェアボタン（結果表示直後に診断画像をシェア） -->
+          <button
+            id="btn-quick-share"
+            type="button"
+            class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-2xl text-xs font-black shadow-sm transition-all cursor-pointer shrink-0 self-start sm:self-center"
+            title="診断結果を画像でシェア"
+          >
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            <span>診断結果をシェア</span>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- AI固定費最適化アドバイザー セクション -->
-    <div
-      id="ai-advisor-container"
-      class="bg-gradient-to-br from-blue-50/70 via-white to-indigo-50/50 rounded-3xl shadow-sm p-5 md:p-8 border border-blue-100 transition-all duration-300"
-    >
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl shadow-md shadow-blue-500/20 flex-shrink-0">
-            ✨
-          </div>
-          <div>
-            <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-              AI固定費アドバイザー
-              <span class="text-[10px] md:text-xs font-extrabold px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Gemini搭載</span>
-            </h2>
-            <p class="text-xs md:text-sm text-slate-500 font-medium">契約の重複や無駄な出費を徹底診断・最適化提案</p>
-          </div>
-        </div>
+    <!-- ② 3タブ切り替えナビゲーション（ピル型スマートタブ） -->
+    <div class="sticky top-14 z-40 bg-slate-50/95 backdrop-blur-md pt-1 pb-2">
+      <div
+        id="result-tab-bar"
+        class="bg-slate-200/80 p-1 rounded-2xl flex items-center shadow-inner gap-1"
+      >
         <button
-          id="btn-trigger-ai"
+          id="tab-btn-breakdown"
           type="button"
-          class="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-sm rounded-xl shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2 flex-shrink-0"
+          class="tab-btn flex-1 py-2.5 md:py-3 px-2 rounded-xl text-xs md:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer bg-white text-blue-600 shadow-xs"
+          data-tab="breakdown"
         >
-          <span>✨</span>
-          <span>AI診断を開始する</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          <span>支出の内訳</span>
+        </button>
+        <button
+          id="tab-btn-advisor"
+          type="button"
+          class="tab-btn flex-1 py-2.5 md:py-3 px-2 rounded-xl text-xs md:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer text-slate-600 hover:text-slate-900"
+          data-tab="advisor"
+        >
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+          </svg>
+          <span>見直し案</span>
+          <span
+            id="tab-advisor-dot"
+            class="w-2 h-2 rounded-full bg-blue-600 hidden animate-pulse"
+          ></span>
+        </button>
+        <button
+          id="tab-btn-actions"
+          type="button"
+          class="tab-btn flex-1 py-2.5 md:py-3 px-2 rounded-xl text-xs md:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer text-slate-600 hover:text-slate-900"
+          data-tab="actions"
+        >
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+          <span>解約手順・乗り換え</span>
         </button>
       </div>
+    </div>
 
-      <div id="ai-advisor-content" class="mt-4">
-        <!-- ai-advisor.js によって動的レンダリング -->
-        <p class="text-xs md:text-sm text-slate-500 bg-white/80 rounded-2xl p-6 text-center border border-slate-100 font-medium">
-          上の「AI診断を開始する」ボタンを押すと、契約中のサブスクから重複やプランの切り替え余地を分析します。
-        </p>
+    <!-- ③ タブコンテンツエリア -->
+
+    <!-- タブ1: 支出の内訳 (出費ランキング & 割合円グラフ) -->
+    <div id="tab-content-breakdown" class="tab-pane space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:grid-cols-3">
+        <!-- 左: 出費ランキング -->
+        <div
+          class="bg-white rounded-3xl shadow-sm p-5 md:p-6 border border-slate-200 lg:col-span-1 h-fit text-left"
+        >
+          <div
+            class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100"
+          >
+            <h2
+              class="text-base md:text-lg font-black text-slate-900 flex items-center gap-2"
+            >
+              <div class="w-6 h-6 rounded-md bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                </svg>
+              </div>
+              <span>出費ランキング</span>
+            </h2>
+            <span class="text-xs font-bold text-slate-400">TOP 5</span>
+          </div>
+          <div id="res-top3-list" class="space-y-2"></div>
+        </div>
+
+        <!-- 右: 割合円グラフ -->
+        <div
+          class="bg-white rounded-3xl shadow-sm p-5 md:p-6 border border-slate-200 lg:col-span-2"
+        >
+          <div
+            class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100"
+          >
+            <h2
+              class="text-base md:text-lg font-black text-slate-900 flex items-center gap-2"
+            >
+              <div class="w-6 h-6 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                </svg>
+              </div>
+              <span>支出の割合</span>
+            </h2>
+            <div class="flex bg-slate-100 rounded-lg p-1">
+              <button
+                id="btn-chart-genre"
+                class="px-3 py-1 text-xs font-bold rounded-md text-slate-500 hover:text-slate-700 transition-all cursor-pointer"
+              >
+                ジャンル別
+              </button>
+              <button
+                id="btn-chart-sub"
+                class="px-3 py-1 text-xs font-bold rounded-md bg-white shadow-xs text-slate-800 transition-all cursor-pointer"
+              >
+                サブスク別
+              </button>
+            </div>
+          </div>
+          <div class="relative w-full max-w-[360px] md:max-w-[400px] mx-auto py-2">
+            <canvas id="resultChart"></canvas>
+          </div>
+        </div>
       </div>
+
+      <!-- 支出の内訳タブ専用: メイン 𝕏 シェアブロック -->
+      <div id="res-share-container" class="pt-2"></div>
+    </div>
+
+    <!-- タブ2: 見直し案（旧：AI診断・提案） -->
+    <div id="tab-content-advisor" class="tab-pane hidden space-y-6">
+      <div
+        id="ai-advisor-container"
+        class="bg-white rounded-3xl shadow-sm p-5 md:p-7 border border-slate-200 transition-all duration-300"
+      >
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-100"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 md:w-11 md:h-11 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl flex items-center justify-center text-lg md:text-xl shadow-2xs shrink-0"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+              </svg>
+            </div>
+            <div>
+              <h2
+                class="text-base md:text-xl font-black text-slate-900 tracking-tight"
+              >
+                今すぐできる節約アクション
+              </h2>
+              <p class="text-xs text-slate-500 font-medium mt-0.5">
+                プラン変更や重複解消など、無理なく固定費を減らせる方法
+              </p>
+            </div>
+          </div>
+          <button
+            id="btn-trigger-ai"
+            type="button"
+            class="px-3 py-1.5 border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 active:scale-95 font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <span>再分析</span>
+          </button>
+        </div>
+
+        <div id="ai-advisor-content" class="mt-4">
+          <!-- ai-advisor.js によって動的レンダリング -->
+          <p
+            class="text-xs md:text-sm text-slate-500 bg-slate-50 rounded-2xl p-6 text-center border border-slate-200 font-medium"
+          >
+            サブスクの契約状況をAIが分析しています...
+          </p>
+        </div>
+      </div>
+
+      <!-- 見直し案タブ末尾: 控えめなスリムシェアバー -->
+      <div id="res-advisor-share-bar"></div>
+    </div>
+
+    <!-- タブ3: 解約・乗り換え (公式解約サポート ＆ お得な代替案) -->
+    <div id="tab-content-actions" class="tab-pane hidden space-y-6">
+      <div id="actions-container" class="space-y-6">
+        <!-- ai-advisor.js によって動的レンダリング -->
+      </div>
+
+      <!-- 解約タブ末尾: 控えめなスリムシェアバー -->
+      <div id="res-actions-share-bar"></div>
     </div>
   </main>
 </div>

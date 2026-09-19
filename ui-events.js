@@ -138,7 +138,7 @@ export function initUIEvents(callbacks) {
         if (isScrollingFromNav) return;
 
         const sections = document.querySelectorAll(
-          "main > div > section, #section-custom",
+          "#subscription-list > section, #section-custom",
         );
         let currentId = "";
 
@@ -228,6 +228,10 @@ export function initUIEvents(callbacks) {
   if (btnAnalyze) {
     btnAnalyze.addEventListener("click", () => {
       const data = callbacks.getAggregatedData();
+      if (!data || !data.selectedItems || data.selectedItems.length === 0) {
+        if (window.showToast) window.showToast("select-toast");
+        return;
+      }
 
       const inputScr = document.getElementById("input-screen");
       const resultScr = document.getElementById("result-screen");
