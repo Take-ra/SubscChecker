@@ -4,6 +4,7 @@
 function normalizeSearchText(text) {
   if (!text) return "";
   let normalized = text.normalize("NFKC").toLowerCase();
+  // ひらがなをカタカナに変換
   normalized = normalized.replace(/[\u3041-\u3096]/g, function (match) {
     return String.fromCharCode(match.charCodeAt(0) + 0x60);
   });
@@ -11,14 +12,34 @@ function normalizeSearchText(text) {
 }
 
 export function initSearch() {
-  const searchInput = document.getElementById("search-input");
-  const searchClearBtn = document.getElementById("search-clear-btn");
+  const searchInput =
+    document.getElementById("main-search-input") ||
+    document.getElementById("search-input");
+  const searchClearBtn =
+    document.getElementById("main-search-clear-btn") ||
+    document.getElementById("search-clear-btn");
   const emptyState = document.getElementById("empty-state");
+  const overlookedContainer = document.getElementById("overlooked-subs-container");
+  const quickGuide = document.getElementById("quick-guide");
+  const btnEmptyAddCustom = document.getElementById("btn-empty-add-custom");
 
   if (!searchInput) return;
 
+  // ショートカットキー「/」で検索バーにフォーカス
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) {
+      e.preventDefault();
+      searchInput.focus();
+    } else if (e.key === "Escape" && document.activeElement === searchInput) {
+      searchInput.value = "";
+      searchInput.dispatchEvent(new Event("input"));
+      searchInput.blur();
+    }
+  });
+
   searchInput.addEventListener("input", (e) => {
-    const queryStr = normalizeSearchText(e.target.value).trim();
+    const rawQuery = e.target.value.trim();
+    const queryStr = normalizeSearchText(rawQuery);
     const keywords = queryStr.split(/\s+/).filter((k) => k.length > 0);
 
     const sections = document.querySelectorAll(
@@ -32,6 +53,15 @@ export function initSearch() {
       } else {
         searchClearBtn.classList.add("hidden");
       }
+    }
+
+    // 検索中は見落とし枠やガイドを非表示にして検索結果に集中
+    if (keywords.length > 0) {
+      if (overlookedContainer) overlookedContainer.classList.add("hidden");
+      if (quickGuide) quickGuide.classList.add("hidden");
+    } else {
+      if (overlookedContainer) overlookedContainer.classList.remove("hidden");
+      if (quickGuide) quickGuide.classList.remove("hidden");
     }
 
     sections.forEach((section) => {
@@ -57,7 +87,7 @@ export function initSearch() {
           10,
         );
 
-        const rawName = item.querySelector("label div")?.textContent || "";
+        const rawName = item.querySelector("label span, label div")?.textContent || "";
         const name = normalizeSearchText(rawName);
         const searchAttr = normalizeSearchText(
           item.getAttribute("data-search") || "",
@@ -75,7 +105,7 @@ export function initSearch() {
           let bestScore = 99;
 
           for (const k of keywords) {
-            if (!searchAttr.includes(k)) {
+            if (!searchAttr.includes(k) && !name.includes(k)) {
               isMatch = false;
               break;
             }
@@ -156,6 +186,25 @@ export function initSearch() {
       searchInput.value = "";
       searchInput.dispatchEvent(new Event("input"));
       searchInput.focus();
+    });
+  }
+
+  // 0件ヒット時の「独自のサブスクとして追加」ボタンで検索文字列を引き継ぐ
+  if (btnEmptyAddCustom) {
+    btnEmptyAddCustom.addEventListener("click", () => {
+      const currentQuery = searchInput.value.trim();
+      const openModalBtn = document.getElementById("btn-open-custom-modal");
+      if (openModalBtn) openModalBtn.click();
+
+      if (currentQuery) {
+        setTimeout(() => {
+          const nameInput = document.getElementById("custom-name");
+          if (nameInput) {
+            nameInput.value = currentQuery;
+            nameInput.dispatchEvent(new Event("input"));
+          }
+        }, 50);
+      }
     });
   }
 }

@@ -228,6 +228,10 @@ export function initUIEvents(callbacks) {
   if (btnAnalyze) {
     btnAnalyze.addEventListener("click", () => {
       const data = callbacks.getAggregatedData();
+      if (!data || !data.selectedItems || data.selectedItems.length === 0) {
+        if (window.showToast) window.showToast("select-toast");
+        return;
+      }
 
       const inputScr = document.getElementById("input-screen");
       const resultScr = document.getElementById("result-screen");

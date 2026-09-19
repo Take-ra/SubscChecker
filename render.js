@@ -1,5 +1,6 @@
 // render.js（ナビゲーション、ハイライト、結果画面の描画）
 import { escapeAttr, animateValue, escapeHtml, formatCurrency } from "./utils.js";
+import { renderBrandIcon } from "./brand-icons.js";
 export { escapeAttr, animateValue, escapeHtml, formatCurrency };
 
 export function updateHighlight(card, isChecked) {
@@ -19,8 +20,6 @@ export function updateHighlight(card, isChecked) {
   }
 }
 
-
-
 export function renderNav(cats, container) {
   if (!container) return;
   let htmlNav = "";
@@ -29,26 +28,28 @@ export function renderNav(cats, container) {
       navIcon: "text-blue-500 group-hover:text-blue-600",
     };
     htmlNav += `
-    <button data-target="section-${cat.id}" class="nav-link group px-4 py-2 md:py-2.5 md:px-4 text-slate-500 bg-white border border-slate-200 md:border-transparent md:bg-transparent rounded-full md:rounded-r-2xl md:rounded-l-none text-sm md:text-base font-bold hover:bg-slate-50 md:hover:bg-blue-50/50 md:hover:text-blue-600 transition-all duration-200 whitespace-nowrap md:w-full md:text-left flex items-center justify-center md:justify-start border-l-0 md:border-l-4 focus:outline-none">
-      <span class="flex items-center w-full">
-        <span class="w-6 md:w-8 flex items-center justify-center ${theme.navIcon} transition-colors">
+    <button data-target="section-${cat.id}" data-cat-name="${escapeAttr(cat.name)}" class="nav-link group px-4 py-2 md:py-2.5 md:px-4 text-slate-500 bg-white border border-slate-200 md:border-transparent md:bg-transparent rounded-full md:rounded-r-2xl md:rounded-l-none text-sm md:text-base font-bold hover:bg-slate-50 md:hover:bg-blue-50/50 md:hover:text-blue-600 transition-all duration-200 whitespace-nowrap md:w-full md:text-left flex items-center justify-between border-l-0 md:border-l-4 focus:outline-none">
+      <span class="flex items-center min-w-0">
+        <span class="w-6 md:w-8 flex items-center justify-center ${theme.navIcon} transition-colors shrink-0">
           <span class="w-4 h-4 md:w-5 md:h-5 inline-block">${cat.icon}</span>
         </span>
-        <span class="ml-1.5 md:ml-3 text-left flex-1">${cat.name}</span>
+        <span class="ml-1.5 md:ml-3 text-left truncate">${cat.name}</span>
       </span>
+      <span class="nav-badge hidden ml-1.5 px-1.5 py-0.2 bg-blue-100 text-blue-700 text-[11px] font-black rounded-full">0</span>
     </button>`;
   });
   htmlNav += `
-  <button data-target="section-custom" class="nav-link group px-4 py-2 md:py-2.5 md:px-4 text-slate-500 bg-white border border-slate-200 md:border-transparent md:bg-transparent rounded-full md:rounded-r-2xl md:rounded-l-none text-sm md:text-base font-bold hover:bg-slate-50 md:hover:bg-indigo-50/50 md:hover:text-indigo-600 transition-all duration-200 whitespace-nowrap md:w-full md:text-left flex items-center justify-center md:justify-start border-l-0 md:border-l-4 focus:outline-none">
-    <span class="flex items-center w-full">
-      <span class="w-6 md:w-8 flex items-center justify-center text-indigo-500 group-hover:text-indigo-600 transition-colors">
+  <button data-target="section-custom" data-cat-name="独自のサブスク" class="nav-link group px-4 py-2 md:py-2.5 md:px-4 text-slate-500 bg-white border border-slate-200 md:border-transparent md:bg-transparent rounded-full md:rounded-r-2xl md:rounded-l-none text-sm md:text-base font-bold hover:bg-slate-50 md:hover:bg-indigo-50/50 md:hover:text-indigo-600 transition-all duration-200 whitespace-nowrap md:w-full md:text-left flex items-center justify-between border-l-0 md:border-l-4 focus:outline-none">
+    <span class="flex items-center min-w-0">
+      <span class="w-6 md:w-8 flex items-center justify-center text-indigo-500 group-hover:text-indigo-600 transition-colors shrink-0">
         <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
         </svg>
       </span>
-      <span class="ml-1.5 md:ml-3 text-left flex-1">独自のサブスク</span>
+      <span class="ml-1.5 md:ml-3 text-left truncate">独自のサブスク</span>
     </span>
-  </button>
+    <span class="nav-badge hidden ml-1.5 px-1.5 py-0.2 bg-indigo-100 text-indigo-700 text-[11px] font-black rounded-full">0</span>
+  </button>`;
 
   <!-- Information セクション -->
   <div class="flex flex-nowrap items-center md:flex-col md:items-stretch gap-1.5 md:gap-1 pt-2 md:pt-4 md:mt-3 border-l md:border-l-0 md:border-t border-slate-200/80 pl-2 md:pl-0">
@@ -160,5 +161,114 @@ export function renderResultScreen(data) {
       )
       .join("");
   }
+}
+
+// PC専用右サイドバー: 選択中サブスクパネルの描画
+export function renderPcSelectedPanel(selectedItems = [], totalMonthly = 0, totalYearly = 0) {
+  const countBadgeEl = document.getElementById("pc-selected-count-badge");
+  const listEl = document.getElementById("pc-selected-items-list");
+  const monthlyEl = document.getElementById("pc-monthly-total");
+  const yearlyEl = document.getElementById("pc-yearly-total");
+  const btnAnalyze = document.getElementById("pc-btn-analyze");
+  const analyzeHint = document.getElementById("pc-analyze-hint");
+
+  const count = selectedItems.length;
+
+  if (countBadgeEl) {
+    countBadgeEl.textContent = `${count}件`;
+  }
+
+  if (monthlyEl) {
+    monthlyEl.textContent = Number(totalMonthly || 0).toLocaleString();
+  }
+  if (yearlyEl) {
+    yearlyEl.textContent = Number(totalYearly || 0).toLocaleString();
+  }
+
+  if (btnAnalyze) {
+    if (count === 0) {
+      btnAnalyze.disabled = true;
+      btnAnalyze.classList.add("opacity-50", "cursor-not-allowed");
+      if (analyzeHint) analyzeHint.textContent = "1つ以上選択すると診断できます";
+    } else {
+      btnAnalyze.disabled = false;
+      btnAnalyze.classList.remove("opacity-50", "cursor-not-allowed");
+      if (analyzeHint) analyzeHint.textContent = `${count}件のサブスクから節約ポイントを診断`;
+    }
+  }
+
+  if (!listEl) return;
+
+  if (count === 0) {
+    listEl.innerHTML = `
+      <div class="h-full flex flex-col items-center justify-center text-center py-10 px-4 space-y-3">
+        <div class="w-12 h-12 rounded-2xl bg-white border border-slate-200/80 text-slate-300 flex items-center justify-center shadow-2xs">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+        </div>
+        <div class="space-y-1">
+          <p class="text-xs font-bold text-slate-600">選択中のサブスクはありません</p>
+          <p class="text-[11px] text-slate-400">リストからチェックを入れると<br>ここにリアルタイムで反映されます</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = selectedItems
+    .map((item) => {
+      const iconHtml = renderBrandIcon(item.id, item.name);
+      const planLabel = item.planName ? `<span class="text-[10px] text-slate-400 truncate block">${escapeHtml(item.planName)}</span>` : "";
+
+      return `
+        <div class="group flex items-center justify-between p-2.5 bg-white hover:bg-slate-50 rounded-xl border border-slate-200/80 shadow-2xs transition-all duration-150">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+            <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 p-1">
+              ${iconHtml}
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-xs font-bold text-slate-800 truncate block">${escapeHtml(item.name)}</span>
+              ${planLabel}
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <div class="text-right">
+              <span class="text-xs font-black text-slate-900">¥${Number(item.monthly || 0).toLocaleString()}</span>
+              <span class="text-[9px] text-slate-400 block">/月</span>
+            </div>
+            <button
+              type="button"
+              data-sub-id="${escapeAttr(item.id)}"
+              class="pc-btn-remove-sub text-slate-300 hover:text-red-500 hover:bg-red-50 p-1 rounded-md transition-colors cursor-pointer"
+              title="選択を解除"
+              aria-label="${escapeAttr(item.name)}の選択を解除"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+// ナビゲーションのジャンル別選択バッジ更新
+export function updateNavBadges(genreCounts = {}) {
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    const catName = link.getAttribute("data-cat-name");
+    const badge = link.querySelector(".nav-badge");
+    if (!badge || !catName) return;
+
+    const count = genreCounts[catName] || 0;
+    if (count > 0) {
+      badge.textContent = count;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+  });
 }
 

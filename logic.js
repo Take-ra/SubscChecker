@@ -51,24 +51,46 @@ export function calculateAggregation(
     icon: `<svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>`,
   };
 
-  // ① 既存のサブスクの集計（HTMLを見ず、保存データから計算する）
+  // ① 既存のサブスクの集計（新スキーマ plans と legacyIds を完全サポート）
+  const processedSubIds = new Set();
+
   Object.keys(savedState).forEach((subId) => {
     const state = savedState[subId];
     if (!state || !state.checked) return;
 
-    const subData = subscriptions.find((s) => s.id === subId);
-    if (!subData) return;
+    // 新IDまたは旧IDでサブスクデータを検索
+    const subData = subscriptions.find(
+      (s) => s.id === subId || (s.legacyIds && s.legacyIds.includes(subId))
+    );
+    if (!subData || processedSubIds.has(subData.id)) return;
+    processedSubIds.add(subData.id);
 
-    let selectedPlan = state.plan || (subData.monthly ? "monthly" : "yearly");
-    let mCost = 0,
-      yCost = 0;
+    // 選択中のプランを解決
+    let plan = null;
+    const requestedPlanId = state.planId || state.plan;
 
-    if (selectedPlan === "monthly") {
-      mCost = subData.monthly || 0;
-      yCost = mCost * 12;
+    if (Array.isArray(subData.plans) && subData.plans.length > 0) {
+      plan =
+        subData.plans.find((p) => p.id === requestedPlanId) ||
+        subData.plans.find((p) => p.id === subData.defaultPlanId) ||
+        subData.plans[0];
+    }
+
+    let mCost = 0;
+    let yCost = 0;
+
+    if (plan) {
+      mCost = Number(plan.monthly) || 0;
+      yCost = Number(plan.yearly) || mCost * 12;
     } else {
-      yCost = subData.yearly || (subData.monthly || 0) * 12;
-      mCost = Math.round(yCost / 12);
+      // フォールバック（旧構造）
+      if (requestedPlanId === "yearly") {
+        yCost = Number(subData.yearly) || (Number(subData.monthly || 0) * 12);
+        mCost = Math.round(yCost / 12);
+      } else {
+        mCost = Number(subData.monthly) || 0;
+        yCost = Number(subData.yearly) || mCost * 12;
+      }
     }
 
     totalMonthly += mCost;
@@ -80,9 +102,18 @@ export function calculateAggregation(
       genreTotals[catName].monthly += mCost;
       genreTotals[catName].yearly += yCost;
     }
+
+    const displayName = plan && plan.name && plan.name !== "月額プラン" && plan.name !== "月払い"
+      ? `${subData.name} (${plan.name})`
+      : subData.name;
+
     selectedItems.push({
       id: subData.id,
       name: subData.name,
+      displayName,
+      planId: plan ? plan.id : requestedPlanId,
+      planName: plan ? plan.name : "",
+      isYearly: plan ? !!plan.yearly : requestedPlanId === "yearly",
       category: catName,
       categoryId: subData.categoryId,
       monthly: mCost,

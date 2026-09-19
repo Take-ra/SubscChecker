@@ -41,6 +41,7 @@ export function initApp() {
   const navContainer = document.getElementById("nav-container");
   const listContainer = document.getElementById("subscription-list");
   const customListContainer = document.getElementById("custom-list-container");
+  const overlookedContainer = document.getElementById("overlooked-subs-container");
   const monthlyTotalEl = document.getElementById("monthly-total");
   const yearlyTotalEl = document.getElementById("yearly-total");
 
@@ -51,6 +52,7 @@ export function initApp() {
   function init() {
     loadData();
     Render.renderNav(cats, navContainer);
+    RenderList.renderOverlookedSection(subs, savedState, overlookedContainer);
     RenderList.renderMainList(cats, subs, savedState, listContainer);
     RenderList.renderCustomList(
       customSubscriptions,
@@ -84,12 +86,15 @@ export function initApp() {
         savedState = {};
         customSubscriptions = [];
 
-        const searchInput = document.getElementById("search-input");
+        const searchInput =
+          document.getElementById("main-search-input") ||
+          document.getElementById("search-input");
         if (searchInput) {
           searchInput.value = "";
           searchInput.dispatchEvent(new Event("input"));
         }
 
+        RenderList.renderOverlookedSection(subs, savedState, overlookedContainer);
         RenderList.renderMainList(cats, subs, savedState, listContainer);
         RenderList.renderCustomList(
           customSubscriptions,
@@ -180,6 +185,15 @@ export function initApp() {
       else quickGuide.classList.add("guide-hidden");
     }
 
+    // ジャンルごとの選択数を集計
+    const genreItemCounts = {};
+    data.selectedItems.forEach((item) => {
+      const gName = item.category || "その他";
+      genreItemCounts[gName] = (genreItemCounts[gName] || 0) + 1;
+    });
+    // ナビゲーションのバッジを更新
+    Render.updateNavBadges(genreItemCounts);
+
     // ジャンルごとの小計を更新
     const sections = document.querySelectorAll("main > div > section");
     sections.forEach((section) => {
@@ -206,7 +220,7 @@ export function initApp() {
       else Render.animateValue(customSubtotalEl, currentSub, val, 500);
     }
 
-    // 全体の合計を更新
+    // 全体の合計を更新（モバイルフッター）
     if (isFirstLoad) {
       monthlyTotalEl.textContent = data.totalMonthly.toLocaleString();
       yearlyTotalEl.textContent = data.totalYearly.toLocaleString();
@@ -225,6 +239,26 @@ export function initApp() {
       Render.animateValue(yearlyTotalEl, currentYearly, data.totalYearly, 500);
     }
 
+    // PC専用右サイドバーの選択中パネルをリアルタイム更新
+    Render.renderPcSelectedPanel(data.selectedItems, data.totalMonthly, data.totalYearly);
+
+    // 見落としがちチップの選択状態（チェック状態）を同期
+    document.querySelectorAll(".overlooked-chip").forEach((chip) => {
+      const subId = chip.getAttribute("data-sub-id");
+      const isChecked = Boolean(savedState[subId]?.checked);
+      if (isChecked) {
+        chip.classList.add("bg-blue-50", "border-blue-500", "text-blue-700", "font-bold");
+        chip.classList.remove("bg-white", "border-slate-200/90", "text-slate-700");
+        const icon = chip.querySelector(".chip-check-icon");
+        if (icon) icon.classList.remove("hidden");
+      } else {
+        chip.classList.remove("bg-blue-50", "border-blue-500", "text-blue-700", "font-bold");
+        chip.classList.add("bg-white", "border-slate-200/90", "text-slate-700");
+        const icon = chip.querySelector(".chip-check-icon");
+        if (icon) icon.classList.add("hidden");
+      }
+    });
+
     // フッターの「〇件 選択中」ボタンの更新
     const footerCountEl = document.getElementById("footer-selected-count");
     if (footerCountEl) {
@@ -238,6 +272,16 @@ export function initApp() {
       } else {
         btnOpenSelected.classList.add("hidden");
         btnOpenSelected.style.display = "none";
+      }
+    }
+
+    // モバイルの「結果を分析」ボタンの活性/非活性
+    const btnAnalyze = document.getElementById("btn-analyze");
+    if (btnAnalyze) {
+      if (data.selectedItems.length === 0) {
+        btnAnalyze.classList.add("opacity-50", "cursor-not-allowed");
+      } else {
+        btnAnalyze.classList.remove("opacity-50", "cursor-not-allowed");
       }
     }
 
@@ -272,6 +316,54 @@ export function initApp() {
 
       saveData();
       calculateTotal();
+    }
+  });
+
+  // --- 見落としがちチップ・PC右サイドバー操作・ガイド閉じる ---
+  document.body.addEventListener("click", (e) => {
+    // 見落としがちチップをクリック
+    const chip = e.target.closest(".overlooked-chip");
+    if (chip) {
+      const subId = chip.getAttribute("data-sub-id");
+      const chk = document.getElementById(`chk-${subId}`);
+      if (chk) {
+        chk.checked = !chk.checked;
+        chk.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      return;
+    }
+
+    // PCサイドバー内の個別サブスク解除ボタン
+    const removeBtn = e.target.closest(".pc-btn-remove-sub");
+    if (removeBtn) {
+      const subId = removeBtn.getAttribute("data-sub-id");
+      const chk = document.getElementById(`chk-${subId}`);
+      if (chk) {
+        chk.checked = false;
+        chk.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      return;
+    }
+
+    // PCサイドバー内のリセットボタン
+    if (e.target.closest("#pc-btn-reset-all")) {
+      document.getElementById("btn-reset-all")?.click();
+      return;
+    }
+
+    // PCサイドバー内の分析ボタン
+    if (e.target.closest("#pc-btn-analyze")) {
+      document.getElementById("btn-analyze")?.click();
+      return;
+    }
+
+    // ガイドを閉じるボタン
+    if (e.target.closest("#btn-close-guide")) {
+      const quickGuide = document.getElementById("quick-guide");
+      if (quickGuide) {
+        quickGuide.style.display = "none";
+      }
+      return;
     }
   });
 
