@@ -117,17 +117,21 @@
                 class="w-full bg-white border border-slate-200/90 shadow-2xs hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100/60 focus:outline-none rounded-2xl py-3.5 pl-11 pr-24 text-sm md:text-base font-medium text-slate-800 placeholder-slate-400 transition-all"
               />
               <div class="absolute right-3 flex items-center gap-1.5">
+                <span
+                  id="main-search-count-badge"
+                  class="hidden text-xs font-black px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/80 select-none transition-all"
+                ></span>
                 <button
                   id="main-search-clear-btn"
                   type="button"
-                  class="hidden text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                  class="hidden text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
                   aria-label="検索をクリア"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                   </svg>
                 </button>
-                <kbd class="hidden md:inline-flex items-center px-2 py-0.5 text-[11px] font-semibold text-slate-400 bg-slate-100 border border-slate-200 rounded-md">
+                <kbd id="main-search-kbd" class="hidden md:inline-flex items-center px-2 py-0.5 text-[11px] font-semibold text-slate-400 bg-slate-100 border border-slate-200 rounded-md">
                   /
                 </kbd>
               </div>

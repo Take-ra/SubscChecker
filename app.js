@@ -6,7 +6,7 @@ import * as CustomModal from "./custom-subscription-modal.js";
 import * as ChartApp from "./expense-chart.js";
 import * as CalendarApp from "./calendar.js";
 import { categories, subscriptions } from "./subscription-data.js";
-import { initSearch } from "./search.js";
+import { initSearch, buildSearchIndex } from "./search.js";
 import { initUIEvents } from "./ui-events.js";
 import * as AIAdvisor from "./ai-advisor.js";
 import * as SelectedSheet from "./selected-sheet.js";
@@ -110,6 +110,7 @@ export function initApp() {
           customListContainer,
         );
         calculateTotal();
+        buildSearchIndex();
         window.showToast("reset-toast");
       },
     });
@@ -133,6 +134,7 @@ export function initApp() {
         customListContainer,
       );
       calculateTotal();
+      buildSearchIndex();
     },
   });
 

@@ -134,9 +134,11 @@ export function renderMainList(cats, subs, savedState, container) {
           </div>`;
       }
 
-      // 検索用キーワード文字列（あいまい検索対応）
+      // 検索用キーワード文字列（あいまい検索・ジャンル名検索対応）
       const searchText = (
         sub.name +
+        " " +
+        cat.name +
         " " +
         (sub.keywords ? sub.keywords.join(" ") : "")
       ).toLowerCase();
@@ -259,7 +261,7 @@ export function renderCustomList(customSubs, savedState, container) {
       : "bg-white border-slate-200/80 shadow-2xs hover:border-slate-300";
 
     html += `
-    <div class="custom-sub-item relative flex items-center justify-between py-2.5 pl-3 pr-3 sm:py-3 sm:pl-3.5 sm:pr-4 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${cardBgClass}" data-search="${sub.name.toLowerCase()}" data-sub-id="${sub.id}">
+    <div class="custom-sub-item relative flex items-center justify-between py-2.5 pl-3 pr-3 sm:py-3 sm:pl-3.5 sm:pr-4 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${cardBgClass}" data-search="${escapeAttr(sub.name.toLowerCase())} 独自 サブスク カスタム" data-sub-id="${sub.id}">
       <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
         <input type="checkbox" id="chk-${sub.id}" class="sub-checkbox peer w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" ${isChecked ? "checked" : ""}>
         ${renderBrandIcon(sub.name, "lifestyle")}
