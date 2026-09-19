@@ -122,43 +122,22 @@ export function findCancelInfo(serviceName) {
 }
 
 /**
- * お得な最適化プラン / 代替案プロモーションデータ
- * 後からアフィリエイトリンク（ASPリンク）や掲載内容を1行で差し替え可能です。
+ * お得な最適化プラン / 代替案プロモーションデータ（文脈連動型）
+ * ユーザーの登録契約データと照合し、条件に一致する場合のみ表示されます。
  */
 export const PROMO_CARDS = [
-  {
-    id: "amazon-prime",
-    badge: "王道まとめ割",
-    isPR: true,
-    title: "Amazonプライム",
-    subTitle: "動画・音楽・配送を1本に集約",
-    savingHighlight: "年間 約14,000円 お得",
-    points: [
-      "Prime Video見放題 ＋ お急ぎ便・日時指定便が何度でも無料",
-      "単体契約を一本化して月々の固定費を大幅圧縮",
-    ],
-    buttonText: "30日間無料体験を試す",
-    microCopy: "※Webからいつでも即時解約可能・違約金ゼロ",
-    url: "https://www.amazon.co.jp/prime",
-    theme: {
-      border: "border-blue-200 hover:border-blue-400",
-      bgGradient: "from-blue-50/70 via-indigo-50/30 to-white",
-      badgeBg: "bg-blue-600 text-white",
-      highlightColor: "text-blue-700",
-      buttonBg: "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20",
-    },
-  },
   {
     id: "unext-point",
     badge: "動画・マンガ集約",
     isPR: true,
     title: "U-NEXT",
-    subTitle: "見放題作品数No.1 ＋ 毎月1,200pt",
+    subTitle: "見放題作品数No.1 ＋ 毎月1,200pt還元",
     savingHighlight: "実質月額 約989円",
     points: [
       "映画・アニメ31万本＋雑誌200誌以上が見放題",
-      "毎月1,200円分のポイントで最新作やマンガも購入可能",
+      "毎月1,200ptで最新映画やマンガも購入可能",
     ],
+    demerit: "※NetflixやDisney+などの独自オリジナル作品は視聴できません",
     buttonText: "31日間無料トライアル",
     microCopy: "※無料期間内に解約すれば料金は一切かかりません",
     url: "https://video.unext.jp/",
@@ -169,18 +148,72 @@ export const PROMO_CARDS = [
       highlightColor: "text-slate-900",
       buttonBg: "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20",
     },
+    // 動画または電子書籍を契約しているユーザーにマッチ
+    match: (items = []) => {
+      const targets = items.filter((i) => {
+        const cat = (i.category || "").toLowerCase();
+        const name = (i.name || "").toLowerCase();
+        return (
+          cat.includes("動画") ||
+          cat.includes("書籍") ||
+          /netflix|disney|hulu|dmm|kindle|マガジン|unext/i.test(name)
+        );
+      });
+      if (targets.length === 0) return null;
+
+      const currentTotal = targets.reduce((sum, i) => sum + (Number(i.monthly) || 0), 0);
+      const targetNames = targets.map((i) => i.name).slice(0, 2).join("・");
+      return {
+        matched: true,
+        reason: `契約中の ${targetNames}${targets.length > 2 ? "など" : ""}（月額計¥${currentTotal.toLocaleString()}）を集約して節約できる選択肢`,
+        currentTotal,
+      };
+    },
+  },
+  {
+    id: "amazon-prime",
+    badge: "王道まとめ割",
+    isPR: true,
+    title: "Amazonプライム",
+    subTitle: "動画・音楽・配送を1本に集約",
+    savingHighlight: "月額 約492円 (年払い時)",
+    points: [
+      "Prime Video見放題 ＋ お急ぎ便・日時指定便が何度でも無料",
+      "単体契約を一本化して月々の固定費を大幅圧縮",
+    ],
+    demerit: "※専門の音楽・動画アプリと比べると一部最新曲や特定作品に制限があります",
+    buttonText: "30日間無料体験を試す",
+    microCopy: "※Webからいつでも即時解約可能・違約金ゼロ",
+    url: "https://www.amazon.co.jp/prime",
+    theme: {
+      border: "border-blue-200 hover:border-blue-400",
+      bgGradient: "from-blue-50/70 via-indigo-50/30 to-white",
+      badgeBg: "bg-blue-600 text-white",
+      highlightColor: "text-blue-700",
+      buttonBg: "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20",
+    },
+    // Amazonプライムを契約していない人にのみ表示
+    match: (items = []) => {
+      const hasPrime = items.some((i) => /prime|プライム/i.test(i.name || ""));
+      if (hasPrime) return null; // 契約済みなら表示しない
+      return {
+        matched: true,
+        reason: "動画・音楽・配送特典をまとめて固定費を一本化したい方向け",
+      };
+    },
   },
   {
     id: "rakuten-mobile",
-    badge: "通信費＋サブスク",
+    badge: "固定費＋特典",
     isPR: true,
     title: "楽天モバイル",
     subTitle: "スマホ代大幅削減 ＆ 特典無料付帯",
-    savingHighlight: "月 約4,000円 節約",
+    savingHighlight: "データ無制限 月3,278円",
     points: [
-      "データ無制限で月3,278円の圧倒的コストパフォーマンス",
+      "大手キャリアからの乗り換えで月約4,000円のスマホ代節約",
       "NBAやパ・リーグが見放題 ＋ YouTube Premium 3ヶ月無料",
     ],
+    demerit: "※お住まいの地域や地下・屋内環境によって電波状況が異なる場合があります",
     buttonText: "料金シミュレーションを見る",
     microCopy: "※事務手数料0円・いつでも解約金なし",
     url: "https://network.mobile.rakuten.co.jp/",
@@ -191,8 +224,43 @@ export const PROMO_CARDS = [
       highlightColor: "text-rose-700",
       buttonBg: "bg-rose-600 hover:bg-rose-700 text-white shadow-rose-500/20",
     },
+    // YouTube Premium利用中、またはサブスク月額合計が高額なユーザーにのみ表示
+    match: (items = []) => {
+      const hasYoutube = items.some((i) => /youtube/i.test(i.name || ""));
+      const totalMonthly = items.reduce((sum, i) => sum + (Number(i.monthly) || 0), 0);
+      if (!hasYoutube && totalMonthly < 4000) return null;
+      return {
+        matched: true,
+        reason: hasYoutube
+          ? "YouTube Premium特典（3ヶ月無料）＆通信費圧縮の選択肢"
+          : "スマホ代を下げてサブスク全体の固定費を浮かせる選択肢",
+      };
+    },
   },
 ];
+
+/**
+ * ユーザーの登録サブスク一覧に条件合致する広告カードのみを抽出する
+ */
+export function getMatchedPromoCards(items = []) {
+  const matched = [];
+  for (const card of PROMO_CARDS) {
+    if (typeof card.match === "function") {
+      const matchResult = card.match(items);
+      if (matchResult && matchResult.matched) {
+        matched.push({
+          ...card,
+          contextReason: matchResult.reason,
+          currentTotal: matchResult.currentTotal,
+        });
+      }
+    } else {
+      matched.push(card);
+    }
+  }
+  // 最大2件までに厳選（過剰な広告感を防止）
+  return matched.slice(0, 2);
+}
 
 /**
  * 開発用モックデータ（UI確認時にGemini APIのクォータを一切消費しないためのダミー）
