@@ -425,10 +425,16 @@ export function buildShortTweetText({ mode = "type", stats, completedAction = nu
   }
 
   // 3. 支出レポートモード（金額表示）
+  const AVG_MONTHLY = 4890;
+  const diff = stats.totalMonthly - AVG_MONTHLY;
+  const diffStr = diff < 0
+    ? `みんなの平均（月¥4,890）より月¥${Math.abs(diff).toLocaleString()}抑えめでした！`
+    : `みんなの平均（月¥4,890）より月¥${diff.toLocaleString()}多めでした！`;
+
   if (stats.potentialSaving > 0) {
-    return `【サブスク支出レポート】\nサブスクに年間¥${yearlyStr}払ってた。年間約¥${savingStr}節約できるみたい！\nhttps://subsc-checker.com/ #SubscChecker`;
+    return `【サブスク支出レポート】\nサブスク月額¥${stats.totalMonthly.toLocaleString()}（年換算¥${yearlyStr}）利用中。\n${diffStr}\n見直せば年間¥${savingStr}節約できます！\n\nあなたの固定費は？\nhttps://subsc-checker.com/ #SubscChecker`;
   }
-  return `【サブスク支出レポート】\nサブスク年間¥${yearlyStr}（全${stats.serviceCount}契約）利用中。あなたの固定費は？\nhttps://subsc-checker.com/ #SubscChecker`;
+  return `【サブスク支出レポート】\nサブスク月額¥${stats.totalMonthly.toLocaleString()}（年換算¥${yearlyStr}）利用中。\n${diffStr}\n無駄ゼロの優良家計でした！\n\nあなたの固定費は？\nhttps://subsc-checker.com/ #SubscChecker`;
 }
 
 /**
@@ -863,76 +869,20 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     ctx.fillStyle = accentColor;
     ctx.font = "bold 24px sans-serif";
     ctx.fillText(`“ ${type.tagline} ”`, width / 2, 375);
-  } else {
-    // 【支出レポートモード（金額表示のポスター形式）】
-    // ① レポートバッジ（シンプル化）
-    const repBadge = `契約数 ${stats.serviceCount}件 │ サブスク年間支出`;
-    ctx.font = "bold 18px sans-serif";
-    const badgeWidth = ctx.measureText(repBadge).width + 50;
-    const badgeX = (width - badgeWidth) / 2;
-    const badgeY = 135;
 
-    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
+    // 下部ステータス欄（契約数と全体平均の比較だけにスッキリ絞る）
+    const barWidth = 460;
+    const barHeight = 56;
+    const barX = (width - barWidth) / 2;
+    const barY = 445;
+
+    ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
     ctx.lineWidth = 1.5;
-    roundRect(ctx, badgeX, badgeY, badgeWidth, 38, 19);
+    roundRect(ctx, barX, barY, barWidth, barHeight, 28);
     ctx.fill();
     ctx.stroke();
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#38bdf8";
-    ctx.fillText(repBadge, width / 2, badgeY + 19);
-
-    // ② 巨大金額表示
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "900 70px sans-serif";
-    ctx.fillText(`月額 ¥${stats.totalMonthly.toLocaleString()}`, width / 2, 235);
-
-    // ③ 年間換算
-    ctx.fillStyle = "#cbd5e1";
-    ctx.font = "bold 26px sans-serif";
-    ctx.fillText(`年間換算 約 ${stats.totalYearly.toLocaleString()} 円`, width / 2, 310);
-
-    // ④ 削減ポテンシャルまたはコメント
-    if (stats.potentialSaving > 0) {
-      ctx.fillStyle = "#34d399";
-      ctx.font = "bold 22px sans-serif";
-      ctx.fillText(`年間最大 -¥${stats.potentialSaving.toLocaleString()} の節約余地あり`, width / 2, 365);
-    } else {
-      ctx.fillStyle = accentColor;
-      ctx.font = "bold 22px sans-serif";
-      ctx.fillText(`“ ${type.tagline} ”`, width / 2, 365);
-    }
-  }
-
-  // 4. 下部ステータス欄（3分割を廃止し、説得力ある1つのスマートバッジへ集約）
-  const barWidth = 460;
-  const barHeight = 56;
-  const barX = (width - barWidth) / 2;
-  const barY = 445;
-
-  ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
-  ctx.lineWidth = 1.5;
-  roundRect(ctx, barX, barY, barWidth, barHeight, 28);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-
-  if (mode === "normal") {
-    // 支出レポート時: 契約数と月額
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 18px sans-serif";
-    ctx.fillText(
-      `契約数 ${stats.serviceCount}件  │  月額 ¥${stats.totalMonthly.toLocaleString()}（平均4.2件）`,
-      width / 2,
-      barY + 28
-    );
-  } else {
-    // タイプ診断時: 契約数と全体平均の比較だけにスッキリ絞る
     ctx.fillStyle = "#94a3b8";
     ctx.font = "16px sans-serif";
     const labelPart = "契約数 ";
@@ -962,6 +912,186 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
     ctx.fillStyle = "#64748b";
     ctx.font = "15px sans-serif";
     ctx.fillText(avgPart, startX, barY + 28);
+  } else {
+    // 【支出レポートモード（実額と内訳が主役のインフォグラフィック・ポスター）】
+    const AVG_MONTHLY = 4890;
+    const diff = stats.totalMonthly - AVG_MONTHLY;
+
+    // ① 上部社会的通貨バッジ（同単位・金額vs金額の比較）
+    let repBadge = "";
+    let badgeColor = "#38bdf8";
+    if (diff < 0) {
+      repBadge = `みんなの平均より月 ¥${Math.abs(diff).toLocaleString()} 抑えめ（全国平均 月¥4,890）`;
+      badgeColor = "#34d399";
+    } else if (diff > 0) {
+      repBadge = `みんなの平均より月 +¥${diff.toLocaleString()}（全国平均 月¥4,890）`;
+      badgeColor = "#fbbf24";
+    } else {
+      repBadge = `全国平均水準（平均 月¥4,890）`;
+      badgeColor = "#38bdf8";
+    }
+
+    ctx.font = "bold 17px sans-serif";
+    const badgeWidth = ctx.measureText(repBadge).width + 50;
+    const badgeX = (width - badgeWidth) / 2;
+    const badgeY = 125;
+
+    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+    ctx.strokeStyle = badgeColor + "80";
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, badgeX, badgeY, badgeWidth, 36, 18);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillText(repBadge, width / 2, badgeY + 18);
+
+    // ② 巨大金額表示（月額）
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 70px sans-serif";
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 4;
+    ctx.fillText(`月額 ¥${stats.totalMonthly.toLocaleString()}`, width / 2, 212);
+    ctx.restore();
+
+    // ③ 年間換算 & 契約数
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "bold 19px sans-serif";
+    ctx.fillText(
+      `年間換算 約 ¥${stats.totalYearly.toLocaleString()}  │  全 ${stats.serviceCount} 契約`,
+      width / 2,
+      266
+    );
+
+    // ④ 内訳インフォグラフィック（タイプ診断との決定的な視覚差別化）
+    // 水平スタックバー（ジャンル別色分けプログレスバー）
+    const barWidth = 760;
+    const barHeight = 16;
+    const barX = (width - barWidth) / 2;
+    const barY = 305;
+
+    // 背景レール
+    ctx.fillStyle = "#1e293b";
+    roundRect(ctx, barX, barY, barWidth, barHeight, 8);
+    ctx.fill();
+
+    // ジャンル集計ソート
+    const genreEntries = Object.entries(stats.genreAmounts)
+      .filter(([, amt]) => amt > 0)
+      .sort((a, b) => b[1] - a[1]);
+
+    if (stats.totalMonthly > 0 && genreEntries.length > 0) {
+      let curX = barX;
+      ctx.save();
+      roundRect(ctx, barX, barY, barWidth, barHeight, 8);
+      ctx.clip();
+
+      genreEntries.forEach(([cat, amt]) => {
+        const segW = (amt / stats.totalMonthly) * barWidth;
+        const col = GENRE_COLORS[cat]?.color || "#64748b";
+        ctx.fillStyle = col;
+        ctx.fillRect(curX, barY, segW, barHeight);
+        curX += segW;
+      });
+      ctx.restore();
+    }
+
+    // ジャンル内訳チップ（上位最大4ジャンルを均等配置）
+    const displayGenres = genreEntries.slice(0, 4);
+    if (displayGenres.length > 0) {
+      const chipHeight = 36;
+      const chipY = 338;
+
+      // 全体のチップ幅計算
+      ctx.font = "bold 14px sans-serif";
+      const chipItems = displayGenres.map(([cat, amt]) => {
+        const label = GENRE_COLORS[cat]?.label || cat;
+        const pct = ((amt / stats.totalMonthly) * 100).toFixed(1);
+        const text = `${label} ¥${amt.toLocaleString()} (${pct}%)`;
+        const textW = ctx.measureText(text).width;
+        return {
+          cat,
+          color: GENRE_COLORS[cat]?.color || "#64748b",
+          text,
+          w: textW + 36,
+        };
+      });
+
+      const totalChipsW = chipItems.reduce((sum, c) => sum + c.w, 0) + (chipItems.length - 1) * 12;
+      let curChipX = (width - totalChipsW) / 2;
+
+      chipItems.forEach((item) => {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.lineWidth = 1;
+        roundRect(ctx, curChipX, chipY, item.w, chipHeight, 18);
+        ctx.fill();
+        ctx.stroke();
+
+        // 丸印
+        ctx.fillStyle = item.color;
+        ctx.beginPath();
+        ctx.arc(curChipX + 15, chipY + chipHeight / 2, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // テキスト
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#cbd5e1";
+        ctx.fillText(item.text, curChipX + 26, chipY + chipHeight / 2);
+
+        curChipX += item.w + 12;
+      });
+    }
+
+    // ⑤ 下部バッジ（言い切り型：節約余地 または 健全家計）
+    const actionBoxW = 680;
+    const actionBoxH = 72;
+    const actionBoxX = (width - actionBoxW) / 2;
+    const actionBoxY = 440;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (stats.potentialSaving > 0) {
+      ctx.fillStyle = "rgba(16, 185, 129, 0.14)";
+      ctx.strokeStyle = "rgba(16, 185, 129, 0.45)";
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, actionBoxX, actionBoxY, actionBoxW, actionBoxH, 22);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#34d399";
+      ctx.font = "900 23px sans-serif";
+      ctx.fillText(
+        `年間 ¥${stats.potentialSaving.toLocaleString()}、実行すれば節約できます`,
+        width / 2,
+        actionBoxY + 25
+      );
+
+      ctx.fillStyle = "#a7f3d0";
+      ctx.font = "bold 13px sans-serif";
+      ctx.fillText("※プランの年払い化や不要な重複契約の見直し試算", width / 2, actionBoxY + 50);
+    } else {
+      ctx.fillStyle = "rgba(14, 165, 233, 0.14)";
+      ctx.strokeStyle = "rgba(14, 165, 233, 0.45)";
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, actionBoxX, actionBoxY, actionBoxW, actionBoxH, 22);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "900 23px sans-serif";
+      ctx.fillText("無駄な重複ゼロ！極めてスリムな優良家計です", width / 2, actionBoxY + 25);
+
+      ctx.fillStyle = "#bae6fd";
+      ctx.font = "bold 13px sans-serif";
+      ctx.fillText(`年間 ¥${stats.totalYearly.toLocaleString()} を厳選してフル活用中`, width / 2, actionBoxY + 50);
+    }
   }
 
   // 5. フッター描画
