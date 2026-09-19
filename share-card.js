@@ -503,7 +503,7 @@ export function drawShareCardCanvas(canvas, { mode = "type", stats, completedAct
   ctx.textBaseline = "middle";
 
   sortedGenres.forEach(([cat, amt]) => {
-    const p = Math.round((amt / stats.totalMonthly) * 100);
+    const p = ((amt / stats.totalMonthly) * 100).toFixed(1);
     const color = GENRE_COLORS[cat]?.color || "#64748b";
     const label = GENRE_COLORS[cat]?.label || cat;
 

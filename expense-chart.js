@@ -101,7 +101,7 @@ export function renderChart(data, type = currentChartType) {
 
   const totalSum = chartData.reduce((a, b) => a + b, 0);
 
-  // スライス上にパーセンテージを描画するプラグイン
+  // スライス上にパーセンテージを描画するプラグイン（ホバー時はツールチップとかぶらないよう非表示にする）
   const slicePercentagePlugin = {
     id: "slicePercentagePlugin",
     afterDraw(chart) {
@@ -114,23 +114,38 @@ export function renderChart(data, type = currentChartType) {
       const sum = dataset.data.reduce((a, b) => a + b, 0);
       if (sum === 0) return;
 
+      // 現在ホバー（アクティブ）されているスライスのインデックスを取得
+      const activeElements = chart.getActiveElements ? chart.getActiveElements() : [];
+      const activeIndices = new Set(activeElements.map((el) => el.index));
+      if (chart.tooltip && chart.tooltip._active && Array.isArray(chart.tooltip._active)) {
+        chart.tooltip._active.forEach((el) => {
+          if (el.index !== undefined) activeIndices.add(el.index);
+          if (el.element && el.element.$context && el.element.$context.index !== undefined) {
+            activeIndices.add(el.element.$context.index);
+          }
+        });
+      }
+
       ctx.save();
-      ctx.font = "bold 12px system-ui, -apple-system, sans-serif";
+      ctx.font = "bold 11px system-ui, -apple-system, sans-serif";
       ctx.fillStyle = "#ffffff";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
       meta.data.forEach((element, index) => {
+        // ホバー中のスライスはツールチップと文字が重なるため描画をスキップ
+        if (activeIndices.has(index)) return;
+
         const value = dataset.data[index] || 0;
         const pct = (value / sum) * 100;
 
         // 6%以上の面積があるスライスにのみパーセントを描画
         if (pct >= 6) {
           const pos = element.getCenterPoint();
-          const text = `${Math.round(pct)}%`;
+          const text = `${pct.toFixed(1)}%`;
 
-          ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-          ctx.shadowBlur = 3;
+          ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+          ctx.shadowBlur = 4;
           ctx.shadowOffsetX = 0;
           ctx.shadowOffsetY = 1;
 
@@ -176,7 +191,7 @@ export function renderChart(data, type = currentChartType) {
               const dataset = chart.data.datasets[0];
               return originalLabels.map((item, i) => {
                 const val = dataset.data[i] || 0;
-                const pct = Math.round((val / totalSum) * 100);
+                const pct = ((val / totalSum) * 100).toFixed(1);
                 return {
                   ...item,
                   text: `${item.text} (${pct}%)`,
@@ -187,11 +202,15 @@ export function renderChart(data, type = currentChartType) {
         },
         tooltip: {
           enabled: !isEmpty,
+          padding: 10,
+          cornerRadius: 10,
+          titleFont: { weight: "bold", size: 12 },
+          bodyFont: { weight: "bold", size: 12 },
           callbacks: {
             label: function (context) {
               const value = context.raw;
               const sum = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + "%" : "0%";
+              const percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + "%" : "0.0%";
               return ` ${value.toLocaleString()}円 (${percentage})`;
             },
           },
