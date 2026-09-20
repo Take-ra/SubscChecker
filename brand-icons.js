@@ -1,4 +1,5 @@
 // brand-icons.js（公式アプリアイコン解決＆ブランドバッジ導出モジュール）
+import { escapeHtml } from "./utils.js";
 
 /**
  * サービス名に応じた本物の公式ロゴ画像（512px高解像度PNG / 公式ベクターSVG）のパスを取得
@@ -214,13 +215,13 @@ export function renderBrandIcon(
     return `
       <div class="${sizeClasses} rounded-xl shrink-0 select-none overflow-hidden relative flex items-center justify-center bg-white shadow-2xs">
         <img src="${faviconUrl}" alt="" referrerpolicy="no-referrer" class="w-full h-full object-contain p-0.5" onerror="this.parentElement.className='${sizeClasses} rounded-xl ${brandBadge.bg} flex items-center justify-center font-black ${textSizeClasses} shadow-2xs shrink-0 select-none'; this.remove();" />
-        <span class="sr-only">${brandBadge.label}</span>
+        <span class="sr-only">${escapeHtml(brandBadge.label)}</span>
       </div>`;
   }
 
   // 3. ブランドバッジ（カテゴリカラー＋頭文字）
   return `
     <div class="${sizeClasses} rounded-xl ${brandBadge.bg} flex items-center justify-center font-black ${textSizeClasses} shadow-2xs shrink-0 select-none">
-      ${brandBadge.label}
+      ${escapeHtml(brandBadge.label)}
     </div>`;
 }

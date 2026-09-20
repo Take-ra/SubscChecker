@@ -160,7 +160,7 @@ export function calculateAggregation(
   customSubscriptions.forEach((sub) => {
     const state = savedState[sub.id];
     if (state && state.checked) {
-      const price = parseInt(sub.price, 10) || 0;
+      const price = Math.max(0, parseInt(sub.price, 10) || 0);
       let mCost = 0,
         yCost = 0;
 
@@ -171,7 +171,7 @@ export function calculateAggregation(
         yCost = price;
         mCost = Math.round(yCost / 12);
       } else {
-        const cycle = sub.cycle > 0 ? sub.cycle : 1;
+        const cycle = Number(sub.cycle) > 0 ? Number(sub.cycle) : 1;
         mCost = Math.round(price / cycle);
         yCost = Math.round(mCost * 12);
       }

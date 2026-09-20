@@ -103,10 +103,21 @@ export default async function handler(req, res) {
       }
     }
 
-    const subscriptions = body?.subscriptions;
-    if (!Array.isArray(subscriptions) || subscriptions.length === 0) {
+    const rawSubscriptions = body?.subscriptions;
+    if (!Array.isArray(rawSubscriptions) || rawSubscriptions.length === 0) {
       return res.status(400).json({ error: "サブスクリプション一覧が指定されていないか空です。" });
     }
+    if (rawSubscriptions.length > 50) {
+      return res.status(400).json({ error: "一度に診断できるサブスクリプションは最大50件までです。" });
+    }
+
+    // 悪意のある長大文字列や不正フィールドを排除・サニタイズ
+    const subscriptions = rawSubscriptions.slice(0, 50).map((sub) => ({
+      name: String(sub?.name || "").slice(0, 50).trim() || "サブスク",
+      category: String(sub?.category || "").slice(0, 30).trim() || "その他",
+      monthly: Math.max(0, Math.min(10000000, Number(sub?.monthly) || 0)),
+      yearly: Math.max(0, Math.min(120000000, Number(sub?.yearly) || 0)),
+    }));
 
     // ユーザープロンプトの構成
     const userPrompt = `以下は現在契約しているサブスクリプションの一覧です。\n${JSON.stringify(subscriptions, null, 2)}\n\nこの契約内容を診断し、指定スキーマのJSONで結果を返してください。`;

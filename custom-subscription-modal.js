@@ -61,37 +61,47 @@ export function initCustomModal(callbacks) {
     btnSaveCustom.addEventListener("click", () => {
       const name = document.getElementById("custom-name")?.value.trim() || "";
       const price = document.getElementById("custom-price")?.value || "";
-    const planType = customPlanType.value;
-    const errorMsg = document.getElementById("custom-error-msg");
+      const planType = customPlanType.value;
+      const errorMsg = document.getElementById("custom-error-msg");
 
-    const numPrice = parseInt(price, 10);
-    if (!name || isNaN(numPrice) || numPrice <= 0) {
-      errorMsg.textContent = "サービス名と1円以上の料金を入力してください。";
-      errorMsg.classList.remove("hidden");
-      return;
-    } else {
+      const numPrice = parseInt(price, 10);
+      if (!name || isNaN(numPrice) || numPrice <= 0) {
+        errorMsg.textContent = "サービス名と1円以上の料金を入力してください。";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+      if (name.length > 50) {
+        errorMsg.textContent = "サービス名は50文字以内で入力してください。";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+      if (numPrice > 10000000) {
+        errorMsg.textContent = "料金は1,000万円以下で入力してください。";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
       errorMsg.classList.add("hidden");
-    }
 
-    let cycle = 1;
-    let cycleNum = 1;
-    let cycleUnit = "months";
+      let cycle = 1;
+      let cycleNum = 1;
+      let cycleUnit = "months";
 
-    if (planType === "monthly") {
-      cycle = 1;
-      cycleNum = 1;
-      cycleUnit = "months";
-    } else if (planType === "yearly") {
-      cycle = 12;
-      cycleNum = 1;
-      cycleUnit = "years";
-    } else if (planType === "custom") {
-      cycleNum = parseInt(customCycleNum.value, 10);
-      cycleUnit = customCycleUnit.value;
-      if (cycleUnit === "weeks") cycle = cycleNum / 4.345;
-      else if (cycleUnit === "months") cycle = cycleNum;
-      else if (cycleUnit === "years") cycle = cycleNum * 12;
-    }
+      if (planType === "monthly") {
+        cycle = 1;
+        cycleNum = 1;
+        cycleUnit = "months";
+      } else if (planType === "yearly") {
+        cycle = 12;
+        cycleNum = 1;
+        cycleUnit = "years";
+      } else if (planType === "custom") {
+        const rawCycleNum = parseInt(customCycleNum.value, 10);
+        cycleNum = isNaN(rawCycleNum) || rawCycleNum <= 0 ? 1 : Math.min(rawCycleNum, 365);
+        cycleUnit = customCycleUnit.value;
+        if (cycleUnit === "weeks") cycle = cycleNum / 4.345;
+        else if (cycleUnit === "months") cycle = cycleNum;
+        else if (cycleUnit === "years") cycle = cycleNum * 12;
+      }
 
     // app.js から最新のデータを取得
     let customSubs = app.getCustomSubs();

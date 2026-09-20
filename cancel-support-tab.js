@@ -119,13 +119,13 @@ export function renderActionsTab(items = []) {
         return `
           <div class="flex flex-col justify-between p-4 sm:p-5 rounded-2xl border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all">
             <div>
-              <!-- バッジ & PR表記（控えめかつ明瞭） -->
+              <!-- バッジ & PR表記（消費者庁ステマ規制準拠の明瞭な表示） -->
               <div class="flex items-center justify-between gap-2 mb-2.5">
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
                   ${escapeHtml(card.badge)}
                 </span>
-                <span class="text-[10px] font-bold px-1.5 py-0.5 bg-amber-50 text-amber-800 rounded border border-amber-200/80">
-                  スポンサー提供
+                <span class="text-[10px] font-black px-1.5 py-0.5 bg-amber-50 text-amber-800 rounded border border-amber-200/80 tracking-wider">
+                  PR
                 </span>
               </div>
 

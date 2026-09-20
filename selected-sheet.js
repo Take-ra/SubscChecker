@@ -1,5 +1,5 @@
 import { renderBrandIcon } from "./brand-icons.js";
-import { escapeAttr } from "./utils.js";
+import { escapeAttr, escapeHtml } from "./utils.js";
 
 export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze }) {
   const getPopupEl = () => document.getElementById("selected-subs-popup");
@@ -83,7 +83,7 @@ export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze })
           <div class="flex items-center gap-2.5 min-w-0 mr-2">
             ${iconHtml}
             <span class="text-xs font-black text-slate-800 truncate" title="${escapeAttr(item.name)}">
-              ${escapeAttr(item.name)}
+              ${escapeHtml(item.name)}
             </span>
           </div>
           <div class="flex items-center gap-2 shrink-0">
