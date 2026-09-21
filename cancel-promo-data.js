@@ -1,11 +1,19 @@
 // cancel-promo-data.js
 // 解約サポート公式リンク集 & お得な代替案プロモーションデータ & 開発用モックデータ
+import { getAffiliateUrl } from "./affiliate-config.js";
 
 /**
  * 主要サブスクリプションの公式解約・プラン管理ページURL一覧
  * 後からサービスの追加・URLの差し替えが容易に行えるよう一元管理しています。
  */
 export const CANCEL_URLS = [
+  {
+    keywords: ["abema", "アベマ", "アメバ", "abemaプレミアム"],
+    name: "ABEMA",
+    url: "https://abema.tv/about/support",
+    guide: "「アカウント管理」または「設定」＞「視聴プラン」＞「解約する」",
+    category: "動画",
+  },
   {
     keywords: ["netflix", "ネットフリックス"],
     name: "Netflix",
@@ -182,6 +190,55 @@ export const PROMO_CARDS = [
       return {
         matched: true,
         reason,
+      };
+    },
+  },
+  {
+    id: "abema",
+    affiliateKey: "abema",
+    badge: "動画配信の集約",
+    isPR: true,
+    title: "ABEMAプレミアム",
+    subTitle: "オリジナル作品・アニメ・スポーツが見放題 ＆ 広告なし",
+    points: [
+      "限定オリジナルドラマ・バラエティや話題のアニメ、格闘・メジャースポーツが見放題",
+      "放送中の見逃し視聴、追っかけ再生、動画ダウンロード対応で快適に視聴",
+    ],
+    demerit: "NetflixやDisney+などの独自オリジナル作品は視聴できません。また一部の専門チャンネルやPPV（ペイパービュー）作品は別料金となります。",
+    buttonText: "詳しく見る",
+    microCopy: "※2週間の無料体験あり・Web管理画面からいつでも即時解約可能",
+    url: getAffiliateUrl("abema"),
+    // 動画配信ジャンルの契約数が2件以上、かつABEMA未契約の場合に表示
+    match: (items = []) => {
+      const hasAbema = items.some(
+        (i) => i.id === "abema" || /abema|アベマ/i.test(i.name || "")
+      );
+      if (hasAbema) return null;
+
+      const vodItems = items.filter((i) => {
+        const catId = (i.categoryId || "").toLowerCase();
+        const cat = (i.category || "").toLowerCase();
+        const name = (i.name || "").toLowerCase();
+        return (
+          catId === "video" ||
+          cat.includes("動画") ||
+          /netflix|disney|hulu|dmm|u-next|unext|wowow|dazn/i.test(name)
+        );
+      });
+
+      if (vodItems.length < 2) return null;
+
+      const vodNamesWithPrice = vodItems
+        .slice(0, 3)
+        .map((i) => `${i.name}(¥${(Number(i.monthly) || 0).toLocaleString()})`)
+        .join("・");
+      const vodSum = vodItems.reduce((sum, i) => sum + (Number(i.monthly) || 0), 0);
+      const etc = vodItems.length > 3 ? "など" : "";
+
+      return {
+        matched: true,
+        reason: `現在契約中の動画配信（${vodNamesWithPrice}${etc} 計¥${vodSum.toLocaleString()}/月）などを集約できる選択肢です。無料体験で配信内容を比較検討できます。`,
+        currentTotal: vodSum,
       };
     },
   },
