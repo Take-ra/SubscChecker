@@ -1,5 +1,6 @@
 import { escapeAttr, escapeHtml } from "./utils.js";
 import { renderBrandIcon } from "./brand-icons.js";
+import { renderLifestyleProposal } from "./lifestyle-proposal-ui.js";
 
 export function updateHighlight(card, isChecked) {
   if (!card) return;
@@ -152,6 +153,9 @@ export function renderResultScreen(data) {
       )
       .join("");
   }
+
+  // ライフスタイル提案（Audible等、条件一致時のみ中立的に表示）
+  renderLifestyleProposal(data?.selectedItems || []);
 }
 
 // PC専用右サイドバー: 選択中サブスクパネルの描画

@@ -457,9 +457,10 @@ export const subscriptions = [
     name: "Audible (オーディブル)",
     isOverlooked: true,
     overlookedReason: "無料体験後の自動継続",
-    defaultPlanId: "std",
+    defaultPlanId: "premium",
     plans: [
-      { id: "std", name: "月額プラン", monthly: 1500, note: "聴く読書・オーディオブック" },
+      { id: "premium", name: "プレミアムプラン", monthly: 1500, note: "聴き放題・オーディオブック" },
+      { id: "standard", name: "スタンダードプラン", monthly: 880, note: "毎月1冊・単品30%OFF" },
     ],
     keywords: ["おーでぃぶる", "オーディブル", "audible", "アマゾン", "朗読"],
   },

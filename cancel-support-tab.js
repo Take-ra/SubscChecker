@@ -194,6 +194,7 @@ export function renderActionsTab(items = []) {
                 href="${escapeHtml(card.url)}"
                 target="_blank"
                 rel="noopener noreferrer"
+                onclick="window.trackAffiliateClick && window.trackAffiliateClick('${escapeHtml(card.id)}_card', '${escapeHtml(card.title)}', '${escapeHtml(card.url)}');"
                 class="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-4 text-xs font-bold text-slate-800 bg-slate-100 hover:bg-blue-600 hover:text-white hover:border-blue-600 rounded-xl border border-slate-200/90 shadow-2xs transition-all text-center cursor-pointer active:scale-98 group"
               >
                 <span>${escapeHtml(card.buttonText)}</span>
