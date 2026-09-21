@@ -9,8 +9,7 @@ export const AFFILIATE_CONFIG = {
   abema: {
     id: "abema",
     name: "ABEMA",
-    // 実URL差し替え用プレースホルダー
-    baseUrl: "https://t.afi-b.com/visit.php?guid=ON&a=placeholder_abema",
+    baseUrl: "https://px.a8.net/svt/ejp?a8mat=4BCGFN+AGVEPE+4EKC+5YRHE",
     utmParams: {
       utm_source: "subsc-checker",
       utm_medium: "affiliate",
@@ -18,13 +17,12 @@ export const AFFILIATE_CONFIG = {
       utm_content: "abema_card",
     },
     buttonText: "ABEMAプレミアムの詳細を見る",
-    microCopy: "※2週間の無料体験あり・いつでも解約可能",
+    microCopy: "※2週間の無料体験あり・Web管理画面からいつでも即時解約可能",
   },
   audible: {
     id: "audible",
     name: "Audible",
-    // 実URL差し替え用プレースホルダー
-    baseUrl: "https://www.amazon.co.jp/dp/B00U-placeholder_audible",
+    baseUrl: "https://px.a8.net/svt/ejp?a8mat=4BCGFN+B9G7QQ+5TB0+5YRHE",
     utmParams: {
       utm_source: "subsc-checker",
       utm_medium: "affiliate",

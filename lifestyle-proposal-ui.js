@@ -163,3 +163,4 @@ export function renderLifestyleProposal(items = []) {
     </div>
   `;
 }
+
