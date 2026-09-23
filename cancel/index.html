@@ -91,70 +91,37 @@
       </header>
 
       <!-- ヒーロータイトル -->
-      <div class="mb-7">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="px-2 py-0.5 rounded-md text-[11px] font-black bg-blue-50 text-blue-700 border border-blue-200/80">
-            公式一次情報準拠
-          </span>
-          <span class="text-xs text-slate-400 font-medium">確認日：2026年9月</span>
+      <header class="mb-8">
+        <div class="mb-2">
+          <span class="text-xs text-slate-500 font-medium">最終確認：2026年9月</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
-          主要サブスクリプションの公式解約手順
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight leading-tight">
+          主要サブスクリプションの公式解約手順一覧
         </h1>
-        <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-          各サービスの公式サポート規約に基づき、解約直通リンクと失敗しないための注意点を整理した早見表ガイドです。
+        <p class="text-sm text-slate-600 mt-2.5 leading-relaxed">
+          主要なサブスクリプションサービスの公式サポート規約に基づき、解約手続きの手順および公式のアカウント管理ページへの案内を掲載しています。
         </p>
-      </div>
+      </header>
 
-      <!-- 解約時の共通チェック事項（ホーム見落としがち枠スタイルの柔らかいボックス） -->
-      <section class="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-4 sm:p-5 mb-8 shadow-2xs">
-        <div class="flex items-start gap-3 mb-3">
-          <div class="w-8 h-8 rounded-xl bg-blue-100 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0 shadow-2xs">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
-          <div>
-            <h2 class="text-sm sm:text-base font-black text-slate-800 tracking-tight">
-              解約前に確認したい3大チェック事項
-            </h2>
-            <p class="text-xs text-slate-500 mt-0.5">
-              手続きミスによる意図しない継続課金を防ぐための共通ルールです
-            </p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs sm:text-sm text-slate-700 pt-1">
-          <div class="bg-white/90 p-3 rounded-xl border border-blue-100 shadow-2xs">
-            <div class="font-black text-slate-900 flex items-center gap-1.5 mb-1 text-xs">
-              <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
-              アプリ削除では解約不可
-            </div>
-            <p class="text-[11px] text-slate-600 leading-relaxed">
-              スマホ画面からアイコンを消去しても請求は止まりません。必ず所定の手続きが必要です。
-            </p>
-          </div>
-
-          <div class="bg-white/90 p-3 rounded-xl border border-blue-100 shadow-2xs">
-            <div class="font-black text-slate-900 flex items-center gap-1.5 mb-1 text-xs">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
-              契約窓口の確認
-            </div>
-            <p class="text-[11px] text-slate-600 leading-relaxed">
-              Web（クレカ）決済か、Apple / Google Play決済かによって手続きを行う場所が異なります。
-            </p>
-          </div>
-
-          <div class="bg-white/90 p-3 rounded-xl border border-blue-100 shadow-2xs">
-            <div class="font-black text-slate-900 flex items-center gap-1.5 mb-1 text-xs">
-              <span class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>
-              原則日割り返金なし
-            </div>
-            <p class="text-[11px] text-slate-600 leading-relaxed">
-              月途中解約の返金はありませんが、解約後も次回請求日前日までは引き続き利用できます。
-            </p>
-          </div>
-        </div>
+      <!-- 解約時の共通チェック事項（Noteスタイル） -->
+      <section class="bg-slate-50/80 border border-slate-200 border-l-4 border-l-blue-600 p-5 rounded-r-xl mb-9">
+        <h2 class="text-sm sm:text-base font-bold text-slate-900 mb-2.5">
+          解約時の共通チェック事項
+        </h2>
+        <ul class="space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
+          <li class="flex items-start gap-2">
+            <span class="text-slate-400 shrink-0">•</span>
+            <span><strong>アプリ削除だけでは解約になりません：</strong>スマホからアプリアイコンを消去しても課金は継続します。必ず所定の解約手続きが必要です。</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-slate-400 shrink-0">•</span>
+            <span><strong>契約窓口を確認してください：</strong>Webブラウザ決済（クレジットカード決済）か、Apple決済（App Store）・Google Play決済かによって、解約手続きを行う場所が異なります。</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-slate-400 shrink-0">•</span>
+            <span><strong>原則日割り返金はありません：</strong>多くのサービスで月途中の返金はありませんが、解約後も次回請求日まではそのまま利用できます。</span>
+          </li>
+        </ul>
       </section>
 
       <!-- 主要サービスの個別ガイド一覧（15社グリッド） -->

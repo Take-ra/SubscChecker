@@ -28,6 +28,8 @@ export function initCustomModal(callbacks) {
     document.getElementById("btn-save-custom").textContent = "追加する";
     document.getElementById("custom-name").value = "";
     document.getElementById("custom-price").value = "";
+    const memoInput = document.getElementById("custom-memo");
+    if (memoInput) memoInput.value = "";
     document.getElementById("custom-error-msg").classList.add("hidden");
     if (customCycleContainer) customCycleContainer.classList.add("hidden");
     customPlanType.value = "monthly";
@@ -65,6 +67,7 @@ export function initCustomModal(callbacks) {
     btnSaveCustom.addEventListener("click", () => {
       const name = document.getElementById("custom-name")?.value.trim() || "";
       const price = document.getElementById("custom-price")?.value || "";
+      const memo = document.getElementById("custom-memo")?.value.trim() || "";
       const planType = customPlanType.value;
       const errorMsg = document.getElementById("custom-error-msg");
 
@@ -76,6 +79,11 @@ export function initCustomModal(callbacks) {
       }
       if (name.length > 50) {
         errorMsg.textContent = "サービス名は50文字以内で入力してください。";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+      if (memo.length > 100) {
+        errorMsg.textContent = "メモは100文字以内で入力してください。";
         errorMsg.classList.remove("hidden");
         return;
       }
@@ -122,6 +130,7 @@ export function initCustomModal(callbacks) {
           cycle,
           cycleNum,
           cycleUnit,
+          memo,
         };
       }
       // 保存状態のプランタイプも同期する
@@ -131,7 +140,7 @@ export function initCustomModal(callbacks) {
       editingSubId = null;
     } else {
       const newId = "c_" + Date.now();
-      customSubs.push({ id: newId, name, price: numPrice, planType, cycle, cycleNum, cycleUnit });
+      customSubs.push({ id: newId, name, price: numPrice, planType, cycle, cycleNum, cycleUnit, memo });
       savedState[newId] = { checked: true, plan: planType };
     }
 
@@ -176,6 +185,8 @@ export function initCustomModal(callbacks) {
     editingSubId = id;
     document.getElementById("custom-name").value = sub.name;
     document.getElementById("custom-price").value = sub.price;
+    const memoInput = document.getElementById("custom-memo");
+    if (memoInput) memoInput.value = sub.memo || "";
     customPlanType.value = sub.planType;
 
     if (sub.planType === "custom") {

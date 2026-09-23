@@ -348,18 +348,24 @@ export function renderCustomList(customSubs, savedState, container) {
       </button>
     `;
 
+    const memoSearch = sub.memo ? " " + escapeAttr(sub.memo.toLowerCase()) : "";
+    const memoHtml = sub.memo
+      ? `<div class="text-[11px] text-slate-400 font-medium truncate mt-0.5 leading-tight">${escapeHtml(sub.memo)}</div>`
+      : "";
+
     html += `
-    <div class="custom-sub-item relative flex items-center justify-between py-2.5 pl-3 pr-2.5 sm:py-3 sm:pl-3.5 sm:pr-3 md:py-3 md:pl-4 md:pr-3.5 rounded-2xl border active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md cursor-pointer overflow-hidden ${cardBgClass}" data-search="${escapeAttr(sub.name.toLowerCase())} 独自 サブスク カスタム" data-sub-id="${sub.id}">
+    <div class="custom-sub-item relative flex items-center justify-between py-2.5 pl-3 pr-2.5 sm:py-3 sm:pl-3.5 sm:pr-3 md:py-3 md:pl-4 md:pr-3.5 rounded-2xl border active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md cursor-pointer overflow-hidden ${cardBgClass}" data-search="${escapeAttr(sub.name.toLowerCase())}${memoSearch} 独自 サブスク カスタム" data-sub-id="${sub.id}">
       <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
         <input type="checkbox" id="chk-${sub.id}" class="sub-checkbox peer w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" ${isChecked ? "checked" : ""}>
         ${renderBrandIcon(sub.name, "lifestyle")}
-        <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-1 min-w-0">
-          <div class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug line-clamp-2">${escapeHtml(sub.name)}</div>
+        <label for="chk-${sub.id}" class="flex-1 cursor-pointer select-none py-0.5 min-w-0">
+          <div class="text-xs sm:text-sm md:text-base font-extrabold text-slate-800 leading-snug line-clamp-1">${escapeHtml(sub.name)}</div>
+          ${memoHtml}
         </label>
       </div>
 
-      <div class="flex-shrink-0 flex items-center gap-1 sm:gap-1.5">
-        <div class="w-[115px] sm:w-[145px] md:w-[170px] lg:w-[190px] shrink-0">
+      <div class="flex-shrink-0 flex items-center gap-0.5 sm:gap-1">
+        <div class="w-[110px] sm:w-[140px] md:w-[165px] lg:w-[185px] shrink-0">
           <div class="w-full h-8 text-xs font-bold text-slate-800 border border-slate-200 rounded-xl bg-slate-100/70 flex items-center justify-start text-left tabular-nums select-none shadow-2xs pl-2.5 py-0 truncate">
             ${label}
           </div>
@@ -367,6 +373,9 @@ export function renderCustomList(customSubs, savedState, container) {
         <div class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center">
           ${bellBtnHtml}
         </div>
+        <button type="button" class="btn-edit-custom w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-400 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors shrink-0 cursor-pointer" data-id="${escapeAttr(sub.id)}" onclick="event.stopPropagation(); window.editCustomSub('${escapeAttr(sub.id)}')" title="編集" aria-label="このサブスクを編集">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+        </button>
         <button type="button" class="btn-delete-custom w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors shrink-0 cursor-pointer" data-id="${escapeAttr(sub.id)}" onclick="event.stopPropagation(); window.deleteCustomSub('${escapeAttr(sub.id)}')" title="削除" aria-label="このサブスクを削除">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
         </button>
