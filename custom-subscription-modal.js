@@ -23,6 +23,8 @@ export function initCustomModal(callbacks) {
   // モーダルを開く
   const openModal = () => {
     editingSubId = null;
+    const modalTitle = document.getElementById("custom-modal-title");
+    if (modalTitle) modalTitle.textContent = "一覧にないサブスクを追加";
     document.getElementById("btn-save-custom").textContent = "追加する";
     document.getElementById("custom-name").value = "";
     document.getElementById("custom-price").value = "";
@@ -202,6 +204,8 @@ export function initCustomModal(callbacks) {
       customCycleContainer.classList.add("hidden");
     }
 
+    const modalTitle = document.getElementById("custom-modal-title");
+    if (modalTitle) modalTitle.textContent = "サブスクを編集";
     document.getElementById("btn-save-custom").textContent = "更新する";
     customModal.classList.remove("hidden");
     customModal.classList.add("flex");

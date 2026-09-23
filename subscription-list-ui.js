@@ -367,7 +367,7 @@ export function renderCustomList(customSubs, savedState, container) {
         <div class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center">
           ${bellBtnHtml}
         </div>
-        <button type="button" class="btn-delete-custom w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors shrink-0 cursor-pointer" data-id="${escapeAttr(sub.id)}" onclick="event.stopPropagation(); window.deleteCustomSub('${escapeAttr(sub.id)}')" title="削除" aria-label="この独自サブスクを削除">
+        <button type="button" class="btn-delete-custom w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors shrink-0 cursor-pointer" data-id="${escapeAttr(sub.id)}" onclick="event.stopPropagation(); window.deleteCustomSub('${escapeAttr(sub.id)}')" title="削除" aria-label="このサブスクを削除">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
         </button>
       </div>

@@ -138,7 +138,7 @@ export const subscriptions = [
     categoryId: "video",
     name: "Netflix",
     isOverlooked: true,
-    overlookedReason: "作品視聴後の放置注意",
+    overlookedReason: "作品視聴後に放置しがち",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "スタンダード", monthly: 1590, note: "フルHD・2画面同時" },
@@ -153,7 +153,7 @@ export const subscriptions = [
     categoryId: "video",
     name: "Amazon Prime",
     isOverlooked: true,
-    overlookedReason: "30日無料の自動更新",
+    overlookedReason: "無料体験後に自動更新されがち",
     defaultPlanId: "monthly",
     plans: [
       { id: "monthly", name: "月払い", monthly: 600, note: "月額 ¥600" },
@@ -169,7 +169,7 @@ export const subscriptions = [
     categoryId: "video",
     name: "YouTube Premium",
     isOverlooked: true,
-    overlookedReason: "3ヶ月無料の自動移行",
+    overlookedReason: "無料体験後に自動更新されがち",
     defaultPlanId: "web-monthly",
     plans: [
       { id: "web-monthly", name: "Web", monthly: 1280, note: "公式Web価格" },
@@ -186,7 +186,7 @@ export const subscriptions = [
     categoryId: "video",
     name: "Disney+",
     isOverlooked: true,
-    overlookedReason: "特定作品の視聴後放置",
+    overlookedReason: "作品視聴後に放置しがち",
     defaultPlanId: "std-monthly",
     plans: [
       { id: "std-monthly", name: "スタンダード", monthly: 990, note: "フルHD・2画面" },
@@ -343,7 +343,7 @@ export const subscriptions = [
     categoryId: "music",
     name: "Spotify",
     isOverlooked: true,
-    overlookedReason: "無料体験後の自動移行",
+    overlookedReason: "無料体験後に自動更新されがち",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "Standard", monthly: 1080, note: "個人向け標準" },
@@ -359,7 +359,7 @@ export const subscriptions = [
     categoryId: "music",
     name: "Apple Music",
     isOverlooked: true,
-    overlookedReason: "端末購入特典の放置",
+    overlookedReason: "無料特典の終了後に放置しがち",
     defaultPlanId: "ind-monthly",
     plans: [
       { id: "ind-monthly", name: "個人", monthly: 1080, note: "月額 ¥1,080" },
@@ -456,7 +456,7 @@ export const subscriptions = [
     categoryId: "ebook",
     name: "Kindle Unlimited",
     isOverlooked: true,
-    overlookedReason: "無料/99円CP自動移行",
+    overlookedReason: "キャンペーン後に自動更新されがち",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "月額プラン", monthly: 980, note: "200万冊読み放題" },
@@ -469,7 +469,7 @@ export const subscriptions = [
     categoryId: "ebook",
     name: "Audible (オーディブル)",
     isOverlooked: true,
-    overlookedReason: "無料体験後の自動継続",
+    overlookedReason: "無料体験後に自動更新されがち",
     defaultPlanId: "premium",
     plans: [
       { id: "premium", name: "プレミアム", monthly: 1500, note: "聴き放題・オーディオブック" },
@@ -543,7 +543,7 @@ export const subscriptions = [
     categoryId: "game",
     name: "Nintendo Switch Online",
     isOverlooked: true,
-    overlookedReason: "年額自動更新で失念",
+    overlookedReason: "年払いで支払いを忘れがち",
     defaultPlanId: "ind-yearly",
     plans: [
       { id: "ind-monthly", name: "個人", monthly: 306, note: "月額 ¥306" },
@@ -606,7 +606,7 @@ export const subscriptions = [
     categoryId: "tool",
     name: "Microsoft 365 (Office)",
     isOverlooked: true,
-    overlookedReason: "PC試用後の自動更新",
+    overlookedReason: "PC購入時の試用後に自動更新されがち",
     defaultPlanId: "personal-yearly",
     plans: [
       { id: "personal-monthly", name: "Personal", monthly: 2130, note: "月額 ¥2,130" },
@@ -694,7 +694,7 @@ export const subscriptions = [
     categoryId: "storage",
     name: "iCloud+",
     isOverlooked: true,
-    overlookedReason: "月¥150〜少額明細埋没",
+    overlookedReason: "少額で明細に埋もれがち",
     defaultPlanId: "200gb",
     plans: [
       { id: "50gb", name: "50GB", monthly: 150, note: "最小容量・月¥150" },
@@ -711,7 +711,7 @@ export const subscriptions = [
     categoryId: "storage",
     name: "Google One",
     isOverlooked: true,
-    overlookedReason: "月¥250〜少額明細埋没",
+    overlookedReason: "少額で明細に埋もれがち",
     defaultPlanId: "100gb-monthly",
     plans: [
       { id: "100gb-monthly", name: "100GB", monthly: 250, note: "月額 ¥250" },
@@ -732,7 +732,7 @@ export const subscriptions = [
     categoryId: "storage",
     name: "Apple One",
     isOverlooked: true,
-    overlookedReason: "無料体験の自動更新",
+    overlookedReason: "無料体験後に自動更新されがち",
     defaultPlanId: "ind",
     plans: [
       { id: "ind", name: "個人", monthly: 1350, note: "Music/TV+/Arcade/iCloud 50GB" },
@@ -766,7 +766,7 @@ export const subscriptions = [
     categoryId: "delivery",
     name: "Uber One",
     isOverlooked: true,
-    overlookedReason: "初月無料の自動更新",
+    overlookedReason: "初月無料の後に自動更新されがち",
     defaultPlanId: "monthly",
     plans: [
       { id: "monthly", name: "通常", monthly: 498, note: "月額 ¥498" },
@@ -782,7 +782,7 @@ export const subscriptions = [
     categoryId: "delivery",
     name: "LYPプレミアム (旧Yahoo!プレミアム)",
     isOverlooked: true,
-    overlookedReason: "スマホ特典終了後の放置",
+    overlookedReason: "無料特典の終了後に放置しがち",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "Web決済", monthly: 508, note: "LINEアルバム高画質・ヤフー特典" },
@@ -812,7 +812,7 @@ export const subscriptions = [
     categoryId: "lifestyle",
     name: "chocoZAP",
     isOverlooked: true,
-    overlookedReason: "入会後の利用休眠",
+    overlookedReason: "通わなくなっても放置しがち",
     defaultPlanId: "std",
     plans: [
       { id: "std", name: "月額プラン", monthly: 3278, note: "全店24時間使い放題" },

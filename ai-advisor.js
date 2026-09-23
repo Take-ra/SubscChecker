@@ -431,7 +431,7 @@ function renderAdvisor(container, data, items = []) {
       <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-800">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span class="text-[11px] font-bold text-slate-400 block mb-1">削減ポテンシャル</span>
+            <span class="text-[11px] font-bold text-slate-400 block mb-1">年間の節約見込み</span>
             <div class="flex items-baseline gap-2">
               <span class="text-xs sm:text-sm font-extrabold text-emerald-400">年間</span>
               <span class="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">
