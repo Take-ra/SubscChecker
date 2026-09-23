@@ -58,69 +58,119 @@
     }
     </script>
   </head>
-  <body class="bg-[#f8f9fa] font-sans text-slate-800 antialiased p-4 sm:p-8">
+  <body class="bg-slate-50 font-sans text-slate-800 antialiased p-3 sm:p-6 md:p-8 min-h-screen">
     <div
-      class="max-w-4xl mx-auto bg-white p-6 sm:p-10 border border-slate-200/90 shadow-2xs rounded-xl"
+      class="max-w-4xl mx-auto bg-white p-5 sm:p-8 md:p-10 border border-slate-200/90 shadow-2xs rounded-3xl"
     >
-      <!-- ナビゲーション -->
-      <nav class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
+      <!-- ヘッダー（ホーム統一ナビゲーション） -->
+      <header class="flex items-center justify-between pb-4 mb-7 border-b border-slate-200/80">
+        <div class="flex items-center gap-2.5 sm:gap-3">
+          <a href="/" class="flex items-center gap-2 group">
+            <img
+              src="/icon.png"
+              alt="SubscChecker"
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl shadow-2xs group-hover:scale-105 transition-transform"
+            />
+            <span class="font-black text-slate-800 text-sm sm:text-base tracking-tight group-hover:text-blue-600 transition-colors">
+              SubscChecker
+            </span>
+          </a>
+          <span class="text-slate-300">/</span>
+          <span class="text-xs sm:text-sm font-bold text-slate-500">
+            解約手順ガイド一覧
+          </span>
+        </div>
         <a
           href="/"
-          class="inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-colors"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold text-xs transition-colors shrink-0 shadow-2xs"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-          </svg>
-          サブスクチェッカー トップへ
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+          <span class="hidden sm:inline">固定費診断へ</span>
+          <span class="sm:hidden">診断</span>
         </a>
-        <span class="text-xs text-slate-400">公式解約手順ガイド</span>
-      </nav>
-
-      <!-- ヒーローヘッダー -->
-      <header class="mb-8">
-        <div class="mb-2">
-          <span class="text-xs text-slate-500 font-medium">最終確認：2026年9月</span>
-        </div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight leading-tight">
-          主要サブスクリプションの公式解約手順一覧
-        </h1>
-        <p class="text-sm text-slate-600 mt-2.5 leading-relaxed">
-          主要なサブスクリプションサービスの公式サポート規約に基づき、解約手続きの手順および公式のアカウント管理ページへの案内を掲載しています。
-        </p>
       </header>
 
-      <!-- 解約時の共通チェック事項（Noteスタイル） -->
-      <section class="bg-slate-50/80 border border-slate-200 border-l-4 border-l-slate-700 p-5 rounded-r-lg mb-9">
-        <h2 class="text-sm sm:text-base font-bold text-slate-900 mb-2.5">
-          解約時の共通チェック事項
-        </h2>
-        <ul class="space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
-          <li class="flex items-start gap-2">
-            <span class="text-slate-400 shrink-0">•</span>
-            <span><strong>アプリ削除だけでは解約になりません：</strong>スマホからアプリアイコンを消去しても課金は継続します。必ず所定の解約手続きが必要です。</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-slate-400 shrink-0">•</span>
-            <span><strong>契約窓口を確認してください：</strong>Webブラウザ決済（クレジットカード決済）か、Apple決済（App Store）・Google Play決済かによって、解約手続きを行う場所が異なります。</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-slate-400 shrink-0">•</span>
-            <span><strong>原則日割り返金はありません：</strong>多くのサービスで月途中の返金はありませんが、解約後も次回請求日まではそのまま利用できます。</span>
-          </li>
-        </ul>
+      <!-- ヒーロータイトル -->
+      <div class="mb-7">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="px-2 py-0.5 rounded-md text-[11px] font-black bg-blue-50 text-blue-700 border border-blue-200/80">
+            公式一次情報準拠
+          </span>
+          <span class="text-xs text-slate-400 font-medium">確認日：2026年9月</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+          主要サブスクリプションの公式解約手順
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+          各サービスの公式サポート規約に基づき、解約直通リンクと失敗しないための注意点を整理した早見表ガイドです。
+        </p>
+      </div>
+
+      <!-- 解約時の共通チェック事項（ホーム見落としがち枠スタイルの柔らかいボックス） -->
+      <section class="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-4 sm:p-5 mb-8 shadow-2xs">
+        <div class="flex items-start gap-3 mb-3">
+          <div class="w-8 h-8 rounded-xl bg-blue-100 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0 shadow-2xs">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-sm sm:text-base font-black text-slate-800 tracking-tight">
+              解約前に確認したい3大チェック事項
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              手続きミスによる意図しない継続課金を防ぐための共通ルールです
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs sm:text-sm text-slate-700 pt-1">
+          <div class="bg-white/90 p-3 rounded-xl border border-blue-100 shadow-2xs">
+            <div class="font-black text-slate-900 flex items-center gap-1.5 mb-1 text-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+              アプリ削除では解約不可
+            </div>
+            <p class="text-[11px] text-slate-600 leading-relaxed">
+              スマホ画面からアイコンを消去しても請求は止まりません。必ず所定の手続きが必要です。
+            </p>
+          </div>
+
+          <div class="bg-white/90 p-3 rounded-xl border border-blue-100 shadow-2xs">
+            <div class="font-black text-slate-900 flex items-center gap-1.5 mb-1 text-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+              契約窓口の確認
+            </div>
+            <p class="text-[11px] text-slate-600 leading-relaxed">
+              Web（クレカ）決済か、Apple / Google Play決済かによって手続きを行う場所が異なります。
+            </p>
+          </div>
+
+          <div class="bg-white/90 p-3 rounded-xl border border-blue-100 shadow-2xs">
+            <div class="font-black text-slate-900 flex items-center gap-1.5 mb-1 text-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>
+              原則日割り返金なし
+            </div>
+            <p class="text-[11px] text-slate-600 leading-relaxed">
+              月途中解約の返金はありませんが、解約後も次回請求日前日までは引き続き利用できます。
+            </p>
+          </div>
+        </div>
       </section>
 
       <!-- 主要サービスの個別ガイド一覧（15社グリッド） -->
       <section class="mb-10">
-        <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-4 pl-3 border-l-4 border-slate-700">
-          サービス別 解約ガイド（全15サービス）
-        </h2>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base sm:text-lg font-black text-slate-900 pl-3 border-l-4 border-blue-600">
+            サービス別 解約ガイド（全15サービス）
+          </h2>
+          <span class="text-xs font-bold text-slate-400">15件掲載</span>
+        </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
           <!-- 1. Netflix -->
           <a
             href="/cancel/netflix.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -133,19 +183,19 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">動画配信</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">Netflix</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/70 mb-0.5">動画配信</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">Netflix</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              アプリ内解約不可。ブラウザのアカウント設定から解約、10ヶ月間データ保持。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              ブラウザ解約必須（アプリ内不可）。違約金なし、次回請求日まで視聴可、10ヶ月間データ保持。
             </p>
           </a>
 
           <!-- 2. YouTube Premium -->
           <a
             href="/cancel/youtube-premium.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -158,19 +208,19 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">動画・音楽配信</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">YouTube Premium</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/70 mb-0.5">動画・音楽</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">YouTube Premium</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              Web契約（¥1,280）とApple決済（¥1,680）で手順が異なります。一時停止機能も掲載。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Web契約（¥1,280）とApple決済（¥1,680）で手順が相違。最大6ヶ月の一時停止機能も掲載。
             </p>
           </a>
 
           <!-- 3. Amazonプライム -->
           <a
             href="/cancel/amazon-prime.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -183,19 +233,19 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">EC・動画配信</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">Amazonプライム</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-orange-50 text-orange-600 border border-orange-200/70 mb-0.5">総合・動画</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">Amazonプライム</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              更新後に特典を利用していない場合の会費自動返金規定や、自動更新の解除手順。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              更新後特典未使用なら会費の自動返金規定あり。自動更新の解除手順を整理。
             </p>
           </a>
 
           <!-- 4. Spotify -->
           <a
             href="/cancel/spotify.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -208,19 +258,19 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">音楽配信</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">Spotify</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/70 mb-0.5">音楽配信</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">Spotify</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              アプリ内解約不可。Freeプランへの自動移行、無料体験解約時の即時終了ルール。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              ブラウザ解約必須。無料のFreeプランへ自動移行、楽曲プレイリストはそのまま保持。
             </p>
           </a>
 
           <!-- 5. Apple / iCloud+ -->
           <a
             href="/cancel/apple.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -233,19 +283,19 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">クラウド・音楽</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">Apple / iCloud+</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-sky-50 text-sky-600 border border-sky-200/70 mb-0.5">クラウド・総合</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">Apple / iCloud+</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              iPhoneの設定から解約可能。更新24時間前ルール、iCloud容量超過時の注意点。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              iPhoneの「設定」から1タップで解約可能。更新24時間前ルール、容量超過時の注意点。
             </p>
           </a>
 
           <!-- 6. U-NEXT -->
           <a
             href="/cancel/u-next.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -258,19 +308,19 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">動画・電子書籍</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">U-NEXT</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/70 mb-0.5">動画・電子書籍</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">U-NEXT</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              「解約」と「退会」の相違点。解約即時の見放題停止ルールと購入済み書籍の保持。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              「解約」と「退会」の決定的な違い。解約即時に見放題停止、購入書籍は退会しなければ保持。
             </p>
           </a>
 
           <!-- 7. Disney+ -->
           <a
             href="/cancel/disney-plus.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -283,19 +333,19 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">動画配信</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">Disney+</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/70 mb-0.5">動画配信</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">Disney+</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              公式サイト、ドコモ（dアカウント）経由、Apple決済別の解約窓口の違いを解説。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              公式サイト、ドコモ（dアカウント）、Apple決済別の解約窓口の違いを解説。
             </p>
           </a>
 
           <!-- 8. Hulu -->
           <a
             href="/cancel/hulu.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -308,19 +358,19 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">動画配信</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">Hulu</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/70 mb-0.5">動画配信</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">Hulu</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              アプリやテレビ画面からは解約不可。Webブラウザでのアカウント解約手順を掲載。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              アプリやテレビ画面からは解約不可。Webブラウザでのアカウント管理解約手順。
             </p>
           </a>
 
           <!-- 9. DAZN -->
           <a
             href="/cancel/dazn.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -333,19 +383,19 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">スポーツ配信</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">DAZN</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/70 mb-0.5">スポーツ配信</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">DAZN</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              退会通知30日前ルール（日割り請求）、年間プラン途中解約不可、一時停止機能。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              退会通知30日前ルール（日割り請求あり）、年間契約の途中解約制限、一時停止機能。
             </p>
           </a>
 
           <!-- 10. ABEMA -->
           <a
             href="/cancel/abema.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -358,19 +408,19 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">動画・ライブ配信</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">ABEMA</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/70 mb-0.5">動画配信</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">ABEMA</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              有効期限の24時間前までに解約必須。iOS・Android・ブラウザ決済別の解約窓口。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              有効期限の24時間前までに解約必須。iOS・Android・ブラウザ別の解約窓口。
             </p>
           </a>
 
           <!-- 11. ChatGPT Plus -->
           <a
             href="/cancel/chatgpt-plus.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -383,11 +433,11 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">AIツール</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">ChatGPT Plus</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-blue-50 text-blue-600 border border-blue-200/70 mb-0.5">仕事・AI</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">ChatGPT Plus</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+            <p class="text-xs text-slate-600 leading-relaxed">
               Web決済とアプリ内課金の窓口の違い。アカウント削除とサブスク解約の相違点。
             </p>
           </a>
@@ -395,7 +445,7 @@
           <!-- 12. Switch Online -->
           <a
             href="/cancel/nintendo-switch-online.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -408,11 +458,11 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">ゲーム</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">Switch Online</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-purple-50 text-purple-600 border border-purple-200/70 mb-0.5">ゲーム</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">Switch Online</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+            <p class="text-xs text-slate-600 leading-relaxed">
               有効期限の48時間前決済ルール。本体またはWebからの自動更新停止手順を解説。
             </p>
           </a>
@@ -420,7 +470,7 @@
           <!-- 13. PlayStation Plus -->
           <a
             href="/cancel/playstation-plus.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -433,11 +483,11 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">ゲーム</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">PlayStation Plus</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-purple-50 text-purple-600 border border-purple-200/70 mb-0.5">ゲーム</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">PlayStation Plus</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+            <p class="text-xs text-slate-600 leading-relaxed">
               クレジットカード削除では解約不可。PS5/PS4/Webからの定額サービス停止手順。
             </p>
           </a>
@@ -445,7 +495,7 @@
           <!-- 14. dアニメストア -->
           <a
             href="/cancel/d-anime.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -458,11 +508,11 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">アニメ配信</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">dアニメストア</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/70 mb-0.5">アニメ配信</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">dアニメストア</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+            <p class="text-xs text-slate-600 leading-relaxed">
               Web契約は解約即時に視聴停止（月末解約が有利）。dアカウントでの手続き。
             </p>
           </a>
@@ -470,7 +520,7 @@
           <!-- 15. Audible -->
           <a
             href="/cancel/audible.html"
-            class="group block bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs p-4 rounded-lg transition-all"
+            class="group block bg-white border border-slate-200/80 hover:border-blue-400 rounded-2xl shadow-2xs hover:-translate-y-0.5 hover:shadow-md transition-all p-4"
           >
             <div class="flex items-center gap-3 mb-2.5">
               <div class="w-9 h-9 rounded-xl overflow-hidden shrink-0 select-none shadow-2xs flex items-center justify-center bg-white">
@@ -483,38 +533,42 @@
                 />
               </div>
               <div class="min-w-0">
-                <span class="text-[11px] text-slate-500 underline underline-offset-2 block truncate">音声・書籍</span>
-                <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors truncate">Audible</h3>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-amber-50 text-amber-600 border border-amber-200/70 mb-0.5">電子書籍・音声</span>
+                <h3 class="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors truncate">Audible</h3>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              アプリ内解約不可（PCサイト表示必須）。単品購入作品の保持、最大3ヶ月休会機能。
+            <p class="text-xs text-slate-600 leading-relaxed">
+              アプリ内解約不可（PC版表示必須）。購入作品は解約後も保持、最大3ヶ月休会機能。
             </p>
           </a>
         </div>
       </section>
 
-      <!-- 控えめなフッター導線 -->
-      <section class="border border-slate-200 bg-slate-50/50 p-5 mb-8 rounded-lg text-slate-800">
+      <!-- フッターCTA（固定費診断への誘導） -->
+      <section class="border border-blue-200/80 bg-blue-50/50 p-5 mb-8 rounded-2xl text-slate-800 shadow-2xs">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h3 class="font-bold text-sm sm:text-base text-slate-900">サブスクの固定費をまとめて計算する</h3>
-            <p class="text-xs text-slate-600 mt-0.5">利用中のサービスを選ぶだけで毎月・毎年の支出を自動集計できます。</p>
+            <h3 class="font-black text-sm sm:text-base text-slate-900">
+              固定費のムダを一掃するなら
+            </h3>
+            <p class="text-xs text-slate-600 mt-0.5">
+              使っているサブスクを選ぶだけで、月額・年額の総出費を10秒で自動集計・診断できます。
+            </p>
           </div>
           <a
             href="/"
-            class="shrink-0 px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-medium text-xs sm:text-sm rounded transition-colors"
+            class="shrink-0 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-xs hover:shadow transition-all active:scale-98"
           >
-            サブスクチェッカー トップへ
+            固定費を診断してみる →
           </a>
         </div>
       </section>
 
       <!-- フッター -->
-      <footer class="pt-6 border-t border-slate-200 text-center text-xs text-slate-500 space-y-1">
+      <footer class="pt-6 border-t border-slate-200/80 text-center text-xs text-slate-500 space-y-1">
         <p>© 2026 SubscChecker. All rights reserved.</p>
         <p class="text-[11px] text-slate-400">
-          ※本サイトの解約手順情報は各社公式サポート情報に基づき作成されています。最新の規約・料金は各公式サイトをご確認ください。
+          ※本ガイドは各社公式サポート情報に基づき作成されています。最新の規約・料金は各公式サイトをご確認ください。
         </p>
       </footer>
     </div>
