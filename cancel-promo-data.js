@@ -12,6 +12,7 @@ export const CANCEL_URLS = [
     name: "ABEMA",
     url: "https://abema.tv/about/support",
     guide: "「アカウント管理」または「設定」＞「視聴プラン」＞「解約する」",
+    detailGuideUrl: "/cancel/abema.html",
     category: "動画",
   },
   {
@@ -35,6 +36,7 @@ export const CANCEL_URLS = [
     name: "Spotify",
     url: "https://www.spotify.com/account/overview/",
     guide: "アカウント情報ページ＞「プランを変更」＞最下部「Spotify Freeにキャンセル」",
+    detailGuideUrl: "/cancel/spotify.html",
     category: "音楽",
   },
   {
@@ -48,8 +50,9 @@ export const CANCEL_URLS = [
   {
     keywords: ["apple", "icloud", "アップル", "apple one", "apple music"],
     name: "Apple / iCloud+ / Apple One",
-    url: "https://support.apple.com/ja-jp/HT202039",
+    url: "https://support.apple.com/ja-jp/118428",
     guide: "iPhoneの「設定」＞「自分の名前」＞「サブスクリプション」より解約",
+    detailGuideUrl: "/cancel/apple.html",
     category: "クラウド・総合",
   },
   {
@@ -57,6 +60,7 @@ export const CANCEL_URLS = [
     name: "Disney+",
     url: "https://www.disneyplus.com/account",
     guide: "「アカウント」＞「サブスクリプション」＞「Disney+を解約」",
+    detailGuideUrl: "/cancel/disney-plus.html",
     category: "動画",
   },
   {
@@ -64,6 +68,7 @@ export const CANCEL_URLS = [
     name: "Hulu",
     url: "https://www.hulu.jp/account",
     guide: "「アカウント」＞「サービスのご利用状況」＞「解約する」",
+    detailGuideUrl: "/cancel/hulu.html",
     category: "動画",
   },
   {
@@ -71,6 +76,7 @@ export const CANCEL_URLS = [
     name: "U-NEXT",
     url: "https://account.unext.jp/account",
     guide: "「アカウント・契約」＞「契約内容の確認・解約」＞「解約手続きはこちら」",
+    detailGuideUrl: "/cancel/u-next.html",
     category: "動画・書籍",
   },
   {
@@ -78,6 +84,7 @@ export const CANCEL_URLS = [
     name: "dアニメストア",
     url: "https://animestore.docomo.ne.jp/animestore/CF/cancel_top",
     guide: "解約手続きページよりdアカウントでログインして解約",
+    detailGuideUrl: "/cancel/d-anime.html",
     category: "アニメ",
   },
   {
@@ -85,14 +92,40 @@ export const CANCEL_URLS = [
     name: "DAZN",
     url: "https://www.dazn.com/ja-JP/myaccount/subscription",
     guide: "「マイ・アカウント」＞「ご契約内容」＞「退会する」",
+    detailGuideUrl: "/cancel/dazn.html",
     category: "スポーツ",
   },
   {
-    keywords: ["chatgpt", "openai"],
+    keywords: ["chatgpt", "openai", "chatgpt plus"],
     name: "ChatGPT Plus",
     url: "https://chatgpt.com/#settings",
     guide: "画面左下のアカウント＞「設定」＞「サブスクリプション」＞「管理」",
+    detailGuideUrl: "/cancel/chatgpt-plus.html",
     category: "AI",
+  },
+  {
+    keywords: ["nintendo", "任天堂", "スイッチオンライン", "switch online", "ニンテンドースイッチ"],
+    name: "Nintendo Switch Online",
+    url: "https://ec.nintendo.com/my/membership",
+    guide: "「ショップメニュー」またはSwitch本体のeショップ「利用状況」＞「自動継続購入の更新停止」",
+    detailGuideUrl: "/cancel/nintendo-switch-online.html",
+    category: "ゲーム",
+  },
+  {
+    keywords: ["playstation", "ps plus", "プレステ", "ps5", "ps4"],
+    name: "PlayStation Plus",
+    url: "https://store.playstation.com/",
+    guide: "PS5「設定」＞「ユーザーとアカウント」＞「定額サービス」＞「定額制サービスをキャンセル」",
+    detailGuideUrl: "/cancel/playstation-plus.html",
+    category: "ゲーム",
+  },
+  {
+    keywords: ["audible", "オーディブル", "amazon audible"],
+    name: "Audible",
+    url: "https://www.audible.co.jp/account/overview",
+    guide: "PCまたはスマホのブラウザで「PC版サイト」を表示＞「アカウントサービス」＞「退会手続きへ」",
+    detailGuideUrl: "/cancel/audible.html",
+    category: "書籍・音声",
   },
   {
     keywords: ["adobe", "アドビ", "creative cloud"],
