@@ -145,12 +145,8 @@ export function renderMainList(cats, subs, savedState, container) {
             },
           ];
 
-      // 価格が安い順（月額換算の昇順）に上から並び替え
-      const plans = [...rawPlans].sort((a, b) => {
-        const priceA = a.monthly ?? (a.yearly ? a.yearly / 12 : 0);
-        const priceB = b.monthly ?? (b.yearly ? b.yearly / 12 : 0);
-        return priceA - priceB;
-      });
+      // プランの並び順は定義順を尊重（主要プラン・通常プラン順）
+      const plans = rawPlans;
 
       const activePlanId = state.planId || state.plan || sub.defaultPlanId || plans[0].id;
 
@@ -160,9 +156,13 @@ export function renderMainList(cats, subs, savedState, container) {
         const optionsHtml = plans
           .map((p) => {
             const isSel = p.id === activePlanId;
-            const priceLabel = p.yearly
-              ? `年額 ¥${p.yearly.toLocaleString()} (¥${p.monthly.toLocaleString()}/月)`
-              : `${p.name} ¥${p.monthly.toLocaleString()}/月`;
+            const priceLabel = (() => {
+              if (p.monthly === 0) return `${p.name} (無料)`;
+              if (p.yearly) {
+                return `${p.name} ¥${p.yearly.toLocaleString()}/年`;
+              }
+              return `${p.name} ¥${p.monthly.toLocaleString()}/月`;
+            })();
             return `<option value="${p.id}" ${isSel ? "selected" : ""}>${priceLabel}</option>`;
           })
           .join("");
