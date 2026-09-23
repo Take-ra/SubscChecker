@@ -64,13 +64,31 @@ div[class*="absolute bottom-full"] {
   z-index: 100 !important;
   position: relative;
 }
+/* --- スクロール・描画パフォーマンス最適化 --- */
+
+/* 画面外セクションのレンダリング計算（レイアウト・ペイント）をスキップ */
+.nav-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 450px;
+}
+
+/* スクロールコンテナのネイティブGPU加速とオーバースクロール制御 */
+.fixed.inset-0.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
 /* --- サブスクカード共通スタイル --- */
 
 .sub-item, .custom-sub-item {
   min-height: 64px;
+  transition-property: transform, box-shadow, border-color, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
 
 /* チェックボックスの固定 */
 .sub-checkbox {
   flex-shrink: 0;
 }
+

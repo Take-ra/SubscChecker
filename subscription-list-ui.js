@@ -29,7 +29,7 @@ export function renderOverlookedSection(subs = [], savedState = {}, container = 
           type="button"
           data-sub-id="${sub.id}"
           data-overlooked-id="${sub.id}"
-          class="overlooked-chip flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl border transition-all shrink-0 cursor-pointer text-left select-none active:scale-95 ${
+          class="overlooked-chip flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl border transition-colors duration-150 shrink-0 cursor-pointer text-left select-none active:scale-95 ${
             isChecked
               ? "bg-blue-50 border-blue-400 shadow-xs ring-1 ring-blue-300 text-blue-700 font-bold"
               : "bg-white border-slate-200/90 hover:border-slate-300 shadow-2xs text-slate-800"
@@ -200,13 +200,11 @@ export function renderMainList(cats, subs, savedState, container) {
         ? "bg-blue-50/90 border-blue-400 shadow-sm"
         : "bg-white border-slate-200/80 shadow-2xs hover:border-slate-300";
 
-      const safeName = escapeAttr(sub.name);
-
       // ベルボタン（通知設定・枠内に収まるよう配置）
       const bellBtnHtml = `
         <button
           type="button"
-          class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-600 hover:text-blue-700 hover:bg-white bg-white/90 rounded-full transition-all border border-blue-200/90 shadow-2xs shrink-0 cursor-pointer ${
+          class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-600 hover:text-blue-700 hover:bg-white bg-white/90 rounded-full transition-colors border border-blue-200/90 shadow-2xs shrink-0 cursor-pointer ${
             isChecked ? "" : "invisible pointer-events-none"
           }"
           data-sub-id="${escapeAttr(sub.id)}"
@@ -224,7 +222,7 @@ export function renderMainList(cats, subs, savedState, container) {
       const iconHtml = renderBrandIcon(sub.name, cat.id);
 
       itemsHtml += `
-      <div class="sub-item relative flex items-center justify-between py-2.5 pl-3 pr-2.5 sm:py-3 sm:pl-3.5 sm:pr-3 md:py-3 md:pl-4 md:pr-3.5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer overflow-hidden ${cardBgClass}" data-search="${searchText}" data-sub-id="${sub.id}" data-category-name="${escapeAttr(cat.name)}">
+      <div class="sub-item relative flex items-center justify-between py-2.5 pl-3 pr-2.5 sm:py-3 sm:pl-3.5 sm:pr-3 md:py-3 md:pl-4 md:pr-3.5 rounded-2xl border active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md focus-within:border-blue-400 cursor-pointer overflow-hidden ${cardBgClass}" data-search="${searchText}" data-sub-id="${sub.id}" data-category-name="${escapeAttr(cat.name)}">
         <!-- 左側: チェックボックス + アプリアイコン + サービス名 -->
         <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
           <input
@@ -311,26 +309,38 @@ export function renderCustomList(customSubs, savedState, container) {
     const priceVal = parseInt(sub.price, 10) || 0;
     let label = "";
 
-    if (sub.planType === "monthly") label = `月額 ¥${priceVal.toLocaleString()}`;
-    else if (sub.planType === "yearly") label = `年額 ¥${priceVal.toLocaleString()}`;
-    else label = `${sub.cycle}ヶ月 ¥${priceVal.toLocaleString()}`;
+    if (sub.planType === "monthly") {
+      label = `月額 ¥${priceVal.toLocaleString()}`;
+    } else if (sub.planType === "yearly") {
+      label = `年額 ¥${priceVal.toLocaleString()}`;
+    } else {
+      const unitMap = { weeks: "週間ごと", months: "ヶ月ごと", years: "年ごと" };
+      if (sub.cycleUnit && unitMap[sub.cycleUnit]) {
+        label = `${sub.cycleNum || 1}${unitMap[sub.cycleUnit]} ¥${priceVal.toLocaleString()}`;
+      } else {
+        label = `${sub.cycle || 1}ヶ月ごと ¥${priceVal.toLocaleString()}`;
+      }
+    }
 
-    const safeName = escapeAttr(sub.name);
     const cardBgClass = isChecked
       ? "bg-blue-50/90 border-blue-400 shadow-sm"
       : "bg-white border-slate-200/80 shadow-2xs hover:border-slate-300";
 
+    const customCycleNumVal = escapeAttr(String(sub.cycleNum || sub.cycle || 1));
+    const customCycleUnitVal = escapeAttr(sub.cycleUnit || (sub.planType === "yearly" ? "years" : "months"));
+
     const bellBtnHtml = `
       <button
         type="button"
-        class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-600 hover:text-blue-700 hover:bg-white bg-white/90 rounded-full transition-all border border-blue-200/90 shadow-2xs shrink-0 cursor-pointer ${
+        class="bell-btn w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-blue-600 hover:text-blue-700 hover:bg-white bg-white/90 rounded-full transition-colors border border-blue-200/90 shadow-2xs shrink-0 cursor-pointer ${
           isChecked ? "" : "invisible pointer-events-none"
         }"
         data-sub-id="${escapeAttr(sub.id)}"
         data-sub-name="${escapeAttr(sub.name)}"
         data-plan-type="${escapeAttr(sub.planType || "monthly")}"
-        data-cycle="${escapeAttr(String(sub.cycle || 1))}"
-        onclick="event.stopPropagation(); window.openCalendarModal(this.dataset.subId, this.dataset.subName, this.dataset.planType, Number(this.dataset.cycle))"
+        data-cycle-num="${customCycleNumVal}"
+        data-cycle-unit="${customCycleUnitVal}"
+        onclick="event.stopPropagation(); window.openCalendarModal(this.dataset.subId, this.dataset.subName, this.dataset.planType, Number(this.dataset.cycleNum), this.dataset.cycleUnit)"
         title="カレンダーに通知を登録"
         aria-label="カレンダーに通知を登録"
       >
@@ -339,7 +349,7 @@ export function renderCustomList(customSubs, savedState, container) {
     `;
 
     html += `
-    <div class="custom-sub-item relative flex items-center justify-between py-2.5 pl-3 pr-2.5 sm:py-3 sm:pl-3.5 sm:pr-3 md:py-3 md:pl-4 md:pr-3.5 rounded-2xl border transition-all duration-150 active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md cursor-pointer overflow-hidden ${cardBgClass}" data-search="${escapeAttr(sub.name.toLowerCase())} 独自 サブスク カスタム" data-sub-id="${sub.id}">
+    <div class="custom-sub-item relative flex items-center justify-between py-2.5 pl-3 pr-2.5 sm:py-3 sm:pl-3.5 sm:pr-3 md:py-3 md:pl-4 md:pr-3.5 rounded-2xl border active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-md cursor-pointer overflow-hidden ${cardBgClass}" data-search="${escapeAttr(sub.name.toLowerCase())} 独自 サブスク カスタム" data-sub-id="${sub.id}">
       <div class="flex items-center flex-1 min-w-0 pr-2 gap-2 sm:gap-2.5">
         <input type="checkbox" id="chk-${sub.id}" class="sub-checkbox peer w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" ${isChecked ? "checked" : ""}>
         ${renderBrandIcon(sub.name, "lifestyle")}

@@ -1,8 +1,6 @@
 // ai-advisor.js (Gemini API 固定費最適化AIアドバイザー)
 import {
   findCancelInfo,
-  PROMO_CARDS,
-  getMatchedPromoCards,
   MOCK_DIAGNOSIS_DATA,
 } from "./cancel-promo-data.js";
 import {
@@ -351,7 +349,6 @@ function renderAdvisor(container, data, items = []) {
 
     if (matchedUserItem) {
       const monthly = Number(matchedUserItem.monthly) || 0;
-      const yearly = Number(matchedUserItem.yearly) || monthly * 12;
 
       if (act.action_type === "plan_change") {
         // 年払い削減額は上限（月額×2.5）を超えないようにし、実登録月額ベースで整合

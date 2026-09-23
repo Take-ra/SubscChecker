@@ -1,7 +1,7 @@
 import { renderBrandIcon } from "./brand-icons.js";
 import { escapeAttr, escapeHtml } from "./utils.js";
 
-export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze }) {
+export function initSelectedSheet({ getAggregatedData, onToggleSub, onAnalyze: _onAnalyze }) {
   const getPopupEl = () => document.getElementById("selected-subs-popup");
   const getListEl = () => document.getElementById("selected-popup-list");
   const getCountBadgeEl = () => document.getElementById("popup-count-badge");

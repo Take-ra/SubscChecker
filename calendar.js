@@ -71,12 +71,15 @@ function getSelectedNotifyDays() {
   checkboxes.forEach((cb) => {
     if (cb.value === "custom") {
       const customDays = parseInt(
-        document.getElementById("cal-custom-days").value,
+        document.getElementById("cal-custom-days")?.value,
         10,
       );
-      if (!isNaN(customDays)) daysArray.push(customDays);
+      if (!isNaN(customDays) && customDays > 0) {
+        daysArray.push(Math.min(customDays, 365));
+      }
     } else {
-      daysArray.push(parseInt(cb.value, 10));
+      const days = parseInt(cb.value, 10);
+      if (!isNaN(days) && days >= 0) daysArray.push(days);
     }
   });
 
@@ -92,37 +95,56 @@ function calculateSingleEventDate(notifyDays) {
 
   const parts = startDateStr.split("-").map(Number);
   if (parts.length !== 3 || parts.some(isNaN)) return null;
-  const start = new Date(parts[0], parts[1] - 1, parts[2]);
-  let nextRenewal = new Date(start);
+
+  const startYear = parts[0];
+  const startMonth = parts[1]; // 1-indexed (1〜12)
+  const originalDay = parts[2];
 
   const plan = currentCalSub.plan;
-  const advanceRenewal = () => {
-    if (plan === "custom" && currentCalSub.cycleUnit) {
-      const num = currentCalSub.cycleNum || 1;
-      if (currentCalSub.cycleUnit === "weeks") {
-        nextRenewal.setDate(nextRenewal.getDate() + num * 7);
-      } else if (currentCalSub.cycleUnit === "years") {
-        nextRenewal.setFullYear(nextRenewal.getFullYear() + num);
-      } else {
-        nextRenewal.setMonth(nextRenewal.getMonth() + num);
-      }
-    } else if (
-      plan === "yearly" ||
-      (typeof plan === "string" && (plan.includes("year") || plan.includes("annual")))
-    ) {
-      nextRenewal.setFullYear(nextRenewal.getFullYear() + 1);
-    } else {
-      nextRenewal.setMonth(nextRenewal.getMonth() + 1);
-    }
-  };
+  const isCustom = plan === "custom";
+  const isYearly =
+    !isCustom &&
+    (plan === "yearly" ||
+      (typeof plan === "string" && (plan.includes("year") || plan.includes("annual"))));
 
-  advanceRenewal();
-
-  const now = new Date();
-  while (nextRenewal < now) {
-    advanceRenewal();
+  let unit = "months";
+  let step = 1;
+  if (isCustom && currentCalSub.cycleUnit) {
+    unit = currentCalSub.cycleUnit;
+    step = currentCalSub.cycleNum || 1;
+  } else if (isYearly) {
+    unit = "years";
+    step = 1;
   }
 
+  const now = new Date();
+  let count = 1;
+  let nextRenewal = null;
+
+  // 月末（31日）やうるう年（2月29日）でも日付がズレない高精度サイクル計算
+  while (true) {
+    if (unit === "weeks") {
+      const startTime = new Date(startYear, startMonth - 1, originalDay).getTime();
+      nextRenewal = new Date(startTime + count * step * 7 * 86400000);
+    } else if (unit === "years") {
+      const targetYear = startYear + count * step;
+      const targetMonth = startMonth - 1;
+      const lastDay = new Date(targetYear, targetMonth + 1, 0).getDate();
+      nextRenewal = new Date(targetYear, targetMonth, Math.min(originalDay, lastDay));
+    } else {
+      const totalMonths = startMonth - 1 + count * step;
+      const targetYear = startYear + Math.floor(totalMonths / 12);
+      const targetMonth = totalMonths % 12;
+      const lastDay = new Date(targetYear, targetMonth + 1, 0).getDate();
+      nextRenewal = new Date(targetYear, targetMonth, Math.min(originalDay, lastDay));
+    }
+
+    if (nextRenewal >= now) break;
+    count++;
+    if (count > 1000) break; // 無限ループ防止安全リミット
+  }
+
+  if (!nextRenewal) return null;
   const eventDate = new Date(nextRenewal);
   eventDate.setDate(eventDate.getDate() - notifyDays);
   return eventDate;

@@ -61,6 +61,23 @@ export function renderActionsTab(items = []) {
               </div>
             </div>
 
+            <!-- 個別詳細ガイドリンク（存在する場合） -->
+            ${
+              info.detailGuideUrl
+                ? `
+              <div class="mb-2.5 text-right">
+                <a
+                  href="${escapeHtml(info.detailGuideUrl)}"
+                  class="text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1"
+                >
+                  <span>詳しい解約手順・注意点ガイド</span>
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+              </div>
+            `
+                : ""
+            }
+
             <!-- 公式アクションボタン（全カード統一レイアウト） -->
             <a
               href="${escapeHtml(info.url)}"
