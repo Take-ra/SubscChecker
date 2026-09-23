@@ -5,9 +5,19 @@ export function loadDataFromStorage() {
   let custom = [];
   try {
     const rawState = localStorage.getItem("subscriptionStateV4");
-    if (rawState) state = JSON.parse(rawState);
+    if (rawState) {
+      const parsedState = JSON.parse(rawState);
+      if (parsedState && typeof parsedState === "object" && !Array.isArray(parsedState)) {
+        state = parsedState;
+      }
+    }
     const rawCustom = localStorage.getItem("customSubscriptions");
-    if (rawCustom) custom = JSON.parse(rawCustom);
+    if (rawCustom) {
+      const parsedCustom = JSON.parse(rawCustom);
+      if (Array.isArray(parsedCustom)) {
+        custom = parsedCustom;
+      }
+    }
   } catch (e) {
     console.error("Loading error:", e);
   }
@@ -59,6 +69,9 @@ export function calculateAggregation(
   categories,
   subscriptions,
 ) {
+  const safeState = savedState && typeof savedState === "object" && !Array.isArray(savedState) ? savedState : {};
+  const safeCustom = Array.isArray(customSubscriptions) ? customSubscriptions : [];
+
   // もし何らかの理由で categories が届いていなければエラーを防ぐ
   if (!categories || !subscriptions) {
     console.error("Logic Error: categories or subscriptions is undefined");
@@ -91,8 +104,8 @@ export function calculateAggregation(
   // ① 既存のサブスクの集計（新スキーマ plans と legacyIds を完全サポート）
   const processedSubIds = new Set();
 
-  Object.keys(savedState).forEach((subId) => {
-    const state = savedState[subId];
+  Object.keys(safeState).forEach((subId) => {
+    const state = safeState[subId];
     if (!state || !state.checked) return;
 
     // 新IDまたは旧IDでサブスクデータを高速Map検索
@@ -157,8 +170,8 @@ export function calculateAggregation(
   });
 
   // ② 独自のサブスクの集計
-  customSubscriptions.forEach((sub) => {
-    const state = savedState[sub.id];
+  safeCustom.forEach((sub) => {
+    const state = safeState[sub.id];
     if (state && state.checked) {
       const price = Math.max(0, parseInt(sub.price, 10) || 0);
       let mCost = 0,

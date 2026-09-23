@@ -5,7 +5,11 @@ export function initUIEvents(callbacks) {
   let isScrollingFromNav = false;
 
   // 目次のアクティブ状態を更新するヘルパー関数
+  let currentActiveNavId = null;
   function updateNavActiveState(activeId) {
+    if (currentActiveNavId === activeId) return;
+    currentActiveNavId = activeId;
+
     document.querySelectorAll(".nav-link").forEach((link) => {
       const isTarget = link.getAttribute("data-target") === activeId;
       if (isTarget) {
@@ -126,46 +130,64 @@ export function initUIEvents(callbacks) {
     }
   });
 
-  // 手動スクロール時の目次追従（スクロールスパイ）
+  // 手動スクロール時の目次追従（スクロールスパイ: requestAnimationFrameで軽量化）
   const scrollContainer = document.querySelector(
     ".h-full.w-full.overflow-y-auto",
   );
   if (scrollContainer) {
+    let isRafPending = false;
+
+    const onScroll = () => {
+      // 目次クリックでの自動移動中は処理をスキップ
+      if (isScrollingFromNav) {
+        isRafPending = false;
+        return;
+      }
+
+      const sections = document.querySelectorAll(
+        "#subscription-list > section, #section-custom",
+      );
+      if (sections.length === 0) {
+        isRafPending = false;
+        return;
+      }
+
+      // 最下部に到達している場合は最後のセクションをアクティブにする
+      const isNearBottom =
+        scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 50;
+
+      let currentId = "";
+      if (isNearBottom) {
+        currentId = sections[sections.length - 1].getAttribute("id");
+      } else {
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const isPC = window.innerWidth >= 768;
+        const headerOffset = isPC
+          ? 0
+          : (document.querySelector("nav")?.offsetHeight || 0);
+        const checkLine = containerRect.top + headerOffset + 120;
+
+        for (let i = 0; i < sections.length; i++) {
+          const rect = sections[i].getBoundingClientRect();
+          if (rect.top <= checkLine && rect.bottom >= checkLine) {
+            currentId = sections[i].getAttribute("id");
+            break;
+          }
+        }
+      }
+
+      if (currentId) {
+        updateNavActiveState(currentId);
+      }
+      isRafPending = false;
+    };
+
     scrollContainer.addEventListener(
       "scroll",
       () => {
-        // 目次クリックでの自動移動中は処理をスキップ
-        if (isScrollingFromNav) return;
-
-        const sections = document.querySelectorAll(
-          "#subscription-list > section, #section-custom",
-        );
-        let currentId = "";
-
-        // 最下部に到達している場合は最後のセクションをアクティブにする
-        const isNearBottom =
-          scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 50;
-
-        if (isNearBottom && sections.length > 0) {
-          currentId = sections[sections.length - 1].getAttribute("id");
-        } else {
-          const containerRect = scrollContainer.getBoundingClientRect();
-          const isPC = window.innerWidth >= 768;
-          const headerOffset = isPC
-            ? 0
-            : (document.querySelector("nav")?.offsetHeight || 0);
-          const checkLine = containerRect.top + headerOffset + 120;
-
-          sections.forEach((section) => {
-            const rect = section.getBoundingClientRect();
-            if (rect.top <= checkLine && rect.bottom >= checkLine) {
-              currentId = section.getAttribute("id");
-            }
-          });
-        }
-
-        if (currentId) {
-          updateNavActiveState(currentId);
+        if (!isRafPending) {
+          isRafPending = true;
+          window.requestAnimationFrame(onScroll);
         }
       },
       { passive: true },

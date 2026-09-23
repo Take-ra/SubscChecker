@@ -2,7 +2,7 @@
 // ライフスタイル提案・新体験紹介（Audible等）の独立セクション描画モジュール
 // ※節約提案とは明確に分離し、追加提案（新しい使い方の紹介）として中立的なトーンで表示します。
 
-import { getAffiliateUrl, trackAffiliateClick } from "./affiliate-config.js";
+import { getAffiliateUrl } from "./affiliate-config.js";
 import { escapeHtml } from "./utils.js";
 
 /**

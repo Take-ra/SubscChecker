@@ -1427,7 +1427,7 @@ export function openShareModal({ stats, completedAction = null }) {
         try {
           if (navigator.clipboard && window.ClipboardItem) {
             await navigator.clipboard.write([
-              new ClipboardItem({ "image/png": blob }),
+              new window.ClipboardItem({ "image/png": blob }),
             ]);
             if (btnCopyImageText) btnCopyImageText.textContent = "画像コピー完了！";
             if (hintEl) {

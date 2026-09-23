@@ -21,7 +21,7 @@ export function initCustomModal(callbacks) {
     document.getElementById("search-input");
 
   // モーダルを開く
-  window.openModal = () => {
+  const openModal = () => {
     editingSubId = null;
     document.getElementById("btn-save-custom").textContent = "追加する";
     document.getElementById("custom-name").value = "";
@@ -34,14 +34,16 @@ export function initCustomModal(callbacks) {
     customModal.classList.add("flex");
     document.body.style.overflow = "hidden";
   };
+  window.openModal = openModal;
 
   // モーダルを閉じる
-  window.closeModal = () => {
+  const closeModal = () => {
     editingSubId = null;
     customModal.classList.add("hidden");
     customModal.classList.remove("flex");
     document.body.style.overflow = "";
   };
+  window.closeModal = closeModal;
 
   // イベントリスナーの登録
   if (btnOpenCustomModal)
